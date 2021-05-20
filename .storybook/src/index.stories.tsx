@@ -10,7 +10,7 @@ import Sidebar from './Sidebar';
 
 export default { title: 'Leaflet layer' };
 
-const factors = {
+const factors: any = {
   10: 0.3,
   11: 0.1,
   12: 0.06,
@@ -24,20 +24,40 @@ const factors = {
   20: 0.0025,
 };
 
+const outlineFactors: any = {
+  4: 0.90,
+  5: 0.90,
+  6: 0.90,
+  7: 0.90,
+  8: 0.90,
+  9: 0.90,
+  10: 0.3,
+  11: 0.2,
+  12: 0.15,
+  13: 0.13,
+  14: 0.12,
+  15: 0.10,
+  16: 0.3,
+  17: 0.4,
+  18: 0.5,
+  19: 0.5,
+  20: 0.8,
+};
+
 const initialZoom: number = 12;
 
 // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 // Sample data
-const faultlineDataTroll = require('./Samples/Troll-Faultlines.json');
-const outlineDataTroll = require('./Samples/Troll-Outlines.json');
-const wellboreDataTroll = require('./Samples/Troll-Wellbores.json');
+const faultlineDataTroll = require('./.Samples/Troll-Faultlines.json');
+const outlineDataTroll = require('./.Samples/Troll-Outlines.json');
+const wellboreDataTroll = require('./.Samples/Troll-Wellbores.json');
 const wbData = Object.values(wellboreDataTroll) as any[];
 const licenseData = require('./.Samples/licenses.json');
 const pipelineData = require('./.Samples/pipelines.json');
 const facilityData = require('./.Samples/facilities.json');
 
 let explorationData = processExploration(
-  require('./Samples/Exploration.json'),
+  require('./.Samples/Exploration.json'),
 );
 
 explorationData = removeExpDuplicates(explorationData, wbData);
@@ -116,8 +136,15 @@ export const layer = () => {
       },
     );
 
+    const licenses: GeoJSONModule = new GeoJSONModule({
+      scaling: (zoom) => {
+        console.log('zoom zoom zoom :>> ', zoom);
+        console.log('factors :>> ', (outlineFactors[zoom] || 0) as number);
+        // return zoom;
+        return (outlineFactors[zoom] || 0) as number;
+      },
+    });
     /*
-    const licenses: GeoJSONModule = new GeoJSONModule();
     const pipelines: GeoJSONModule = new GeoJSONModule();
     const facilities: GeoJSONModule = new GeoJSONModule();
     */
@@ -126,7 +153,7 @@ export const layer = () => {
     // pixiLayer.addModule(fields);
     pixiLayer.addModule(outlines);
     pixiLayer.addModule(wellbores);
-    // pixiLayer.addModule(licenses);
+    pixiLayer.addModule(licenses);
     // pixiLayer.addModule(pipelines);
     // pixiLayer.addModule(facilities);
     pixiLayer.addTo(map);
@@ -137,16 +164,15 @@ export const layer = () => {
 
     // ! License, pipeline and facilities should be toggled through the sidebar.
     // ! For examples, see 'Button' section below.
-    /*
     licenses.set(licenseData, (feature) => ({ label: feature.properties.prlName,
                                              id: feature.properties.prlNpdidLicence,
                                              style: {
-                                               lineColor: 'blue',
+                                               lineColor: 'darkblue',
                                                lineWidth: 0.1,
                                                fillColor: feature.properties.prlActive === 'Y' ? 'blue' : 'grey',
                                                fillOpacity: 0.6 },
                                             additionalData: {}}));
-
+/*
     pipelines.set(pipelineData, (feature) => ({ label: feature.properties.pplName,
                                             id: feature.properties.pplNpdidPipeline,
                                             style: {

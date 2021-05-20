@@ -16,6 +16,11 @@ type vec3 = [number, number, number];
 interface Config {
   customEventHandler?: EventHandler;
   onFeatureHover?: (event: MouseEvent, data: any) => void;
+  /** Relative scale of all components. (Default: 1.0) */
+  scale?: number;
+  /** Zoom event handler. */
+  scaling?: (zoom: number) => number;
+
 }
 
 /** Module for displaying fields. */
@@ -30,11 +35,15 @@ export default class GeoJSONModule extends ModuleInterface {
   mapmoving: boolean;
   labelRoot: PIXI.Container
 
+  /** Zoom event handler. */
+  scaling: (zoom: number) => number;
+
   constructor(config?: Config) {
     super();
     this.mapmoving = false;
     this._eventHandler = config?.customEventHandler || new DefaultEventHandler();
     this.onFeatureHover = config?.onFeatureHover;
+    this.scaling = config?.scaling;
   }
 
   set(data: GeoJSON.FeatureCollection, props?: (feature: any) => FeatureProps) {
@@ -47,7 +56,7 @@ export default class GeoJSONModule extends ModuleInterface {
         if (this.linestrings === undefined) this.linestrings = new GeoJSONLineString(this.root, this.pixiOverlay);
         this.linestrings.add(feature, props);
       } else if (feature.geometry.type === 'Polygon') {
-        if (this.polygons === undefined) this.polygons = new GeoJSONPolygon(this.root, this.labelRoot, this.pixiOverlay);
+        if (this.polygons === undefined) this.polygons = new GeoJSONPolygon(this.root, this.labelRoot, this.pixiOverlay, { scaling: this.scaling });
         this.polygons.add(feature, props);
       } else if (feature.geometry.type === 'MultiPolygon') {
         if (this.multipolygons === undefined) this.multipolygons = new GeoJSONMultiPolygon(this.root, this.labelRoot, this.pixiOverlay);
@@ -90,6 +99,14 @@ export default class GeoJSONModule extends ModuleInterface {
 
   onRemove(map: import("leaflet").Map): void {
     this._eventHandler.unregister();
+  }
+
+  resize(zoom: number) {
+    if (!this.scaling) return; // Return if no scaling function
+    if (this.points) this.points.resize(zoom);
+    if (this.linestrings) this.linestrings.resize(zoom);
+    if (this.polygons) this.polygons.resize(zoom);
+    if (this.multipolygons) this.multipolygons.resize(zoom);
   }
 
   private handleMouseMove(event: MouseEvent): boolean {

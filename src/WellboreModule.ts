@@ -407,9 +407,10 @@ export default class WellboreModule extends ModuleInterface {
 
     const wellboreRadius = this.getWellboreRadius(zoom);
     const rootRadius = this.getRootRadius(zoom);
+    console.log({ wellboreRadius, rootRadius, overlay: this.pixiOverlay });
 
     // @ts-ignore
-    this.pixiOverlay._renderer.globalUniforms.uniforms.wellboreRadius = wellboreRadius;
+    // this.pixiOverlay._renderer.globalUniforms.uniforms.wellboreRadius = wellboreRadius;
 
     // @ts-ignore
     this.pixiOverlay._renderer.globalUniforms.uniforms.rootRadius = rootRadius;

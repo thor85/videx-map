@@ -22,7 +22,8 @@ interface FillUniform {
 
 interface OutlineUniform {
   color: vec3;
-  width: number;
+  outlineWidth: number;
+
 }
 
 export interface FeatureMesh {
@@ -54,6 +55,8 @@ interface Config {
   labelColor?: string | number,
   /**Label alignment, default Center  */
   labelAlign?: string,
+  /** Zoom event handler. */
+  scaling?: (zoom: number) => number,
 }
 
 /** Container for GeoJSON Polygon features. */
@@ -85,6 +88,16 @@ export default class GeoJSONPolygon {
   dict: TriangleDictionary<any> = new TriangleDictionary(1.2);
   textStyle: PIXI.TextStyle;
   labels: GeoJSONLabels;
+  currentZoom: number = 20;
+  outlineThickness: number = 0.15;
+
+  outlineData: any;
+  meshData: any;
+  properties: any;
+  zIndex: number = 1000;
+
+  /** Zoom event handler. */
+  scaling: (zoom: number) => number;
 
   constructor(root: PIXI.Container, labelRoot: PIXI.Container, pixiOverlay: pixiOverlayBase, config?: Config) {
     if (config?.initialHash && typeof config.initialHash === 'number') this.config.initialHash = config.initialHash;
@@ -98,6 +111,8 @@ export default class GeoJSONPolygon {
     this.pixiOverlay = pixiOverlay;
     this.features = [];
     this.config.initialHash = clamp(this.config.initialHash);
+
+    this.scaling = config?.scaling;
 
     this.textStyle = new PIXI.TextStyle({
       fontFamily: config?.labelFontFamily || 'Arial',
@@ -124,11 +139,17 @@ export default class GeoJSONPolygon {
 
       const meshData = Mesh.Polygon(projected);
       this.dict.add(coordinates[0], meshData.triangles, feature.properties);
-      const outlineData = Mesh.PolygonOutline(projected, 0.15);
+      const outlineData = Mesh.PolygonOutline(projected, this.outlineThickness);
+      this.meshData = meshData;
+      this.outlineData = outlineData;
       const [position, mass] = centerOfMass(projected, meshData.triangles);
 
+      this.properties = properties;
+      // console.log({ container: this.container, meshData, outlineData, style: properties.style });
+      // this.drawPolygons()
       meshes.push(
-        this.drawPolygons(this.container, meshData, outlineData, properties.style, 1000),
+        // this.drawPolygons(this.container, meshData, outlineData, properties.style, 1000),
+        this.drawPolygons(),
       );
       this.labels.addLabel(properties.label, { position, mass });
       this.features.push(...meshes);
@@ -137,11 +158,25 @@ export default class GeoJSONPolygon {
     }
   }
 
+  updateOutline() {
+    console.log('this container :>> ', this.container.children);
+
+  }
+
   /**
    * Draw each polygon in a polygon collection.
    * @param polygons
    */
-  drawPolygons(container: PIXI.Container, meshData: MeshData, outlineData: MeshNormalData, featureStyle: FeatureStyle, zIndex: number): FeatureMesh {
+  drawPolygons(): FeatureMesh {
+    // container: PIXI.Container, meshData: MeshData, outlineData: MeshNormalData, featureStyle: FeatureStyle, zIndex: number
+    const {
+      container,
+      meshData,
+      outlineData,
+      properties,
+      zIndex,
+    } = this;
+    const featureStyle = properties.style;
 
     const fillColor = featureStyle.fillColor ? color(featureStyle.fillColor).rgb() : undefined;
     const fillColor2 = featureStyle.fillColor2 ? color(featureStyle.fillColor2).rgb() : undefined;
@@ -153,19 +188,30 @@ export default class GeoJSONPolygon {
       hashDisp: Math.random() * 10,
       hashWidth: this.config.initialHash,
     };
+    // console.log('featureStyle :>> ', featureStyle);
 
     const lineColor = color(featureStyle.lineColor).rgb();
     const outlineUniform: OutlineUniform = {
       color: [lineColor.r, lineColor.g, lineColor.b],
-      width: featureStyle.lineWidth,
+      // color: [0, 0, 0],
+      outlineWidth: this.outlineThickness || featureStyle.lineWidth,
     }
+    const pixiShader: any = PIXI.Shader.from(GeoJSONPolygon.vertexShaderOutline, GeoJSONPolygon.fragmentShaderOutline, outlineUniform);
+    const pixiGeometry = new PIXI.Geometry();
+    pixiGeometry.addAttribute('inputVerts', outlineData.vertices);
+    pixiGeometry.addAttribute('inputNormals', outlineData.normals);
+    pixiGeometry.addIndex(outlineData.triangles);
+
+    const polygonOutlineMesh = new PIXI.Mesh(pixiGeometry, pixiShader);
+
 
     const polygonMesh = Mesh.from(meshData.vertices, meshData.triangles, GeoJSONPolygon.vertexShaderFill, GeoJSONPolygon.fragmentShaderFill, fillUniform);
     polygonMesh.zIndex = zIndex;
 
     container.addChild(polygonMesh);
 
-    const polygonOutlineMesh = Mesh.from(outlineData.vertices, outlineData.triangles, GeoJSONPolygon.vertexShaderOutline, GeoJSONPolygon.fragmentShaderOutline, outlineUniform, outlineData.normals);
+
+    // const polygonOutlineMesh = Mesh.from(outlineData.vertices, outlineData.triangles, geo, GeoJSONPolygon.fragmentShaderOutline, outlineUniform, outlineData.normals);
     polygonOutlineMesh.zIndex = zIndex + 1;
     container.addChild(polygonOutlineMesh);
 
@@ -180,6 +226,8 @@ export default class GeoJSONPolygon {
       },
     }
   }
+
+  // drawFill(): void
 
   drawLabels(): void {
     this.labels.draw();
@@ -199,7 +247,18 @@ export default class GeoJSONPolygon {
   }
 
   resize(zoom: number) {
-
+    let scale = this.scaling(zoom);
+    console.log({ scale, zoom, me: this });
+    this.currentZoom = zoom;
+    this.outlineThickness = scale;
+    // @ts-ignore
+    this.pixiOverlay._renderer.globalUniforms.uniforms.outlineWidth = scale;
+    // @ts-ignore
+    this.pixiOverlay._renderer.globalUniforms.uniforms.tempColor = 1.0;
+    console.log('I was resized');
+    // this.pixiOverlay.redraw();
+    // this.container.removeChildren();
+    // this.drawPolygons();
   }
 
   testPosition(pos: Vector2) : any {
@@ -255,10 +314,10 @@ GeoJSONPolygon.vertexShaderOutline = `
   uniform mat3 translationMatrix;
   uniform mat3 projectionMatrix;
 
-  uniform float width;
+  uniform float outlineWidth;
 
   void main() {
-    vec2 pos = inputVerts + inputNormals * width;
+    vec2 pos = inputVerts + inputNormals * outlineWidth;
     gl_Position = vec4((projectionMatrix * translationMatrix * vec3(pos, 1.0)).xy, 0.0, 1.0);
   }
 `;
@@ -267,8 +326,9 @@ GeoJSONPolygon.fragmentShaderOutline = `
   precision mediump float;
 
   uniform vec3 color;
+  uniform float tempColor;
 
   void main() {
-    gl_FragColor = vec4(color / 255., 1.0);
+    gl_FragColor = vec4(tempColor, 1.0, 0.0, 1.0);
   }
 `;

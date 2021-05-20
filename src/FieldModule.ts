@@ -292,7 +292,7 @@ export default class FieldModule extends ModuleInterface {
   }
 
   resize(zoom: number) {
-
+    console.log('zoom field :>> ', zoom);
   }
 
   /*

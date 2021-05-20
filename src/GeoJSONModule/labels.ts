@@ -55,7 +55,8 @@ export default class GeoJSONLabels {
    * @param name label name
    * @param data Data for each label
    */
-  addLabel(name: string, data: GeoJSONLabelData) { // Single-polygon
+  addLabel(name: string, data: GeoJSONLabelData, properties?: any) { // Single-polygon
+    if (name === '153') console.log({ name, data, properties });
       this.labels.push({
         name,
         position: data.position,

@@ -156,8 +156,10 @@ export default class GeoJSONMultiPolygon {
     };
 
     const lineColor = color(featureStyle.lineColor).rgb();
+    // console.log('lineColor :>> ', lineColor);
     const outlineUniform: OutlineUniform = {
-      color: [lineColor.r, lineColor.g, lineColor.b],
+      // color: [lineColor.r, lineColor.g, lineColor.b],
+      color: [0, 0, 0],
       width: featureStyle.lineWidth,
     }
 
@@ -201,7 +203,7 @@ export default class GeoJSONMultiPolygon {
   }
 
   resize(zoom: number) {
-
+    console.log('zoom multi polygon :>> ', zoom);
   }
 
   testPosition(pos: Vector2) : any {
