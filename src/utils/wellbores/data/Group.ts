@@ -27,7 +27,7 @@ export class Group {
 
   /** State of wellbores attached to group */
   state: WellboreState = {
-    completionVisible: true,
+    completionVisible: false,
     wellboreVisible: true,
   };
 

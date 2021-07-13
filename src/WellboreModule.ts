@@ -188,9 +188,11 @@ export default class WellboreModule extends ModuleInterface {
    */
   private handleMouseMove(event: MouseEvent): boolean {
     const map = this.pixiOverlay.utils.getMap();
+    // console.log(event)
     const latLng = map.mouseEventToLatLng(event);
 
     const worldspaceCoord = this.projector.getVector2(latLng);
+    // console.log(worldspaceCoord)
 
     updateHighlighted(
       this,

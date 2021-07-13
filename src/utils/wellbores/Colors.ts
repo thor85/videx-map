@@ -45,21 +45,25 @@ export function getDefaultColors(input?: InputColors): Colors {
 
   const output: Colors = {
     fontColor: 0x000000,
-    interactFontColor: 0xFFFFFF,
+    interactFontColor: 0x000000,
     default: {
       col1: [0.3, 0.3, 0.3],
       col2: [0.05, 0.05, 0.05],
       labelBg: 0xFFFFFF,
     },
     highlight: {
-      col1: [0.8, 0.2, 0.9],
-      col2: [0.5, 0.05, 0.6],
-      labelBg: 0xA30AA3,
+      // col1: [0.8, 0.2, 0.9],
+      col1: [0, 1.0, 1.0],
+      col2: [0, 0.7, 0.7],
+      labelBg: 0x00FFFF,
     },
     multiHighlight: {
-      col1: [0.55, 0.55, 0.55],
-      col2: [0.3, 0.3, 0.3],
-      labelBg: 0x666666,
+      col1: [0, 1.0, 1.0],
+      col2: [0, 0.7, 0.7],
+      labelBg: 0x00FFFF,
+      // col1: [0.55, 0.55, 0.55],
+      // col2: [0.3, 0.3, 0.3],
+      // labelBg: 0x666666,
     },
     selected: {
       col1: [1.0, 0.0, 0.0],

@@ -6,6 +6,8 @@ import { pixiOverlayBase } from '../pixiOverlayInterfaces';
 import PointDictionary from '../utils/PointDictionary';
 import { FeatureProps } from '.';
 
+// import { Conic, ConicDisplay } from '@pixi-essentials/conic';
+
 
 /** Interface for faultline config. */
 interface InputConfig {
@@ -70,11 +72,21 @@ export default class GeoJSONPoint {
       const fillColor = properties.style.fillColor ? PIXI.utils.string2hex(color(properties.style.fillColor).hex()) : 0x0;
       const lineColor = properties.style.lineColor ? PIXI.utils.string2hex(color(properties.style.lineColor).hex()) : 0x0;
       const opacity = properties.style.fillOpacity || 0;
-      const offset = 4;
+      const offset = properties.style.pointSize || 4;
+      const pointShape = properties.style.pointShape || 'square';
       point.lineStyle(properties.style.lineWidth, lineColor);
       point.beginFill(fillColor, opacity);
-      point.drawRect(projected[0] - offset, projected[1] - offset, offset*2, offset*2);
+      if (pointShape == 'square') {
+        point.drawRect(projected[0] - offset, projected[1] - offset, offset*2, offset*2);
+      } else if (pointShape == 'circle') {
+        // Need to draw circle large and scale down to avoid jagged edges when zooming in
+        const scale = 10;
+        point.drawCircle(projected[0] * scale, projected[1] * scale, offset * scale);
+        point.scale.set(1 / scale, 1 / scale);
+      }
+
       point.endFill();
+
       this.spawned.push(point);
     }
   }

@@ -37,6 +37,8 @@ export default class PixiLayer extends L.PixiOverlay {
     root.sortableChildren = true; // Make container sortable
 
     super(drawCallback, root, options);
+    // this._rendererOptions.resolution = 2;
+    // console.log(this)
     this.root = root;
     this.modules = [];
   }

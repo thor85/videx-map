@@ -9,6 +9,9 @@ import PixiLayer from './helper/PixiLayer';
 import { ProspectColors } from './helper/ProspectColors';
 import Sidebar from './Sidebar';
 
+import Vector2 from '@equinor/videx-vector2';
+import { omit } from 'lodash';
+
 export default { title: 'Leaflet layer' };
 
 const factors: any = {
@@ -25,14 +28,15 @@ const factors: any = {
   20: 0.0025,
 };
 
-const initialZoom: number = 12;
+const initialZoom: number = 11;
 
 // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 // Sample data
 const faultlineDataTroll = require('./Samples/Troll-Faultlines.json');
 const outlineDataTroll = require('./Samples/Troll-Outlines.json');
 const wellboreDataTroll = require('./Samples/Troll-Wellbores.json');
-const wbData = Object.values(wellboreDataTroll) as any[];
+// console.log(wellboreDataTroll)
+const wbDataOld = Object.values(wellboreDataTroll) as any[];
 const licenseData = require('./.Samples/licenses.json');
 const pipelineData = require('./.Samples/pipelines.json');
 const facilityData = require('./.Samples/facilities.json');
@@ -42,7 +46,7 @@ let explorationData = processExploration(
   require('./Samples/Exploration.json'),
 );
 
-explorationData = removeExpDuplicates(explorationData, wbData);
+explorationData = removeExpDuplicates(explorationData, wbDataOld);
 // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 export const layer = () => {
@@ -67,8 +71,160 @@ export const layer = () => {
 
   const sidebar = new Sidebar(sidebarRoot, { marginPct: 7 });
 
+  /** Remove two char code at start, if found. Eg, 'NO 31/2-3' becomes '31/2-3'. */
+  function stripLabel(name: string) {
+    let output = name;
+    if (/^[a-zA-Z]{2}\s/.test(name)) {
+      output = name.substring(3);
+    }
+    return output;
+  }
+
+    /** Extract year from date string. */
+  function getYear(date: any) {
+    if (!date) return null;
+    return new Date(date).getFullYear();
+  }
+
+  function transformDrilledWellboreData(data: any[]) {
+    // const proj = new GeoProjection(defaultCrs);
+
+    const wellboreInfo: any[] = data.map(item => {
+      const depthRef: any = item.depthReferenceElevation;
+
+      //@ts-ignore
+      item.intervals = item.intervals.map(d => ({
+        ...d,
+        start: d.start + depthRef,
+        end: d.end + depthRef,
+      }));
+      // proj.set(item.projectedCoordinateSystem || defaultCrs);
+      // item.path = proj.toLatLongStream(item.path, [item.refX, item.refY]);
+      return {
+        ...omit(item, ['depthMsl']),
+        wellboreId: item.wellboreGuid,
+        label: item.uniqueWellboreIdentifier,
+        labelShort: stripLabel(item.uniqueWellboreIdentifier),
+        category: item.wellborePurpose?.toLowerCase() || 'unknown',
+        drillEndYear: getYear(item.drillEndDate || item.completionDate),
+        totalDepthDrillerMd: item.depthMsl + depthRef,
+      };
+    });
+
+    return wellboreInfo;
+  }
+
+  /** Get displacement of point relative to line. X-axis follows line and starts at 'lineStart'. */
+  function displacementToVectorOrigin(point: any, lineStart: any, lineEnd: any) {
+    const lineDir = Vector2.sub(lineEnd, lineStart);
+
+    // Angle of line relative to x-axis
+    const lineAngle = Math.atan2(lineDir.y, lineDir.x);
+
+    // Local direction to point
+    const dir = Vector2.sub(point, lineStart).rotate(-lineAngle);
+
+    return new Vector2(Math.abs(dir.x), Math.abs(dir.y));
+  }
+
+  function ReduceLine(points: any[], maxDeviation: any, distanceWeight: any) {
+    const output = [
+      points[0],
+      points[1],
+    ];
+
+    // Initial direction
+    let [lineStart, lineEnd] = points;
+
+    for (let i = 2; i < points.length - 1; i++) {
+      const cur = points[i];
+
+      const minDisp = displacementToVectorOrigin(cur, lineStart, lineEnd);
+      if (minDisp.y > maxDeviation + minDisp.x * distanceWeight) {
+        output.push(cur);
+        lineStart = [...lineEnd];
+        lineEnd = [...cur];
+      }
+    }
+
+    output.push(points[points.length - 1]); // Add last
+
+    return output;
+  }
+
+  function parseGeometryType(geometryString: string) {
+    const geometryType = geometryString.substr(0, geometryString.indexOf(' '));
+    const lowercase = geometryType.toLowerCase();
+    if (lowercase === 'polygon') return { success: true, geometryType: 'Polygon' };
+    if (lowercase === 'multipolygon') return { success: true, geometryType: 'MultiPolygon' };
+    return { success: false };
+  }
+
+  function transformProspectData(data: any[]) {
+    const features: any[] = [];
+    data.forEach(d => {
+      // Skip if missing geometry data
+      if (!('polygonGeometryWkt' in d)) return;
+
+      const geometryString = d.polygonGeometryWkt;
+
+      const properties = { ...d };
+      delete properties.polygonGeometryWkt;
+
+      const { success, geometryType } = parseGeometryType(geometryString);
+      if (!success) return; // Return if non-valid geometry
+
+      // ! (Hopefully) Temporary code to parse prospect coordinates.
+      // ! Support for Polygon and MultiPolygon with holes.
+      let index = 0;
+      const getCoordinatesRecursive = (arr: any[]) => {
+        let char: any;
+        let sequence = '';
+        while (index < geometryString.length) {
+          char = geometryString[index++];
+          if (char === '(') {
+            sequence = '';
+            const sub: any[] = [];
+            arr.push(sub);
+            getCoordinatesRecursive(sub);
+          } else if (char === ')') {
+            if (sequence !== '') {
+              arr.push(
+                ...sequence.split(',').map((pair) => {
+                  const [lat, long] = pair.split(/\s/);
+                  return [Number(lat), Number(long)];
+                }),
+              );
+            }
+            return;
+          } else {
+            sequence += char;
+          }
+        }
+      };
+
+      let coordinates: any[] = [];
+      getCoordinatesRecursive(coordinates);
+      ([coordinates] = coordinates);
+
+      features.push({
+        type: 'Feature',
+        properties,
+        geometry: {
+          type: geometryType,
+          coordinates,
+        },
+      });
+    });
+
+    return {
+      type: 'FeatureCollection',
+      features,
+    };
+  }
+
   requestAnimationFrame(() => {
-    const map = L.map(mapRoot.node()).setView([60.81, 3.57], initialZoom);
+    const map = L.map(mapRoot.node()).setView([60.78, 3.57], initialZoom);
     // const map = L.map(root.node()).setView([72.395, 20.13], initialZoom); // JC
     // const map = L.map(root.node()).setView([59.227, 2.507], initialZoom); // Grand
     // const map = L.map(root.node()).setView([59.186, 2.491], initialZoom); // Grane
@@ -76,6 +232,9 @@ export const layer = () => {
       maxNativeZoom: 10,
       noWrap: true,
     }).addTo(map);
+
+    // @ts-ignore
+    console.log(map)
 
     const pixiLayer = new PixiLayer();
     const faultlines: FaultlineModule = new FaultlineModule();
@@ -106,15 +265,19 @@ export const layer = () => {
           height: 0.1,
         },
         onHighlightOn: event => {
+          const latLng = map.mouseEventToLatLng(event.originalEvent);
+          // console.log(latLng)
+          // console.log(event.eventData[0].data.labelShort)
+          // console.log(event)
           if (event.count === 1) mapRoot.node().style.cursor = 'pointer'; // Set cursor style
           else mapRoot.node().style.cursor = null; // Remove cursor style
         },
-        onHighlightOff: () => {
-          mapRoot.node().style.cursor = null; // Remove cursor style
-        },
-        onWellboreClick: wellbore => {
-          wellbores.setSelected(d => d === wellbore.data);
-        }
+        // onHighlightOff: () => {
+        //   mapRoot.node().style.cursor = null; // Remove cursor style
+        // },
+        // onWellboreClick: wellbore => {
+        //   wellbores.setSelected(d => d === wellbore.data);
+        // }
       },
     );
 
@@ -148,6 +311,9 @@ export const layer = () => {
     faultlines.set(faultlineDataTroll);
     outlines.set(outlineDataTroll);
 
+    const wbData = transformDrilledWellboreData(wbDataOld) as any[];
+    // console.log(wbData)
+
     const split = Math.floor(wbData.length * 0.9);
 
     const drilled = wbData.slice(0, split);
@@ -174,7 +340,8 @@ export const layer = () => {
     });
 
     wellbores.set(drilled, 'Drilled'); // Set first half (Emulate 'Drilled')
-    // wellbores.set(planned, 'Planned'); // Set second half (Emulate 'Planned')
+
+    wellbores.set(planned, 'Planned'); // Set second half (Emulate 'Planned')
     // wellbores.set(explorationData, 'Exploration');
 
 
@@ -228,6 +395,15 @@ export const layer = () => {
     });
 
     // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+    let faultlinesVisible = true;
+
+    const toggleFaultlines = () => {
+      faultlinesVisible = !faultlinesVisible;
+      // console.log(faultlinesVisible)
+      // console.log(faultlines)
+      faultlines.setVisibility(faultlinesVisible);
+    }
 
     const groupFilter = sidebar.addGroup('Filter');
 
@@ -346,9 +522,14 @@ export const layer = () => {
       id: feature.properties.fclNpdidFacility,
       style: {
         lineColor: 'black',
-        lineWidth: 1,
-        fillColor: 'black',
-        fillOpacity: 0.9,
+        lineWidth: 0.4,
+        fillColor: 'grey',
+        // fillColor2: 'red',
+        fillOpacity: 0.7,
+        pointSize: 0.5,
+        pointShape: 'circle',
+        // hashed: true,
+        // labelScale: 1,
       },
      additionalData: {},
     });
@@ -367,10 +548,13 @@ export const layer = () => {
       }
     };
 
+    // let prospectDataNew = transformProspectData(prospectData);
+    let prospectDataNew = prospectData;
+
     const licenseGeoJSON: SingleGeoJSON = { module: licenses, data: licenseData, props: licenseProps, visible: false };
     const pipelineGeoJSON: SingleGeoJSON = { module: pipelines, data: pipelineData, props: pipelineProps, visible: false };
     const facilityGeoJSON: SingleGeoJSON = { module: facilities, data: facilityData, props: facilityProps, visible: false };
-    const prospectGeoJSON: SingleGeoJSON = { module: prospects, data: prospectData, props: prospectProps, visible: false };
+    const prospectGeoJSON: SingleGeoJSON = { module: prospects, data: prospectDataNew, props: prospectProps, visible: false };
 
     const toggleGeoJSON = (collection: any) => {
       collection.visible = !collection.visible;
@@ -388,6 +572,7 @@ export const layer = () => {
     groupGeoJSON.add('Toggle pipelines', () => toggleGeoJSON(pipelineGeoJSON));
     groupGeoJSON.add('Toggle facilities', () => toggleGeoJSON(facilityGeoJSON));
     groupGeoJSON.add('Toggle prospects', () => toggleGeoJSON(prospectGeoJSON));
+    groupGeoJSON.add('Toggle faultline', () => toggleFaultlines());
   });
 
   return root.node();

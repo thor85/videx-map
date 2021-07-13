@@ -199,6 +199,7 @@ export default class LineDictionary<T> {
     // Find closest line
     let minDist: number = Infinity;
     let minLineID: number = -1;
+    let minSeg: LineSegment;
     segments.forEach(seg => {
       const dist: number = distanceToLine(
         target,
@@ -208,12 +209,18 @@ export default class LineDictionary<T> {
       if (dist < minDist) {
         minDist = dist;
         minLineID = seg.lineID;
+        minSeg = seg;
       }
     });
 
     if(minDist > maxDist * this.gridsize) return undefined;
 
     // Return value of line with smallest distance
+    // console.log("")
+    // console.log("minSeg")
+    // console.log(minSeg)
+    // console.log("getClosest")
+    // console.log(this.lineValues.get(minLineID).value)
     return this.lineValues.get(minLineID).value;
   }
 

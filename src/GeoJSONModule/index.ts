@@ -12,6 +12,8 @@ export interface FeatureStyle {
   fillOpacity?: number;
   hashed?: boolean;
   labelScale?: number;
+  pointShape?: string;
+  pointSize?: number;
 }
 
 export interface FeatureProps {

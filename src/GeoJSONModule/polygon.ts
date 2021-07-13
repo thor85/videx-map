@@ -115,7 +115,7 @@ export default class GeoJSONPolygon {
 
     this.pixiOverlay = pixiOverlay;
     this.features = [];
-    this.config = config;
+    if (config) this.config = config;
     this.config.initialHash = clamp(this.config.initialHash);
 
     this.textStyle = new PIXI.TextStyle({

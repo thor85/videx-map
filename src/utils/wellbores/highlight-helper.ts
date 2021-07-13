@@ -30,6 +30,10 @@ function testLabel(pos: Vector2, roots: RootData[]) : WellboreData[] {
 
 function testWellborePath(pos: Vector2, lineDict: LineDictionary<WellboreData>, distanceThreshold = 0.5) : WellboreData[] {
   const hit = lineDict.getClosest(pos, distanceThreshold);
+  if(hit) {
+    // console.log("hit")
+    // console.log(hit)
+  }
   return hit ? [ hit ] : null;
 }
 

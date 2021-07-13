@@ -23,4 +23,6 @@ export interface SourceData {
   labelShort: string,
   /** Path along wellbore on lat/long format. */
   path: [number, number][],
+  /** Extra point data. */
+  pointData?: [number, number][],
 }
