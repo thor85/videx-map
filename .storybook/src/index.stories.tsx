@@ -253,8 +253,8 @@ export const layer = () => {
         // @ts-ignore
         scaling: zoom => factors[zoom] || 0,
         wellboreResize: {
-          min: { zoom: 10, scale: 0.5 },
-          max: { zoom: 18, scale: 0.05 },
+          min: { zoom: 10, scale: 0.05 },
+          max: { zoom: 18, scale: 0.5 },
         },
         rootResize: {
           min: { zoom: 0, scale: 1000.0 },
@@ -264,6 +264,9 @@ export const layer = () => {
           width: 0.01,
           height: 0.1,
         },
+        // fontSize: 64,
+        // labelScale: 0.011,
+        // wellboreWidth: 150,
         onHighlightOn: event => {
           const latLng = map.mouseEventToLatLng(event.originalEvent);
           // console.log(latLng)
@@ -283,8 +286,8 @@ export const layer = () => {
 
     const licenses: GeoJSONModule = new GeoJSONModule({
       outlineResize: {
-        min: { zoom: 6, scale: 3.0 },
-        max: { zoom: 18, scale: 0.05 },
+        min: { zoom: 6, scale: 6.0 },
+        max: { zoom: 18, scale: 5.05 },
       },
       labelResize: {
         min: { zoom: 11, scale: 0.1 },
@@ -292,10 +295,34 @@ export const layer = () => {
         threshold: 8,
         baseScale: 0.15,
       },
+      onFeatureHover: (event, data) => {
+        if (data && data.length > 0) {
+          console.log(data)
+        }
+      },
     });
-    const pipelines: GeoJSONModule = new GeoJSONModule();
-    const facilities: GeoJSONModule = new GeoJSONModule();
-    const prospects: GeoJSONModule = new GeoJSONModule();
+    const pipelines: GeoJSONModule = new GeoJSONModule({
+      onFeatureHover: (event, data) => {
+        if (data && data.length > 0) {
+          console.log(data)
+        }
+      },
+    });
+    const facilities: GeoJSONModule = new GeoJSONModule({
+      onFeatureHover: (event, data) => {
+        if (data && data.length > 0) {
+          console.log(data)
+        }
+      },
+      distanceThreshold: 250
+    });
+    const prospects: GeoJSONModule = new GeoJSONModule({
+      // onFeatureHover: (event, data) => {
+      //   if (data && data.length > 0) {
+      //     console.log(data)
+      //   }
+      // },
+    });
 
     pixiLayer.addModule(faultlines);
     // pixiLayer.addModule(fields);
@@ -311,8 +338,10 @@ export const layer = () => {
     faultlines.set(faultlineDataTroll);
     outlines.set(outlineDataTroll);
 
-    const wbData = transformDrilledWellboreData(wbDataOld) as any[];
-    // console.log(wbData)
+    console.log(wbDataOld)
+    // const wbData = transformDrilledWellboreData(wbDataOld) as any[];
+    const wbData = wbDataOld;
+    console.log(wbData)
 
     const split = Math.floor(wbData.length * 0.9);
 
@@ -498,7 +527,7 @@ export const layer = () => {
       id: feature.properties.prlNpdidLicence,
       style: {
         lineColor: 'blue',
-        lineWidth: 0.1,
+        lineWidth: 3.1,
         fillColor: feature.properties.prlActive === 'Y' ? 'blue' : 'grey',
         fillOpacity: 0.6,
       },
@@ -510,7 +539,7 @@ export const layer = () => {
       id: feature.properties.pplNpdidPipeline,
       style: {
         lineColor: 'red',
-        lineWidth: 1,
+        lineWidth: 3,
         fillColor: 'red',
         fillOpacity: 0.6,
       },
@@ -562,6 +591,7 @@ export const layer = () => {
       if (collection.visible && !collection.loaded) {
         collection.loaded = true;
         collection.module.set(collection.data, collection.props);
+        // collection.module.cache();
       }
 
       collection.module.setVisibility(collection.visible);

@@ -108,6 +108,7 @@ export default class ExplorationLayer extends ModuleInterface {
     // Get worldspace from coordinates
     const {x, y} = project([lat, long]);
     const worldSpace = new Vector2(x, y);
+    // console.log(worldSpace)
 
     const circleUnder = this.pointDict.getClosestUnder(worldSpace);
 

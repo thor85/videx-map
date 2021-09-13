@@ -193,8 +193,11 @@ export default class LineDictionary<T> {
     // Get all involved segments
     const segments: Set<LineSegment> = this.getSegmentsOn3Grid(target);
 
+    // console.log("before segments")
+    // console.log(segments)
     // Do not return anything if no segments
     if (segments.size === 0) return undefined;
+    // console.log("after segments")
 
     // Find closest line
     let minDist: number = Infinity;

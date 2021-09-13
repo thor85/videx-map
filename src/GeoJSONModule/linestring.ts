@@ -15,7 +15,7 @@ type vec3 = [number, number, number];
 
 interface OutlineUniform {
   color: vec3;
-  width: number;
+  outlineWidth: number;
 }
 
 export interface FeatureMesh {
@@ -92,7 +92,7 @@ export default class GeoJSONLineString {
     const lineColor = color(featureStyle.lineColor).rgb();
     const outlineUniform: OutlineUniform = {
       color: [lineColor.r, lineColor.g, lineColor.b],
-      width: featureStyle.lineWidth,
+      outlineWidth: featureStyle.lineWidth,
     }
 
     const polygonOutlineMesh = Mesh.from(outlineData.vertices, outlineData.triangles, GeoJSONVertexShaderOutline, GeoJSONFragmentShaderOutline, outlineUniform, outlineData.normals);
@@ -139,8 +139,9 @@ export default class GeoJSONLineString {
     this.currentZoom = zoom;
   }
 
-  testPosition(pos: Vector2) : any {
-    return this.dict.getClosest(pos);
+  // TODO: Make distanceThreshold a config setting in the module
+  testPosition(pos: Vector2, distanceThreshold: number = 2.0) : any {
+    return this.dict.getClosest(pos, distanceThreshold);
   }
 
   getOutlineRadius(zoom: number = this.currentZoom) {

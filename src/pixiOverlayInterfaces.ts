@@ -5,6 +5,7 @@ export interface pixiOverlayBase {
   getEvents(): any;
   redraw(data?: any): any;
   utils: pixiOverlayUtils;
+  _map: any;
 }
 
 export interface pixiOverlayUtils {

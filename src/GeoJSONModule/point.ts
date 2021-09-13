@@ -39,12 +39,12 @@ export default class GeoJSONPoint {
 
   container: PIXI.Container;
   pixiOverlay: pixiOverlayBase;
-  dict: PointDictionary<any> = new PointDictionary<number>(0.25, 20, 4);
+  dict: PointDictionary<any>;
 
   textStyle: PIXI.TextStyle;
 
   constructor(root: PIXI.Container, pixiOverlay: pixiOverlayBase) {
-
+    this.dict = new PointDictionary<number>(0.25, 20, 4);
     this.container = new PIXI.Container();
     this.container.sortableChildren = true;
     root.addChild(this.container);
@@ -85,6 +85,8 @@ export default class GeoJSONPoint {
         point.scale.set(1 / scale, 1 / scale);
       }
 
+      point.zIndex = 99999;
+
       point.endFill();
 
       this.spawned.push(point);
@@ -106,7 +108,7 @@ export default class GeoJSONPoint {
 
   }
 
-  testPosition(pos: Vector2) : any {
-    return this.dict.getClosestUnder(pos);
+  testPosition(pos: Vector2, radiusThreshold: number = 0.5) : any {
+    return this.dict.getClosestUnder(pos, radiusThreshold);
   }
 }

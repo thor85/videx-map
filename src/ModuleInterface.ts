@@ -24,6 +24,12 @@ export abstract class ModuleInterface {
     this.root.visible = !this.root.visible;
   }
 
+  cache() {
+    // cacheAsBitmapResolution introduced in pixi v.6
+    // this.root.cacheAsBitmapResolution = 5;
+    this.root.cacheAsBitmap = true;
+  }
+
   /**
    * Set visibility of the root PIXI container to a given value.
    *

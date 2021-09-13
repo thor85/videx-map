@@ -52,6 +52,9 @@ export class WellboreData {
     this.wellboreWidth = input.wellboreWidth;
     this.interpolator = new LineInterpolator(input.coords, input.pointThreshold);
 
+    // console.log(input.data.labelShort)
+    // console.log(input.data.label)
+    // console.log(input.data)
     this.label = new Label(input.data.labelShort, this.colors.fontColor, this.colors.default.labelBg);
 
     if (this.interpolator.singlePoint) {
@@ -59,6 +62,7 @@ export class WellboreData {
     } else {
       const intervals = processIntervals(input.data.intervals);
       this.mesh = this.createWellboreMesh(intervals, input.tick);
+      // console.log(this.mesh)
     }
 
     // Update WellboreData with current state

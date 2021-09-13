@@ -67,12 +67,13 @@ export default class GeoJSONLabels {
    * Draw all labels
    * @param root Target root for labels
    */
-  draw() {
+  draw(scale=this.baseScale) {
     // Function for drawing single label
     const drawLabel = (name: string, position: Vector2) => {
       const instance: PIXI.BitmapText = new PIXI.BitmapText(name, {fontName: this.fontName});
       instance.position.set(position[0], position[1]);
-      instance.scale.set(this.baseScale);
+      instance.scale.set(scale);
+      // instance.scale.set(this.baseScale);
       instance.anchor = new PIXI.Point(0.5, 0.5);
       instance.zIndex = 1000; // High z-index
       this.container.addChild(instance);

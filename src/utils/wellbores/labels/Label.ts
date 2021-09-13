@@ -57,6 +57,7 @@ export class Label {
    */
   constructor (label: string, fontColor: number, bgColor: number) {
     // Label
+    // console.log(label)
     const text: PIXI.Text = new PIXI.Text(label, Label.style);
     text.resolution = window.devicePixelRatio; // Increases text resolution
     text.visible = Label.state.visible;

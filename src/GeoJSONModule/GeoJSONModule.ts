@@ -10,6 +10,7 @@ import {
   FeatureProps,
 } from '.';
 import { ResizeConfig, LabelResizeConfig } from '../ResizeConfigInterface';
+import Projector from '../utils/wellbores/Projector';
 
 /** Interface for config. */
 interface Config {
@@ -17,6 +18,7 @@ interface Config {
   onFeatureHover?: (event: MouseEvent, data: any) => void;
   outlineResize?: ResizeConfig;
   labelResize?: LabelResizeConfig;
+  distanceThreshold?: number;
 }
 
 /** Module for displaying fields. */
@@ -30,7 +32,9 @@ export default class GeoJSONModule extends ModuleInterface {
   _eventHandler: EventHandler;
   mapmoving: boolean;
   labelRoot: PIXI.Container
+  distanceThreshold: number;
   config?: Config;
+  private _projector: Projector;
 
   constructor(config?: Config) {
     super();
@@ -38,6 +42,30 @@ export default class GeoJSONModule extends ModuleInterface {
     this._eventHandler = config?.customEventHandler || new DefaultEventHandler();
     this.onFeatureHover = config?.onFeatureHover;
     this.config = config;
+    this.distanceThreshold = config.distanceThreshold || 200;
+  }
+
+  get projector() {
+    if (!this._projector) this._projector = new Projector(this.pixiOverlay.utils.latLngToLayerPoint);
+    return this._projector;
+  }
+
+  clear() {
+    if (this.points) {
+      this.points.spawned.forEach((el) => { el.destroy(); });
+      this.points = undefined;
+    }
+    if (this.linestrings) {
+      this.linestrings = undefined;
+    }
+    if (this.polygons) {
+      this.polygons.container.removeChildren();
+      this.polygons.labels.container.removeChildren();
+      this.polygons = undefined;
+    }
+    if (this.multipolygons) {
+      this.multipolygons = undefined;
+    }
   }
 
   set(data: GeoJSON.FeatureCollection, props?: (feature: any) => FeatureProps) {
@@ -69,12 +97,18 @@ export default class GeoJSONModule extends ModuleInterface {
    * @param pos Target position in lat-long
    * @returns List of features at the given position
    */
-  testPosition(pos: Vector2) : any {
+  // testPosition(pos: Vector2) : any {
+  testPosition(event: MouseEvent) : any {
+    const map = this.pixiOverlay.utils.getMap();
+    const latLng = map.mouseEventToLatLng(event);
+    const layerCoords = new Vector2([latLng.lng, latLng.lat]);
+    const worldspaceCoord = this.projector.getVector2(latLng);
+
     let result = [];
-    if (this.polygons) result.push(this.polygons.testPosition(pos));
-    if (this.multipolygons) result.push(this.multipolygons.testPosition(pos));
-    if (this.linestrings) result.push(this.linestrings.testPosition(pos));
-    if (this.points) result.push(this.points.testPosition(pos));
+    if (this.polygons) result.push(this.polygons.testPosition(layerCoords));
+    if (this.multipolygons) result.push(this.multipolygons.testPosition(layerCoords));
+    if (this.linestrings) result.push(this.linestrings.testPosition(worldspaceCoord, this.distanceThreshold));
+    if (this.points) result.push(this.points.testPosition(worldspaceCoord, this.distanceThreshold));
     result = result.filter(v => v);
     return result;
   }
@@ -104,10 +138,7 @@ export default class GeoJSONModule extends ModuleInterface {
 
   private handleMouseMove(event: MouseEvent): boolean {
     if(this.mapmoving) return false;
-    const map = this.pixiOverlay.utils.getMap();
-    const latLng = map.mouseEventToLatLng(event);
-    const layerCoords = new Vector2([latLng.lng, latLng.lat]);
-    const hits = this.testPosition(layerCoords);
+    const hits = this.testPosition(event);
     if(this.onFeatureHover) this.onFeatureHover(event, hits);
     return true;
   }

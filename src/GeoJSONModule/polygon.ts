@@ -88,6 +88,9 @@ export default class GeoJSONPolygon {
   /** Collection of features with meshes. */
   features: FeatureMesh[] = [];
 
+  /** Are the labels hidden? */
+  labelsVisible: boolean;
+
   /** Settings for how to render data. */
   config: Config = {
     initialHash: Defaults.INITIAL_HASH,
@@ -113,6 +116,8 @@ export default class GeoJSONPolygon {
     this.container.sortableChildren = true;
     root.addChild(this.container);
 
+    this.labelsVisible = true;
+
     this.pixiOverlay = pixiOverlay;
     this.features = [];
     if (config) this.config = config;
@@ -131,7 +136,7 @@ export default class GeoJSONPolygon {
   }
 
   add(feature: GeoJSON.Feature, props: (feature: object) => FeatureProps) {
-
+    const zoom = this.pixiOverlay._map.getZoom();
     const geom = feature.geometry as GeoJSON.Polygon;
     const properties: FeatureProps = props(feature);
     if (properties.style.labelScale) this.labels.baseScale = properties.style.labelScale;
@@ -143,7 +148,11 @@ export default class GeoJSONPolygon {
 
       const meshData = Mesh.Polygon(projected);
       this.dict.add(coordinates[0], meshData.triangles, feature.properties);
-      const outlineData = Mesh.PolygonOutline(projected, this.outlineThickness);
+
+      //test
+      const outlineRadius = this.getOutlineRadius(zoom);
+      const outlineData = Mesh.PolygonOutline(projected, outlineRadius);
+      // const outlineData = Mesh.PolygonOutline(projected, this.outlineThickness);
       const [position, mass] = centerOfMass(projected, meshData.triangles);
 
       meshes.push(
@@ -161,7 +170,6 @@ export default class GeoJSONPolygon {
    * @param polygons
    */
   drawPolygons(container: PIXI.Container, meshData: MeshData, outlineData: MeshNormalData, featureStyle: FeatureStyle, zIndex: number): FeatureMesh {
-
     const fillColor = featureStyle.fillColor ? color(featureStyle.fillColor).rgb() : undefined;
     const fillColor2 = featureStyle.fillColor2 ? color(featureStyle.fillColor2).rgb() : undefined;
     const fillUniform: FillUniform = {
@@ -173,10 +181,13 @@ export default class GeoJSONPolygon {
       hashWidth: this.config.initialHash,
     };
 
+    const zoom = this.pixiOverlay._map.getZoom();
+    const outlineRadius = this.getOutlineRadius(zoom);
     const lineColor = color(featureStyle.lineColor).rgb();
     const outlineUniform: OutlineUniform = {
       color: [lineColor.r, lineColor.g, lineColor.b],
-      outlineWidth: featureStyle.lineWidth,
+      outlineWidth: outlineRadius,
+      // outlineWidth: featureStyle.lineWidth,
     }
 
     const polygonMesh = Mesh.from(meshData.vertices, meshData.triangles, GeoJSONVertexShaderFill, GeoJSONFragmentShaderFill, fillUniform);
@@ -201,7 +212,8 @@ export default class GeoJSONPolygon {
   }
 
   drawLabels(): void {
-    this.labels.draw();
+    // this.labels.draw();
+    this.labels.draw(this.getLabelSize(this.pixiOverlay._map.getZoom()));
   }
 
   /**
@@ -228,7 +240,7 @@ export default class GeoJSONPolygon {
       if (zoom <= this.config.labelResize.threshold) {
         this.labels.hideLabels();
       } else {
-        this.labels.showLabels();
+        if (this.labelsVisible) this.labels.showLabels();
         this.labels.resize(labelSize);
       }
     }
