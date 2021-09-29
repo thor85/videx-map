@@ -56,17 +56,28 @@ export class WellboreData {
     // console.log(input.data.label)
     // console.log(input.data)
     this.label = new Label(input.data.labelShort, this.colors.fontColor, this.colors.default.labelBg);
+    // this.label.visible = false;
 
     if (this.interpolator.singlePoint) {
       this.label.attachToRoot = true;
     } else {
+      // console.log(this.data.status)
       const intervals = processIntervals(input.data.intervals);
-      this.mesh = this.createWellboreMesh(intervals, input.tick);
+      let wellboreColor;
+      // console.log(this.colors.default)
+      if (typeof this.group.colorFunction === 'function') {
+        // console.log("function")
+        // @ts-ignore
+        wellboreColor = this.group.colorFunction(this.data);
+      } else {
+        wellboreColor = this.colors.default;
+      }
+      this.mesh = this.createWellboreMesh(intervals, input.tick, wellboreColor);
       // console.log(this.mesh)
     }
 
     // Update WellboreData with current state
-    this.update();
+    this.update(true);
   }
 
   set zIndex (val: number) {
@@ -101,7 +112,7 @@ export class WellboreData {
   setFilter(filter: FilterStatus) {
     if (this.filter === filter) return; // If flag is duplicate
     this.filter = filter;
-    this.update();
+    this.update(!this.group.state.labelsVisible);
   }
 
   get selected(): boolean {
@@ -120,7 +131,7 @@ export class WellboreData {
     return this.mesh.shader.uniforms;
   }
 
-  private createWellboreMesh(intervals: [number, number][], tick: TickConfig): PIXI.Mesh {
+  private createWellboreMesh(intervals: [number, number][], tick: TickConfig, wellboreColor: Color): PIXI.Mesh {
     const line = new WellboreMesh(this.interpolator, this.wellboreWidth, tick);
     const { vertices, triangles, vertexData, extraData } = line.generate(intervals);
 
@@ -131,7 +142,8 @@ export class WellboreData {
     geometry.addAttribute('typeData', extraData, 1);
     geometry.addIndex(triangles);
 
-    const shader: any = getWellboreShader(this.colors.default, this.group.state.completionVisible, this.group.state.wellboreVisible);
+    // const shader: any = getWellboreShader(this.colors.default, this.group.state.completionVisible, this.group.state.wellboreVisible);
+    const shader: any = getWellboreShader(wellboreColor, this.group.state.completionVisible, this.group.state.wellboreVisible);
     return new PIXI.Mesh(geometry, shader);
   }
 
@@ -165,8 +177,15 @@ export class WellboreData {
       this.label.text.tint = this.colors.interactFontColor;
     } else {
       if (this.mesh) {
-        this.mesh.shader.uniforms.wellboreColor1 = this.colors.default.col1;
-        this.mesh.shader.uniforms.wellboreColor2 = this.colors.default.col2;
+        let wellboreColor;
+        if (typeof this.group.colorFunction === 'function') {
+          // @ts-ignore
+          wellboreColor = this.group.colorFunction(this.data);
+        } else {
+          wellboreColor = this.colors.default;
+        }
+        this.mesh.shader.uniforms.wellboreColor1 = wellboreColor.col1;
+        this.mesh.shader.uniforms.wellboreColor2 = wellboreColor.col2;
         this.mesh.zIndex = this._zIndex;
       }
       this.label.background.tint = this.colors.default.labelBg;
@@ -205,7 +224,7 @@ export class WellboreData {
     this.root.recalculate();
   }
 
-  update() : void {
+  update(labelForceHide=!this.group.state.labelsVisible) : void {
     const active = (this.group.active && this.filter === FilterStatus.none);
     if (this.mesh) {
       let status = this.filter;
@@ -213,7 +232,10 @@ export class WellboreData {
       this.mesh.shader.uniforms.status = status;
       // this.mesh.shader.uniforms.ghost = this.group.active && !this.isActive;
     }
-    this.label.visible = active;
+    // Workaround to make labels start hidden
+    if (labelForceHide) this.label.visible = false;
+    else this.label.visible = active;
+
   }
 
 }

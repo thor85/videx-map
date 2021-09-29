@@ -5,6 +5,7 @@ import { RootData } from '../../src/utils/wellbores/data';
 import processExploration from './processExploration';
 import removeExpDuplicates from './removeExpDuplicates';
 
+import { SourceData } from '../../src/utils/wellbores/data/SourceData';
 import PixiLayer from './helper/PixiLayer';
 import { ProspectColors } from './helper/ProspectColors';
 import Sidebar from './Sidebar';
@@ -234,7 +235,7 @@ export const layer = () => {
     }).addTo(map);
 
     // @ts-ignore
-    console.log(map)
+    // console.log(map)
 
     const pixiLayer = new PixiLayer();
     const faultlines: FaultlineModule = new FaultlineModule();
@@ -253,8 +254,8 @@ export const layer = () => {
         // @ts-ignore
         scaling: zoom => factors[zoom] || 0,
         wellboreResize: {
-          min: { zoom: 10, scale: 0.05 },
-          max: { zoom: 18, scale: 0.5 },
+          min: { zoom: 10, scale: 0.5 },
+          max: { zoom: 18, scale: 0.05 },
         },
         rootResize: {
           min: { zoom: 0, scale: 1000.0 },
@@ -264,7 +265,7 @@ export const layer = () => {
           width: 0.01,
           height: 0.1,
         },
-        // fontSize: 64,
+        fontSize: 64,
         // labelScale: 0.011,
         // wellboreWidth: 150,
         onHighlightOn: event => {
@@ -311,10 +312,10 @@ export const layer = () => {
     const facilities: GeoJSONModule = new GeoJSONModule({
       onFeatureHover: (event, data) => {
         if (data && data.length > 0) {
-          console.log(data)
+          // console.log(data)
         }
       },
-      distanceThreshold: 250
+      distanceThreshold: 5
     });
     const prospects: GeoJSONModule = new GeoJSONModule({
       // onFeatureHover: (event, data) => {
@@ -338,10 +339,10 @@ export const layer = () => {
     faultlines.set(faultlineDataTroll);
     outlines.set(outlineDataTroll);
 
-    console.log(wbDataOld)
+    // console.log(wbDataOld)
     // const wbData = transformDrilledWellboreData(wbDataOld) as any[];
     const wbData = wbDataOld;
-    console.log(wbData)
+    // console.log(wbData)
 
     const split = Math.floor(wbData.length * 0.9);
 
@@ -350,6 +351,54 @@ export const layer = () => {
 
     wellbores.registerGroup('Drilled', {
       order: 0,
+      // colors: {
+      //   defaultColor1: [0.3, 0.3, 0.3],
+      //   defaultColor2: [0.05, 0.05, 0.05],
+      // },
+      // @ts-ignore
+      colorFunction: function (data: SourceData) {
+        let color;
+        switch (data.status) {
+          case 'top producer':
+          case 'producer':
+            color = {
+              col1: [0.0, 1.0, 0.0],
+              col2: [0.0, 0.5, 0.0],
+              labelBg: 16777215,
+            }
+            break;
+          case 'p&a':
+            color = {
+              col1: [1.0, 0.0, 0.0],
+              col2: [0.5, 0.0, 0.0],
+              labelBg: 16777215,
+            }
+            break;
+          case 'good on/off':
+            color = {
+              col1: [1.0, 1.0, 0.0],
+              col2: [0.5, 0.5, 0.0],
+              labelBg: 16777215,
+            }
+            break;
+          case 'bad on/off':
+            color = {
+              col1: [1.0, 0.5, 0.0],
+              col2: [0.5, 0.25, 0.0],
+              labelBg: 16777215,
+            }
+            break;
+          default:
+            color = {
+              col1: [0.3, 0.3, 0.3],
+              col2: [0.05, 0.05, 0.05],
+              labelBg: 16777215,
+            }
+            break;
+        }
+
+        return color;
+      },
     });
 
     wellbores.registerGroup('Planned', {
@@ -358,6 +407,11 @@ export const layer = () => {
         defaultColor1: [0.4, 0.7, 1.0],
         defaultColor2: [0.1, 0.3, 0.6],
       },
+      // wellboreResize: {
+      //   min: { zoom: 10, scale: 3.5 },
+      //   max: { zoom: 18, scale: 2.5 },
+      // },
+      wellboreWidth: 0.3,
     });
 
     wellbores.registerGroup('Exploration', {
@@ -421,6 +475,18 @@ export const layer = () => {
     groupShowHideCompletion.add('Toggle \'Planned\'', () => {
       completionPlannedVisible = !completionPlannedVisible;
       wellbores.setCompletionVisibility(completionPlannedVisible, 'Planned');
+    });
+    groupShowHideCompletion.add('Change size', () => {
+      // console.log(wellbores.groups)
+      // console.log(wellbores.pixiOverlay._map.getZoom())
+
+      // wellbores.groups['Planned'].wellboreWidth = 8.0;
+      wellbores.groups['Planned'].wellboreWidth = wellbores.groups['Planned'].wellboreWidth + 1.0;
+      wellbores.clear('Planned')
+      wellbores.set(planned, 'Planned');
+      // wellbores.resize(wellbores.pixiOverlay._map.getZoom());
+      // wellbores.pixiOverlay.redraw();
+      // console.log(wellbores.groups)
     });
 
     // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -551,12 +617,23 @@ export const layer = () => {
       id: feature.properties.fclNpdidFacility,
       style: {
         lineColor: 'black',
-        lineWidth: 0.4,
+        lineWidth: 0.05,
         fillColor: 'grey',
         // fillColor2: 'red',
         fillOpacity: 0.7,
         pointSize: 0.5,
-        pointShape: 'circle',
+        // pointShape: 'circle',
+        pointShape: 'image',
+        // pointShape: 'filletrect',
+        // pointShape: 'regularpolygon',
+        pointOptions: {
+          // pointFillet: 1,
+          // pointRectangularSides: 3,
+          // pointRotation: 0,
+          pointScale: 0.01,
+          pointImage: feature.properties.fclKind === 'MULTI WELL TEMPLATE' ? 'https://trollmapsst.blob.core.windows.net/static/images/risks/radioactive.png?sv=2020-04-08&st=2021-09-29T18%3A56%3A17Z&se=2021-09-30T18%3A56%3A17Z&sr=b&sp=r&sig=gLldLoR4fiwBNBnmfxzQxKeTI8bOJD6vk9DjUShy%2F8I%3D' : 'https://trollmapsst.blob.core.windows.net/static/images/risks/loss.png?sv=2020-04-08&st=2021-09-29T19%3A05%3A01Z&se=2021-09-30T19%3A05%3A01Z&sr=b&sp=r&sig=9QIMAIm34XPgweDiXdZ92tl45%2FtxOtAor7X6jDsAMp8%3D',
+        }
+        // pointShape: 'square',
         // hashed: true,
         // labelScale: 1,
       },

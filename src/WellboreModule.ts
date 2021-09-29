@@ -115,7 +115,17 @@ export default class WellboreModule extends ModuleInterface {
     const projectedPath = this.projector.batchVector2(data.path);
     const root = this.addRoot(projectedPath[0]);
 
-    const { rootResize, wellboreResize, tick } = this.config;
+    // const { rootResize, wellboreResize, tick } = this.config;
+    const { rootResize, tick } = this.config;
+
+    // let wellboreResize;
+    let wellboreWidth;
+    if (group.hasOwnProperty('wellboreWidth')) {
+    // if (group.options.hasOwnProperty('wellboreResize')) {
+      wellboreWidth = group.wellboreWidth;
+    } else {
+      wellboreWidth = this.config.wellboreResize.max.scale;
+    }
 
     const wellbore = new WellboreData({
       data: data,
@@ -123,7 +133,7 @@ export default class WellboreModule extends ModuleInterface {
       root,
       coords: projectedPath,
       pointThreshold: rootResize.max.scale * 1.5,
-      wellboreWidth: wellboreResize.max.scale,
+      wellboreWidth: wellboreWidth,
       tick,
     });
     if (wellbore.mesh) this.containers.wellbores.addChild(wellbore.mesh);
@@ -188,11 +198,9 @@ export default class WellboreModule extends ModuleInterface {
    */
   private handleMouseMove(event: MouseEvent): boolean {
     const map = this.pixiOverlay.utils.getMap();
-    // console.log(event)
     const latLng = map.mouseEventToLatLng(event);
 
     const worldspaceCoord = this.projector.getVector2(latLng);
-    // console.log(worldspaceCoord)
 
     updateHighlighted(
       this,
@@ -422,7 +430,7 @@ export default class WellboreModule extends ModuleInterface {
     let scale = this.scaling(zoom - this.config.zoomOrigin);
     if (!Number.isFinite(scale)) scale = 1;
     Label.state.zoom = zoom; // Update label zoom
-    Label.state.scale = scale; // Update label scale
+    Label.state.scale = scale*2; // Update label scale
     Label.state.rootDisplacement = rootRadius;
 
     const labelVisible = zoom > 2;

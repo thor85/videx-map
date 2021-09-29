@@ -14,6 +14,10 @@ export interface FeatureStyle {
   labelScale?: number;
   pointShape?: string;
   pointSize?: number;
+  pointOptions?: {
+    [name: string]: any;
+  }
+  // pointFillet?: number;
 }
 
 export interface FeatureProps {

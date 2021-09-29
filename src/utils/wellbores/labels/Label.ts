@@ -20,6 +20,7 @@ export class Label {
   public static state: State = {
     zoom: 1,
     scale: 1,
+    // visible: false,
     visible: true,
     rootDisplacement: 1,
   };
@@ -61,6 +62,7 @@ export class Label {
     const text: PIXI.Text = new PIXI.Text(label, Label.style);
     text.resolution = window.devicePixelRatio; // Increases text resolution
     text.visible = Label.state.visible;
+    // text.visible = false;
     text.tint = fontColor;
     text.zIndex = 1;
     this.text = text;

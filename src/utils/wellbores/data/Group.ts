@@ -2,15 +2,21 @@ import { Colors, getDefaultColors, InputColors } from '../Colors';
 import { WellboreData, FilterStatus } from './WellboreData';
 import { RootData } from './RootData';
 import { SourceData } from './SourceData';
+import { ResizeConfig } from '../../../ResizeConfigInterface';
 
 export interface GroupOptions {
+  // colors?: InputColors | Function;
   colors?: InputColors;
   order?: number;
+  wellboreResize?: ResizeConfig;
+  wellboreWidth?: number;
+  colorFunction?: Function;
 }
 
 interface WellboreState {
   completionVisible: boolean;
   wellboreVisible: boolean;
+  labelsVisible: boolean;
 }
 
 type Filter = (data: SourceData) => boolean;
@@ -24,18 +30,25 @@ export class Group {
   activeFilter: Filter = null;
   /** Is active filter soft or hard (Ghost) */
   isHardFilter: boolean;
+  options: GroupOptions = {};
+  wellboreWidth: number;
+  colorFunction?: Function;
 
   /** State of wellbores attached to group */
   state: WellboreState = {
     completionVisible: false,
     wellboreVisible: true,
+    labelsVisible: false,
   };
 
   constructor(key: string, options?: GroupOptions) {
     this.key = key;
     if (options) {
+      this.options = options;
       this.colors = getDefaultColors(options.colors);
       if(!isNaN(options.order)) this.order = options.order;
+      if(options.wellboreWidth) this.wellboreWidth = options.wellboreWidth;
+      if(options.colorFunction) this.colorFunction = options.colorFunction;
     } else {
       this.colors = getDefaultColors();
     }
@@ -74,7 +87,7 @@ export class Group {
     this.active = active;
 
     this.forAll(
-      wellbore => wellbore.update(),
+      wellbore => wellbore.update(!wellbore.label.visible),
       root => root.recalculate(true),
     );
   }
@@ -101,7 +114,9 @@ export class Group {
     this.activeFilter = null;
     this.forAll(
       wellbore => wellbore.setFilter(FilterStatus.none),
-      root => root.recalculate(true),
+      // root => root.recalculate(true),
+      // TODO: Improve... just a test to hide labels after changing filter
+      root => root.recalculate(this.wellbores[0].label.visible),
     );
   }
 

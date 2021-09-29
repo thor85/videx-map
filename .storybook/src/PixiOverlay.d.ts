@@ -7,3 +7,5 @@ declare namespace L {
     function latlng(): any;
   }
 }
+
+declare module '@pixi/graphics';

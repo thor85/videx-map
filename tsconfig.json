@@ -4,7 +4,8 @@
     "declarationDir": "./dist",
     "module": "es6",
     "moduleResolution": "node",
-    "noImplicitAny": true,
+    // "noImplicitAny": true,
+    "noImplicitAny": false,
     "outDir": "./dist",
     "target": "es5",
     "esModuleInterop": true
