@@ -109,7 +109,8 @@ export default class GeoJSONPoint {
         } else if (pointShape == 'regularpolygon') {
           // Need to draw circle large and scale down to avoid jagged edges when zooming in
           // const scale = 1;
-          point.drawRegularPolygon(projected[0] - offset, projected[1] - offset, offset, pointRectangularSides, pointRotation);
+          // point.drawRegularPolygon(projected[0] - offset, projected[1] - offset, offset, pointRectangularSides, pointRotation);
+          point.drawRegularPolygon(projected[0], projected[1], offset, pointRectangularSides, pointRotation);
           // point.drawRegularPolygon((projected[0] - offset) * scale, (projected[1] - offset) * scale, offset * scale, offset * scale, pointFillet);
           // point.scale.set(1 / scale, 1 / scale);
         }
