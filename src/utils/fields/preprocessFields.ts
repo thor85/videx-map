@@ -31,15 +31,20 @@ export interface PreprocessedField {
 export default function preprocessFields(data: Field[]): PreprocessedField[] {
   const unique: {[key: string]: PreprocessedField} = {};
 
-  data.forEach(field => {
+  data.forEach(f => {
     // console.log(field)
     // Change properties keys to lowercase
     // @ts-ignore
     const properties = Object.fromEntries(
-      Object.entries(field.properties).map(([k, v]) => [k.toLowerCase(), v])
+      Object.entries(f.properties).map(([k, v]) => [k.toLowerCase(), v])
     );
-    field.properties = properties;
-    console.log(field)
+    // console.log(f)
+    let field: Field = {
+      type: f.type,
+      geometry: f.geometry,
+      properties: properties,
+    };
+    // console.log(field)
 
     const fieldName: string = field.properties.label;
 
