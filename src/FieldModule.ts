@@ -49,7 +49,8 @@ export interface Field {
     discname: string;
     group: number;
     guid?: number;
-    hctype: string;
+    hctype?: string;
+    dsc_hctype?: string;
     label: string;
     lat: number;
     long: number;
@@ -136,6 +137,10 @@ export default class FieldModule extends ModuleInterface {
 
     // Clear fields
     this.fields = [];
+    // @ts-ignore
+    // window.fieldmodule = this;
+    // console.log("setting window")
+    // (window as any).fieldmodule = this;
 
     const textStyle: PIXI.TextStyle = new PIXI.TextStyle({
       fontFamily : 'Arial',
@@ -151,12 +156,16 @@ export default class FieldModule extends ModuleInterface {
       [0.25, 0, 0.25],
       [0.35, 0, 0.35],
     );
-
+    // console.log(data)
     const preprocessedData = preprocessFields(data);
+    // const preprocessedData = data;
+    // console.log(preprocessedData)
 
     let fieldID = 0;
     let baseZIndex = 0;
     preprocessedData.forEach(field => {
+      // console.log("inside foreach")
+      // console.log(field)
       const name: string = field.properties.label;
       if (name === 'Troll') return;
 
@@ -238,39 +247,49 @@ export default class FieldModule extends ModuleInterface {
    */
   getFieldStyle(guid: number, hctype: string): FieldStyle {
     // If no GUID -> gray
-    if (!guid) {
-      return {
-        fillColor1: gray,
-        fillColor2: gray,
-        outlineColor: outlineGray,
-        fillOpacity: 0.15,
-        hashed: false,
-      }
-    }
+    // if (!guid) {
+    //   return {
+    //     fillColor1: gray,
+    //     fillColor2: gray,
+    //     outlineColor: outlineGray,
+    //     fillOpacity: 0.15,
+    //     hashed: false,
+    //   }
+    // }
 
-    // Default is oil
+    // Default is gray
     const fill: FieldStyle = {
-      fillColor1: green,
-      fillColor2: green,
-      outlineColor: green,
-      fillOpacity: 0.6,
+      fillColor1: gray,
+      fillColor2: gray,
+      outlineColor: outlineGray,
+      fillOpacity: 0.15,
       hashed: false,
     };
 
     switch(hctype) {
+      case 'OIL':
+        fill.fillColor1 = green;
+        fill.fillColor2 = green;
+        fill.outlineColor = green;
+        fill.fillOpacity = 0.6;
+        break;
       case 'GAS':
         fill.fillColor1 = red;
         fill.fillColor2 = red;
         fill.outlineColor = outlineRed;
+        fill.fillOpacity = 0.6;
         break;
       case 'GAS/CONDENSATE':
         fill.fillColor1 = pink;
         fill.fillColor2 = red;
         fill.outlineColor = outlineRed;
+        fill.fillOpacity = 0.6;
         fill.hashed = true;
         break;
       case 'OIL/GAS':
         fill.fillColor1 = red;
+        fill.fillColor2 = green;
+        fill.fillOpacity = 0.6;
         fill.hashed = true;
         break;
     }

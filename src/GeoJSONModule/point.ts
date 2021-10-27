@@ -77,6 +77,7 @@ export default class GeoJSONPoint {
         point.scale.y = pointScale;
 
         this.container.addChild(point);
+        this.spawned.push(point);
       } else {
         if (this.pool.length > 0) {
           point = this.pool.pop();
@@ -104,7 +105,8 @@ export default class GeoJSONPoint {
         } else if (pointShape == 'filletrect') {
           // Need to draw circle large and scale down to avoid jagged edges when zooming in
           const scale = 10;
-          point.drawFilletRect((projected[0] - offset) * scale, (projected[1] - offset) * scale, offset * scale, offset * scale, pointFillet);
+          point.drawFilletRect((projected[0] - offset*0.5) * scale, (projected[1] - offset*0.5) * scale, offset * scale, offset * scale, pointFillet);
+          // point.drawFilletRect((projected[0]) * scale, (projected[1]) * scale, offset * scale, offset * scale, pointFillet);
           point.scale.set(1 / scale, 1 / scale);
         } else if (pointShape == 'regularpolygon') {
           // Need to draw circle large and scale down to avoid jagged edges when zooming in

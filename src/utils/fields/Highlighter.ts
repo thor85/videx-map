@@ -35,6 +35,7 @@ export default class Hightlighter {
    * @param group Group of field meshes
    */
   add(group: FieldMesh[]): void {
+    console.log("adding field to highlight")
     this.fields.push(group);
   }
 
@@ -43,6 +44,7 @@ export default class Hightlighter {
    * @param index Index of group to highlight
    */
   highlight(index: number): void {
+    console.log("highlight()")
     const target = this.fields[index];
 
     if (this.cached) this.revert();
@@ -71,6 +73,7 @@ export default class Hightlighter {
 
   /** Revert any highlighting. */
   revert(): boolean {
+    console.log("revert highlight")
     if (!this.cached) return false;
     // Revert selection
     this.cached.forEach(d => {

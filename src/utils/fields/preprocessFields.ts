@@ -32,6 +32,14 @@ export default function preprocessFields(data: Field[]): PreprocessedField[] {
   const unique: {[key: string]: PreprocessedField} = {};
 
   data.forEach(field => {
+    // console.log(field)
+    // Change properties keys to lowercase
+    // @ts-ignore
+    const properties = Object.fromEntries(
+      Object.entries(field.properties).map(([k, v]) => [k.toLowerCase(), v])
+    );
+    field.properties = properties;
+    console.log(field)
 
     const fieldName: string = field.properties.label;
 
@@ -53,7 +61,8 @@ export default function preprocessFields(data: Field[]): PreprocessedField[] {
         coordinates: coordinates[index],
         properties: {
           discname: field.properties.discname,
-          hctype: field.properties.hctype,
+          // hctype: field.properties.hctype,
+          hctype: field.properties.dsc_hctype,
           polygonId: field.properties.polygonId,
           status: field.properties.status,
         },
@@ -74,7 +83,8 @@ export default function preprocessFields(data: Field[]): PreprocessedField[] {
             coordinates: coordinates[0],
             properties: {
               discname: field.properties.discname,
-              hctype: field.properties.hctype,
+              // hctype: field.properties.hctype,
+              hctype: field.properties.dsc_hctype,
               polygonId: field.properties.polygonId,
               status: field.properties.status,
             }

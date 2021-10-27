@@ -1,6 +1,6 @@
 import * as d3 from 'd3';
 import * as L from 'leaflet';
-import { FaultlineModule, OutlineModule, WellboreModule, GeoJSONModule } from '../../src';
+import { FaultlineModule, OutlineModule, WellboreModule, GeoJSONModule, FieldModule } from '../../src';
 import { RootData } from '../../src/utils/wellbores/data';
 import processExploration from './processExploration';
 import removeExpDuplicates from './removeExpDuplicates';
@@ -41,7 +41,10 @@ const wbDataOld = Object.values(wellboreDataTroll) as any[];
 const licenseData = require('./.Samples/licenses.json');
 const pipelineData = require('./.Samples/pipelines.json');
 const facilityData = require('./.Samples/facilities.json');
-const prospectData = require('./Samples/Prospects100.json');
+// const prospectData = require('./Samples/Prospects100.json');
+const prospectData = require('./Samples/prospects.json');
+const fieldData = require('./Samples/Fields.json');
+console.log(fieldData)
 
 let explorationData = processExploration(
   require('./Samples/Exploration.json'),
@@ -161,8 +164,13 @@ export const layer = () => {
     return { success: false };
   }
 
+  const filteredProspectIds = [
+    12990,
+  ]
+
   function transformProspectData(data: any[]) {
     const features: any[] = [];
+    // console.log(data)
     data.forEach(d => {
       // Skip if missing geometry data
       if (!('polygonGeometryWkt' in d)) return;
@@ -208,14 +216,16 @@ export const layer = () => {
       getCoordinatesRecursive(coordinates);
       ([coordinates] = coordinates);
 
-      features.push({
-        type: 'Feature',
-        properties,
-        geometry: {
-          type: geometryType,
-          coordinates,
-        },
-      });
+      if (filteredProspectIds.indexOf(d.prospectId) && d.latitude > 60 && d.longitude > 2.5) {
+        features.push({
+          type: 'Feature',
+          properties,
+          geometry: {
+            type: geometryType,
+            coordinates,
+          },
+        });
+      }
     });
 
     return {
@@ -239,7 +249,7 @@ export const layer = () => {
 
     const pixiLayer = new PixiLayer();
     const faultlines: FaultlineModule = new FaultlineModule();
-    // const fields: FieldModule = new FieldModule();
+    const fields: FieldModule = new FieldModule();
     const outlines: OutlineModule = new OutlineModule({
       minExtraWidth: 0.0,
       maxExtraWidth: 0.3,
@@ -298,14 +308,16 @@ export const layer = () => {
       },
       onFeatureHover: (event, data) => {
         if (data && data.length > 0) {
-          console.log(data)
+          // console.log(data)
         }
       },
     });
+    // (window as any).licenses = licenses;
+    // console.log(licenses)
     const pipelines: GeoJSONModule = new GeoJSONModule({
       onFeatureHover: (event, data) => {
         if (data && data.length > 0) {
-          console.log(data)
+          // console.log(data)
         }
       },
     });
@@ -318,6 +330,16 @@ export const layer = () => {
       distanceThreshold: 5
     });
     const prospects: GeoJSONModule = new GeoJSONModule({
+      outlineResize: {
+        min: { zoom: 6, scale: 1.5 },
+        max: { zoom: 18, scale: 0.15 },
+      },
+      labelResize: {
+        min: { zoom: 11, scale: 0.1 },
+        max: { zoom: 17, scale: 0.025 },
+        threshold: 8,
+        baseScale: 0.15,
+      },
       // onFeatureHover: (event, data) => {
       //   if (data && data.length > 0) {
       //     console.log(data)
@@ -326,7 +348,7 @@ export const layer = () => {
     });
 
     pixiLayer.addModule(faultlines);
-    // pixiLayer.addModule(fields);
+    pixiLayer.addModule(fields);
     pixiLayer.addModule(outlines);
     pixiLayer.addModule(wellbores);
     pixiLayer.addModule(licenses);
@@ -335,7 +357,8 @@ export const layer = () => {
     pixiLayer.addModule(prospects);
     pixiLayer.addTo(map);
 
-    // fields.set(fieldData.features);
+    fields.set(fieldData.features);
+    fields.highlight(60.9, 3.6)
     faultlines.set(faultlineDataTroll);
     outlines.set(outlineDataTroll);
 
@@ -593,7 +616,17 @@ export const layer = () => {
       id: feature.properties.prlNpdidLicence,
       style: {
         lineColor: 'blue',
-        lineWidth: 3.1,
+        // lineWidth: 0.1,
+        outlineResize: {
+          min: { zoom: 7, scale: 0.8 },
+          max: { zoom: 17, scale: 0.05 },
+        },
+        labelResize: {
+          min: { zoom: 0, scale: 4.0 },
+          max: { zoom: 17, scale: 2.45 },
+          threshold: -1,
+          // baseScale: 0.57,
+        },
         fillColor: feature.properties.prlActive === 'Y' ? 'blue' : 'grey',
         fillOpacity: 0.6,
       },
@@ -623,15 +656,16 @@ export const layer = () => {
         fillOpacity: 0.7,
         pointSize: 0.5,
         // pointShape: 'circle',
-        pointShape: 'image',
-        // pointShape: 'filletrect',
+        // pointShape: 'image',
+        pointShape: 'filletrect',
         // pointShape: 'regularpolygon',
         pointOptions: {
-          // pointFillet: 1,
+          pointFillet: 1,
           // pointRectangularSides: 3,
           // pointRotation: 0,
           pointScale: 0.01,
-          pointImage: feature.properties.fclKind === 'MULTI WELL TEMPLATE' ? 'https://trollmapsst.blob.core.windows.net/static/images/risks/radioactive.png?sv=2020-04-08&st=2021-09-29T18%3A56%3A17Z&se=2021-09-30T18%3A56%3A17Z&sr=b&sp=r&sig=gLldLoR4fiwBNBnmfxzQxKeTI8bOJD6vk9DjUShy%2F8I%3D' : 'https://trollmapsst.blob.core.windows.net/static/images/risks/loss.png?sv=2020-04-08&st=2021-09-29T19%3A05%3A01Z&se=2021-09-30T19%3A05%3A01Z&sr=b&sp=r&sig=9QIMAIm34XPgweDiXdZ92tl45%2FtxOtAor7X6jDsAMp8%3D',
+          // pointImage: feature.properties.fclKind === 'MULTI WELL TEMPLATE' ? 'https://trollmapsst.blob.core.windows.net/static/images/risks/radioactive.png?sv=2020-04-08&st=2021-09-29T18%3A56%3A17Z&se=2021-09-30T18%3A56%3A17Z&sr=b&sp=r&sig=gLldLoR4fiwBNBnmfxzQxKeTI8bOJD6vk9DjUShy%2F8I%3D' : 'https://trollmapsst.blob.core.windows.net/static/images/risks/loss.png?sv=2020-04-08&st=2021-09-29T19%3A05%3A01Z&se=2021-09-30T19%3A05%3A01Z&sr=b&sp=r&sig=9QIMAIm34XPgweDiXdZ92tl45%2FtxOtAor7X6jDsAMp8%3D',
+          pointImage: 'https://trollmapsst.blob.core.windows.net/static/images/risks/csand.png?sv=2020-04-08&st=2021-10-01T11%3A50%3A48Z&se=2021-10-16T11%3A50%3A00Z&sr=b&sp=r&sig=Aqv1jcGIj7SnRpbmnfj%2BX4uUZv6rw2Dgaatp%2Bs7sin8%3D',
         }
         // pointShape: 'square',
         // hashed: true,
@@ -641,21 +675,37 @@ export const layer = () => {
     });
 
     const prospectProps = (feature: any) => {
-      const period = feature.properties?.chronoPeriod?.toLowerCase();
-      const { fillColor, lineColor } = ProspectColors.valid(period) ? ProspectColors.get(period) : { fillColor: '#666666', lineColor: '#444444' };
+      // console.log(feature)
+      // const period = feature.properties?.chronoPeriod?.toLowerCase();
+      // const { fillColor, lineColor } = ProspectColors.valid(period) ? ProspectColors.get(period) : { fillColor: '#666666', lineColor: '#444444' };
 
       return {
+        // label: feature.properties.prospectName,
+        id: feature.properties.prospectAnalysisId,
         style: {
-          lineColor,
-          lineWidth: 0.1,
-          fillColor,
+          // lineColor,
+          lineColor: '#444444',
+          // lineWidth: 0.1,
+          // fillColor,
+          fillColor: '#fff004',
           fillOpacity: 0.6,
+          // outlineResize: {
+          //   min: { zoom: 7, scale: 0.8 },
+          //   max: { zoom: 17, scale: 0.05 },
+          // },
+          // labelResize: {
+          //   min: { zoom: 0, scale: 4.0 },
+          //   max: { zoom: 17, scale: 2.45 },
+          //   threshold: -1,
+          //   // baseScale: 0.57,
+          // },
         },
+      additionalData: {},
       }
     };
 
-    // let prospectDataNew = transformProspectData(prospectData);
-    let prospectDataNew = prospectData;
+    let prospectDataNew = transformProspectData(prospectData);
+    // let prospectDataNew = prospectData;
 
     const licenseGeoJSON: SingleGeoJSON = { module: licenses, data: licenseData, props: licenseProps, visible: false };
     const pipelineGeoJSON: SingleGeoJSON = { module: pipelines, data: pipelineData, props: pipelineProps, visible: false };

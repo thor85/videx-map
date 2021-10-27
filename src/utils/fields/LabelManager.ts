@@ -63,6 +63,7 @@ export default class LabelManager {
    * @param entries Data for each label
    */
   addField(name: string, entries: LabelData[]) {
+    if (typeof name === 'undefined') name = '';
     if (entries.length <= 1) { // Single-polygon
       this.fields.push({
         name,
