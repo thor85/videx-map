@@ -136,15 +136,14 @@ export default class FieldModule extends ModuleInterface {
     super();
 
     // Don't continue without config
-    if (!config) return;
-
     this.mapmoving = false;
+    this._eventHandler = config && config.customEventHandler || new DefaultEventHandler();
+    this.onFeatureHover = config?.onFeatureHover;
 
+    if (!config) return;
     if (config.initialHash && typeof config.initialHash === 'number') this.config.initialHash = config.initialHash;
     if (config.minHash && typeof config.minHash === 'number') this.config.minHash = config.minHash;
     if (config.maxHash && typeof config.maxHash === 'number') this.config.maxHash = config.maxHash;
-    this._eventHandler = config && config.customEventHandler || new DefaultEventHandler();
-    this.onFeatureHover = config?.onFeatureHover;
   }
 
   set(data: Field[]) {
@@ -412,7 +411,8 @@ export default class FieldModule extends ModuleInterface {
     }
 
   private handleMouseMove(event: MouseEvent): boolean {
-    // if(this.mapmoving) return false;
+    if(this.mapmoving) return false;
+    // console.log(event)
     const hits = this.testPosition(event);
     if(this.onFeatureHover) this.onFeatureHover(event, hits);
     return true;
