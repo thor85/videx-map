@@ -82,7 +82,7 @@ export default function preprocessFields(data: Field[]): PreprocessedField[] {
     // Push new polygon. Append additional.
     } else {
       unique[fieldName] = {
-        type: field.type,
+        type: field.geometry.type,
         geometry: [
           {
             coordinates: coordinates[0],

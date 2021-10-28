@@ -9,6 +9,17 @@ import { EventHandler, DefaultEventHandler } from './EventHandler';
 import { clamp } from '@equinor/videx-math';
 import TriangleDictionary from './utils/TriangleDictionary';
 import Vector2 from '@equinor/videx-vector2';
+import Projector from './utils/wellbores/Projector';
+import {
+  GeoJSONMultiPolygon,
+  GeoJSONPolygon,
+  FeatureProps,
+} from './GeoJSONModule';
+
+function arraysEqual(a1, a2) {
+  /* WARNING: arrays must not contain {objects} or behavior may be undefined */
+  return JSON.stringify(a1) == JSON.stringify(a2);
+}
 
 type vec3 = [number, number, number];
 
@@ -112,11 +123,16 @@ export default class FieldModule extends ModuleInterface {
   /** Collection of fields with meshes. */
   fields: FieldMesh[] = [];
 
+  polygons: GeoJSONPolygon;
+  multipolygons: GeoJSONMultiPolygon;
+
   mapmoving: boolean;
 
   onFeatureHover: (event: MouseEvent, data: any) => void;
 
   private _eventHandler: EventHandler;
+
+  private _projector: Projector;
 
   /** Settings for how to render fields. */
   config: Config = {
@@ -124,6 +140,9 @@ export default class FieldModule extends ModuleInterface {
     minHash: 0.0,
     maxHash: Infinity,
   };
+
+  highlightActive: boolean = false;
+  highlightHits: number[] = [];
 
   dict: TriangleDictionary<number> = new TriangleDictionary(1.2);
   highlighter: Highlighter;
@@ -144,6 +163,11 @@ export default class FieldModule extends ModuleInterface {
     if (config.initialHash && typeof config.initialHash === 'number') this.config.initialHash = config.initialHash;
     if (config.minHash && typeof config.minHash === 'number') this.config.minHash = config.minHash;
     if (config.maxHash && typeof config.maxHash === 'number') this.config.maxHash = config.maxHash;
+  }
+
+  get projector() {
+    if (!this._projector) this._projector = new Projector(this.pixiOverlay.utils.latLngToLayerPoint);
+    return this._projector;
   }
 
   set(data: Field[]) {
@@ -167,22 +191,35 @@ export default class FieldModule extends ModuleInterface {
 
     this.labelManager = new LabelManager(textStyle, 0.029);
     this.highlighter = new Highlighter(
-      [0.50, 0, 0.50],
-      [0.25, 0, 0.25],
-      [0.35, 0, 0.35],
+      // [0.50, 0, 0.50],
+      // [0.25, 0, 0.25],
+      // [0.35, 0, 0.35],,
+      [0.75, 0.36, 0.42],
+      [0.42, 0.69, 0.44],
+      [0, 1.0, 1.0],
     );
+
+    // Extra loop added to use mouseEvents
+    data.forEach(feature => {
+      // console.log(feature)
+      // if (feature.geometry.type === 'Polygon') {
+      //   if (this.polygons === undefined) this.polygons = new GeoJSONPolygon(this.root, this.labelRoot, this.pixiOverlay, this.config);
+      //   this.polygons.add(feature, );
+      // } else if (feature.geometry.type === 'MultiPolygon') {
+      //   if (this.multipolygons === undefined) this.multipolygons = new GeoJSONMultiPolygon(this.root, this.labelRoot, this.pixiOverlay, this.config);
+      //   this.multipolygons.add(feature, props);
+      // }
+    })
     // console.log(data)
     const preprocessedData = preprocessFields(data);
-    // const preprocessedData = data;
     // console.log(preprocessedData)
 
     let fieldID = 0;
     let baseZIndex = 0;
     preprocessedData.forEach(field => {
-      // console.log("inside foreach")
       // console.log(field)
       const name: string = field.properties.label;
-      if (name === 'Troll') return;
+      // if (name === 'Troll') return;
 
       const guid = field.properties.guid;
 
@@ -231,7 +268,7 @@ export default class FieldModule extends ModuleInterface {
 
     const outlineUniform: OutlineUniform = {
       color: fieldStyle.outlineColor,
-      width: 0.0,
+      width: 0.2,
     }
 
     const polygonMesh = Mesh.from(meshData.vertices, meshData.triangles, FieldModule.vertexShaderFill, FieldModule.fragmentShaderFill, fillUniform);
@@ -360,6 +397,7 @@ export default class FieldModule extends ModuleInterface {
     // Don't highlight field twice
     if (this.prevField === field) return true;
     this.highlighter.highlight(field);
+    this.highlightActive = true;
     this.pixiOverlay.redraw();
     this.prevField = field;
     return true;
@@ -394,27 +432,46 @@ export default class FieldModule extends ModuleInterface {
    */
   // testPosition(pos: Vector2) : any {
     testPosition(event: MouseEvent) : any {
-      // TODO: fix
-      // const map = this.pixiOverlay.utils.getMap();
-      // const latLng = map.mouseEventToLatLng(event);
-      // const layerCoords = new Vector2([latLng.lng, latLng.lat]);
+      const map = this.pixiOverlay.utils.getMap();
+      const latLng = map.mouseEventToLatLng(event);
+      const layerCoords = new Vector2([latLng.lng, latLng.lat]);
       // const worldspaceCoord = this.projector.getVector2(latLng);
 
-      // let result = [];
+      // return this.dict.getPolygonAt([pos.x, pos.y]);
+
+      let result = [];
+      result.push(this.dict.getPolygonAt([layerCoords.x, layerCoords.y]));
       // if (this.polygons) result.push(this.polygons.testPosition(layerCoords));
       // if (this.multipolygons) result.push(this.multipolygons.testPosition(layerCoords));
       // if (this.linestrings) result.push(this.linestrings.testPosition(worldspaceCoord, this.distanceThreshold));
       // if (this.points) result.push(this.points.testPosition(worldspaceCoord, this.distanceThreshold));
-      // result = result.filter(v => v);
-      // return result;
-      return;
+      result = result.filter(v => v);
+      // console.log(result)
+      return result;
     }
 
   private handleMouseMove(event: MouseEvent): boolean {
     if(this.mapmoving) return false;
     // console.log(event)
+    // console.log(this)
     const hits = this.testPosition(event);
-    if(this.onFeatureHover) this.onFeatureHover(event, hits);
+    if (hits.length !== 0 && !arraysEqual(this.highlightHits, hits)) {
+      const map = this.pixiOverlay.utils.getMap();
+      const latLng = map.mouseEventToLatLng(event);
+      this.highlight(latLng.lat, latLng.lng)
+      this.highlightHits = hits;
+    } else if (hits.length === 0 && this.highlightActive) {
+      const map = this.pixiOverlay.utils.getMap();
+      const latLng = map.mouseEventToLatLng(event);
+      this.highlight(latLng.lat, latLng.lng)
+      this.highlightActive = false;
+      this.highlightHits = [];
+    }
+    // const map = this.pixiOverlay.utils.getMap();
+    // const latLng = map.mouseEventToLatLng(event);
+    // this.highlight(latLng.lat, latLng.lng)
+
+    if (this.onFeatureHover) this.onFeatureHover(event, hits);
     return true;
   }
 

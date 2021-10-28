@@ -61,8 +61,8 @@ export default class Hightlighter {
       }
 
       // Highlight
-      field.fill.uniform.col1 = this.fillColor1;
-      field.fill.uniform.col2 = this.fillColor2;
+      // field.fill.uniform.col1 = this.fillColor1;
+      // field.fill.uniform.col2 = this.fillColor2;
       field.fill.mesh.zIndex += 10000;
       field.outline.uniform.color = this.outlineColor;
       field.outline.mesh.zIndex += 10000;

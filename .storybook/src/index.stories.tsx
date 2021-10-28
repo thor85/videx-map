@@ -358,7 +358,7 @@ export const layer = () => {
     pixiLayer.addTo(map);
 
     fields.set(fieldData.features);
-    fields.highlight(60.9, 3.6)
+    // fields.highlight(60.9, 3.6)
     faultlines.set(faultlineDataTroll);
     outlines.set(outlineDataTroll);
 
