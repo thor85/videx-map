@@ -5,6 +5,7 @@ import centerOfMass from './utils/centerOfMass';
 import Highlighter from './utils/fields/Highlighter';
 import preprocessFields from './utils/fields/preprocessFields';
 import LabelManager, { LabelData } from './utils/fields/LabelManager';
+import { EventHandler, DefaultEventHandler } from './EventHandler';
 import { clamp } from '@equinor/videx-math';
 import TriangleDictionary from './utils/TriangleDictionary';
 import Vector2 from '@equinor/videx-vector2';
@@ -78,6 +79,11 @@ interface Config {
   minHash?: number,
   /** Maximum scale of field hash (Default: Infinity). */
   maxHash?: number,
+
+  /** Provide your custom event handler. */
+  customEventHandler?: EventHandler;
+
+  onFeatureHover?: (event: MouseEvent, data: any) => void;
 }
 
 // Colors
@@ -106,6 +112,12 @@ export default class FieldModule extends ModuleInterface {
   /** Collection of fields with meshes. */
   fields: FieldMesh[] = [];
 
+  mapmoving: boolean;
+
+  onFeatureHover: (event: MouseEvent, data: any) => void;
+
+  private _eventHandler: EventHandler;
+
   /** Settings for how to render fields. */
   config: Config = {
     initialHash: 1.0,
@@ -126,9 +138,13 @@ export default class FieldModule extends ModuleInterface {
     // Don't continue without config
     if (!config) return;
 
+    this.mapmoving = false;
+
     if (config.initialHash && typeof config.initialHash === 'number') this.config.initialHash = config.initialHash;
     if (config.minHash && typeof config.minHash === 'number') this.config.minHash = config.minHash;
     if (config.maxHash && typeof config.maxHash === 'number') this.config.maxHash = config.maxHash;
+    this._eventHandler = config && config.customEventHandler || new DefaultEventHandler();
+    this.onFeatureHover = config?.onFeatureHover;
   }
 
   set(data: Field[]) {
@@ -353,6 +369,72 @@ export default class FieldModule extends ModuleInterface {
   tryUnselect() {
     if (this.highlighter.revert()) this.pixiOverlay.redraw();
     this.prevField = -1;
+  }
+
+  onAdd(map: import("leaflet").Map): void {
+    const element = this.pixiOverlay.utils.getRenderer().view.parentNode;
+    const callbacks = {
+      mousemove: this.handleMouseMove.bind(this),
+      mouseout: this.handleMouseOut.bind(this),
+      click: this.handleMouseClick.bind(this),
+      mousedown: this.handleMouseDown.bind(this),
+      mouseup: this.handleMouseUp.bind(this),
+    };
+    this._eventHandler.register(map, element, callbacks);
+  }
+
+  onRemove(map: import("leaflet").Map): void {
+    this._eventHandler.unregister();
+  }
+
+    /**
+   * Check for features at the given coordinates.
+   * Will give a list of feature data if any are hit or an empty list if not.
+   * @param pos Target position in lat-long
+   * @returns List of features at the given position
+   */
+  // testPosition(pos: Vector2) : any {
+    testPosition(event: MouseEvent) : any {
+      // TODO: fix
+      // const map = this.pixiOverlay.utils.getMap();
+      // const latLng = map.mouseEventToLatLng(event);
+      // const layerCoords = new Vector2([latLng.lng, latLng.lat]);
+      // const worldspaceCoord = this.projector.getVector2(latLng);
+
+      // let result = [];
+      // if (this.polygons) result.push(this.polygons.testPosition(layerCoords));
+      // if (this.multipolygons) result.push(this.multipolygons.testPosition(layerCoords));
+      // if (this.linestrings) result.push(this.linestrings.testPosition(worldspaceCoord, this.distanceThreshold));
+      // if (this.points) result.push(this.points.testPosition(worldspaceCoord, this.distanceThreshold));
+      // result = result.filter(v => v);
+      // return result;
+      return;
+    }
+
+  private handleMouseMove(event: MouseEvent): boolean {
+    // if(this.mapmoving) return false;
+    const hits = this.testPosition(event);
+    if(this.onFeatureHover) this.onFeatureHover(event, hits);
+    return true;
+  }
+
+  private handleMouseOut(event: MouseEvent) : boolean {
+    if(this.onFeatureHover) this.onFeatureHover(event, []);
+    return true;
+  }
+
+  private handleMouseClick() : boolean {
+    return true;
+  }
+
+  private handleMouseDown() : boolean {
+    this.mapmoving = true;
+    return true;
+  }
+
+  private handleMouseUp() : boolean {
+    this.mapmoving = false;
+    return true;
   }
 }
 
