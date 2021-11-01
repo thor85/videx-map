@@ -93,6 +93,8 @@ interface Config {
   /** Resize configuration of outline. */
   outlineResize?: ResizeConfig;
 
+  labelResize?: LabelResizeConfig;
+
   /** Provide your custom event handler. */
   customEventHandler?: EventHandler;
 
@@ -144,7 +146,16 @@ export default class FieldModule extends ModuleInterface {
       min: { zoom: 7, scale: 0.8 },
       max: { zoom: 17, scale: 0.05 },
     },
+    labelResize: {
+      min: { zoom: 11, scale: 0.1 },
+      max: { zoom: 17, scale: 0.025 },
+      threshold: 8,
+      baseScale: 0.029,
+    },
   };
+
+  /** Are the labels hidden? */
+  labelsVisible: boolean;
 
   highlightActive: boolean = false;
   highlightHits: number[] = [];
@@ -171,6 +182,8 @@ export default class FieldModule extends ModuleInterface {
     this.labelContainer.sortableChildren = true;
     this.root.addChild(this.labelContainer);
 
+    this.labelsVisible = true;
+
     // Don't continue without config
     this.mapmoving = false;
     this._eventHandler = config && config.customEventHandler || new DefaultEventHandler();
@@ -178,6 +191,7 @@ export default class FieldModule extends ModuleInterface {
 
     if (!config) return;
     if (config.outlineResize) this.config.outlineResize = config.outlineResize;
+    if (config.labelResize) this.config.labelResize = config.labelResize;
     if (config.initialHash && typeof config.initialHash === 'number') this.config.initialHash = config.initialHash;
     if (config.minHash && typeof config.minHash === 'number') this.config.minHash = config.minHash;
     if (config.maxHash && typeof config.maxHash === 'number') this.config.maxHash = config.maxHash;
@@ -194,10 +208,6 @@ export default class FieldModule extends ModuleInterface {
 
     // Clear fields
     this.fields = [];
-    // @ts-ignore
-    // window.fieldmodule = this;
-    // console.log("setting window")
-    // (window as any).fieldmodule = this;
 
     const textStyle: PIXI.TextStyle = new PIXI.TextStyle({
       fontFamily : 'Arial',
@@ -207,6 +217,9 @@ export default class FieldModule extends ModuleInterface {
       align : 'center'
     });
 
+    // const zoom = this.pixiOverlay._map.getZoom();
+    // const labelSize = this.getLabelSize(zoom);
+    // this.labelManager = new LabelManager(textStyle, this.config.labelResize?.baseScale);
     this.labelManager = new LabelManager(textStyle, 0.029);
     this.highlighter = new Highlighter(
       // [0.50, 0, 0.50],
@@ -217,25 +230,11 @@ export default class FieldModule extends ModuleInterface {
       [0, 1.0, 1.0],
     );
 
-    // Extra loop added to use mouseEvents
-    data.forEach(feature => {
-      // console.log(feature)
-      // if (feature.geometry.type === 'Polygon') {
-      //   if (this.polygons === undefined) this.polygons = new GeoJSONPolygon(this.root, this.labelRoot, this.pixiOverlay, this.config);
-      //   this.polygons.add(feature, );
-      // } else if (feature.geometry.type === 'MultiPolygon') {
-      //   if (this.multipolygons === undefined) this.multipolygons = new GeoJSONMultiPolygon(this.root, this.labelRoot, this.pixiOverlay, this.config);
-      //   this.multipolygons.add(feature, props);
-      // }
-    })
-    // console.log(data)
     const preprocessedData = preprocessFields(data);
-    // console.log(preprocessedData)
 
     let fieldID = 0;
     let baseZIndex = 0;
     preprocessedData.forEach(field => {
-      // console.log(field)
       const name: string = field.properties.label;
       // if (name === 'Troll') return;
 
@@ -268,6 +267,11 @@ export default class FieldModule extends ModuleInterface {
     });
 
     this.labelManager.draw(this.labelContainer);
+
+    // TODO: improve this...
+    const zoom = this.pixiOverlay._map.getZoom();
+    const labelSize = this.getLabelSize(zoom);
+    this.labelManager.resize(labelSize);
   }
 
   /**
@@ -388,6 +392,20 @@ export default class FieldModule extends ModuleInterface {
     if (!this.config.outlineResize) return;
     const outlineRadius = this.getOutlineRadius(zoom);
 
+    if (this.config.labelResize && this.labelManager) {
+      console.log(this)
+      const labelSize = this.getLabelSize(zoom);
+      console.log(labelSize)
+
+      // Labels will just get in the way after a certain threshold, so it is better to just hide them
+      if (zoom <= this.config.labelResize.threshold) {
+        this.labelManager.hideLabels();
+      } else {
+        if (this.labelsVisible) this.labelManager.showLabels();
+        this.labelManager.resize(labelSize);
+      }
+    }
+
     /**
      * This is not the best way to update, ideally we would use global uniforms
      * @example this.pixiOverlay._renderer.globalUniforms.uniforms.outlineWidth = outlineRadius;
@@ -412,6 +430,10 @@ export default class FieldModule extends ModuleInterface {
 
   getOutlineRadius(zoom: number = this.currentZoom) {
     return getRadius(zoom, this.config.outlineResize);
+  }
+
+  getLabelSize(zoom: number = this.currentZoom) {
+    return getRadius(zoom, this.config.labelResize);
   }
 
   /*

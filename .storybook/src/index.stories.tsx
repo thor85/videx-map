@@ -244,9 +244,6 @@ export const layer = () => {
       noWrap: true,
     }).addTo(map);
 
-    // @ts-ignore
-    // console.log(map)
-
     const pixiLayer = new PixiLayer();
     const faultlines: FaultlineModule = new FaultlineModule();
     const fields: FieldModule = new FieldModule({
@@ -258,6 +255,12 @@ export const layer = () => {
       outlineResize: {
         min: { zoom: 6, scale: 1.5 },
         max: { zoom: 18, scale: 0.55 },
+      },
+      labelResize: {
+        min: { zoom: 9, scale: 8.1 },
+        max: { zoom: 18, scale: 1.525 },
+        // threshold: 8,
+        // baseScale: 0.15,
       },
       initialHash: 5,
     });
