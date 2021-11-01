@@ -200,7 +200,8 @@ export default class GeoJSONMultiPolygon {
   }
 
   drawLabels(): void {
-    this.labels.draw();
+    // this.labels.draw();
+    this.labels.draw(this.getLabelSize(this.pixiOverlay._map.getZoom()));
   }
 
 

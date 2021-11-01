@@ -257,10 +257,10 @@ export const layer = () => {
         max: { zoom: 18, scale: 0.55 },
       },
       labelResize: {
-        min: { zoom: 9, scale: 8.1 },
-        max: { zoom: 18, scale: 1.525 },
+        min: { zoom: 9, scale: 0.81 },
+        max: { zoom: 18, scale: 0.1525 },
         // threshold: 8,
-        // baseScale: 0.15,
+        baseScale: 0.15,
       },
       initialHash: 5,
     });
@@ -317,7 +317,7 @@ export const layer = () => {
       labelResize: {
         min: { zoom: 11, scale: 0.1 },
         max: { zoom: 17, scale: 0.025 },
-        threshold: 8,
+        // threshold: 8,
         baseScale: 0.15,
       },
       onFeatureHover: (event, data) => {

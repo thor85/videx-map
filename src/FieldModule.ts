@@ -149,8 +149,7 @@ export default class FieldModule extends ModuleInterface {
     labelResize: {
       min: { zoom: 11, scale: 0.1 },
       max: { zoom: 17, scale: 0.025 },
-      threshold: 8,
-      baseScale: 0.029,
+      baseScale: 0.15,
     },
   };
 
@@ -219,8 +218,8 @@ export default class FieldModule extends ModuleInterface {
 
     // const zoom = this.pixiOverlay._map.getZoom();
     // const labelSize = this.getLabelSize(zoom);
-    // this.labelManager = new LabelManager(textStyle, this.config.labelResize?.baseScale);
-    this.labelManager = new LabelManager(textStyle, 0.029);
+    this.labelManager = new LabelManager(textStyle, this.config.labelResize.baseScale);
+    // this.labelManager = new LabelManager(textStyle, 0.029);
     this.highlighter = new Highlighter(
       // [0.50, 0, 0.50],
       // [0.25, 0, 0.25],
@@ -393,12 +392,10 @@ export default class FieldModule extends ModuleInterface {
     const outlineRadius = this.getOutlineRadius(zoom);
 
     if (this.config.labelResize && this.labelManager) {
-      console.log(this)
       const labelSize = this.getLabelSize(zoom);
-      console.log(labelSize)
 
       // Labels will just get in the way after a certain threshold, so it is better to just hide them
-      if (zoom <= this.config.labelResize.threshold) {
+      if (zoom <= this.config.labelResize.threshold || !this.labelsVisible) {
         this.labelManager.hideLabels();
       } else {
         if (this.labelsVisible) this.labelManager.showLabels();
