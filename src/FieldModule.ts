@@ -10,11 +10,9 @@ import { clamp } from '@equinor/videx-math';
 import TriangleDictionary from './utils/TriangleDictionary';
 import Vector2 from '@equinor/videx-vector2';
 import Projector from './utils/wellbores/Projector';
-import {
-  GeoJSONMultiPolygon,
-  GeoJSONPolygon,
-  FeatureProps,
-} from './GeoJSONModule';
+import { getRadius } from './utils/Radius';
+import { Defaults } from './GeoJSONModule/constants';
+import { ResizeConfig, LabelResizeConfig } from './ResizeConfigInterface';
 
 function arraysEqual(a1, a2) {
   /* WARNING: arrays must not contain {objects} or behavior may be undefined */
@@ -63,6 +61,7 @@ export interface Field {
     guid?: number;
     hctype?: string;
     dsc_hctype?: string;
+    dscactstat?: string;
     label: string;
     lat: number;
     long: number;
@@ -90,6 +89,9 @@ interface Config {
   minHash?: number,
   /** Maximum scale of field hash (Default: Infinity). */
   maxHash?: number,
+
+  /** Resize configuration of outline. */
+  outlineResize?: ResizeConfig;
 
   /** Provide your custom event handler. */
   customEventHandler?: EventHandler;
@@ -123,8 +125,7 @@ export default class FieldModule extends ModuleInterface {
   /** Collection of fields with meshes. */
   fields: FieldMesh[] = [];
 
-  polygons: GeoJSONPolygon;
-  multipolygons: GeoJSONMultiPolygon;
+  fieldIdFeatures: any = {};
 
   mapmoving: boolean;
 
@@ -139,14 +140,23 @@ export default class FieldModule extends ModuleInterface {
     initialHash: 1.0,
     minHash: 0.0,
     maxHash: Infinity,
+    outlineResize: {
+      min: { zoom: 7, scale: 0.8 },
+      max: { zoom: 17, scale: 0.05 },
+    },
   };
 
   highlightActive: boolean = false;
   highlightHits: number[] = [];
 
+  currentZoom: number = Defaults.INITIAL_ZOOM;
+
   dict: TriangleDictionary<number> = new TriangleDictionary(1.2);
   highlighter: Highlighter;
   labelManager: LabelManager;
+
+  labelContainer: PIXI.Container;
+  fieldMeshContainer: PIXI.Container;
 
   /** Index of previously highlighted field */
   prevField: number = -1;
@@ -154,12 +164,20 @@ export default class FieldModule extends ModuleInterface {
   constructor(config?: Config) {
     super();
 
+    this.fieldMeshContainer = new PIXI.Container();
+    this.fieldMeshContainer.sortableChildren = true;
+    this.root.addChild(this.fieldMeshContainer);
+    this.labelContainer = new PIXI.Container();
+    this.labelContainer.sortableChildren = true;
+    this.root.addChild(this.labelContainer);
+
     // Don't continue without config
     this.mapmoving = false;
     this._eventHandler = config && config.customEventHandler || new DefaultEventHandler();
     this.onFeatureHover = config?.onFeatureHover;
 
     if (!config) return;
+    if (config.outlineResize) this.config.outlineResize = config.outlineResize;
     if (config.initialHash && typeof config.initialHash === 'number') this.config.initialHash = config.initialHash;
     if (config.minHash && typeof config.minHash === 'number') this.config.minHash = config.minHash;
     if (config.maxHash && typeof config.maxHash === 'number') this.config.maxHash = config.maxHash;
@@ -172,7 +190,7 @@ export default class FieldModule extends ModuleInterface {
 
   set(data: Field[]) {
     // Ensure initial hash is clamped
-    this.config.initialHash = clamp(this.config.initialHash);
+    this.config.initialHash = clamp(this.config.initialHash, this.config.minHash, this.config.maxHash);
 
     // Clear fields
     this.fields = [];
@@ -232,6 +250,7 @@ export default class FieldModule extends ModuleInterface {
 
         const meshData = Mesh.Polygon(projected);
         this.dict.add(polygon.coordinates, meshData.triangles, fieldID);
+        this.fieldIdFeatures[fieldID] = field;
         const outlineData = Mesh.PolygonOutline(projected, 0.15);
         const [position, mass] = centerOfMass(projected, meshData.triangles);
 
@@ -248,7 +267,7 @@ export default class FieldModule extends ModuleInterface {
       this.highlighter.add(meshes)
     });
 
-    this.labelManager.draw(this.root);
+    this.labelManager.draw(this.labelContainer);
   }
 
   /**
@@ -266,19 +285,22 @@ export default class FieldModule extends ModuleInterface {
       hashWidth: this.config.initialHash,
     };
 
+    const zoom = this.pixiOverlay._map.getZoom();
+    const outlineRadius = this.getOutlineRadius(zoom);
+
     const outlineUniform: OutlineUniform = {
       color: fieldStyle.outlineColor,
-      width: 0.2,
+      width: outlineRadius,
     }
 
     const polygonMesh = Mesh.from(meshData.vertices, meshData.triangles, FieldModule.vertexShaderFill, FieldModule.fragmentShaderFill, fillUniform);
     polygonMesh.zIndex = zIndex;
 
-    this.root.addChild(polygonMesh);
+    this.fieldMeshContainer.addChild(polygonMesh);
 
     const polygonOutlineMesh = Mesh.from(outlineData.vertices, outlineData.triangles, FieldModule.vertexShaderOutline, FieldModule.fragmentShaderOutline, outlineUniform, outlineData.normals);
     polygonOutlineMesh.zIndex = zIndex + 1;
-    this.root.addChild(polygonOutlineMesh);
+    this.fieldMeshContainer.addChild(polygonOutlineMesh);
 
     return {
       fill: {
@@ -363,7 +385,33 @@ export default class FieldModule extends ModuleInterface {
   }
 
   resize(zoom: number) {
+    if (!this.config.outlineResize) return;
+    const outlineRadius = this.getOutlineRadius(zoom);
 
+    /**
+     * This is not the best way to update, ideally we would use global uniforms
+     * @example this.pixiOverlay._renderer.globalUniforms.uniforms.outlineWidth = outlineRadius;
+     * instead of iterating over every mesh and manually updating each of the selected
+     */
+    this.fieldMeshContainer.children.map((child) => {
+      // console.log(child)
+      // @ts-ignore
+      if (child.shader.uniformGroup.uniforms.width) {
+        // @ts-ignore
+        child.shader.uniformGroup.uniforms.width = outlineRadius;
+      }
+    });
+    this.currentZoom = zoom;
+  }
+
+  clear() {
+      this.fieldMeshContainer.removeChildren();
+      this.labelContainer.removeChildren();
+      this.dict = new TriangleDictionary(1.2);
+  }
+
+  getOutlineRadius(zoom: number = this.currentZoom) {
+    return getRadius(zoom, this.config.outlineResize);
   }
 
   /*
@@ -452,8 +500,6 @@ export default class FieldModule extends ModuleInterface {
 
   private handleMouseMove(event: MouseEvent): boolean {
     if(this.mapmoving) return false;
-    // console.log(event)
-    // console.log(this)
     const hits = this.testPosition(event);
     if (hits.length !== 0 && !arraysEqual(this.highlightHits, hits)) {
       const map = this.pixiOverlay.utils.getMap();
@@ -471,7 +517,11 @@ export default class FieldModule extends ModuleInterface {
     // const latLng = map.mouseEventToLatLng(event);
     // this.highlight(latLng.lat, latLng.lng)
 
-    if (this.onFeatureHover) this.onFeatureHover(event, hits);
+    let hitsFeatures = [];
+    hits.forEach(hit => {hitsFeatures.push(this.fieldIdFeatures[hit])});
+    // console.log(hitsFeatures)
+
+    if (this.onFeatureHover) this.onFeatureHover(event, hitsFeatures);
     return true;
   }
 

@@ -249,7 +249,18 @@ export const layer = () => {
 
     const pixiLayer = new PixiLayer();
     const faultlines: FaultlineModule = new FaultlineModule();
-    const fields: FieldModule = new FieldModule();
+    const fields: FieldModule = new FieldModule({
+      // onFeatureHover: (event, data) => {
+      //   if (data && data.length > 0) {
+      //     console.log(data)
+      //   }
+      // },
+      outlineResize: {
+        min: { zoom: 6, scale: 1.5 },
+        max: { zoom: 18, scale: 0.55 },
+      },
+      initialHash: 5,
+    });
     const outlines: OutlineModule = new OutlineModule({
       minExtraWidth: 0.0,
       maxExtraWidth: 0.3,
@@ -359,6 +370,7 @@ export const layer = () => {
 
     fields.set(fieldData.features);
     // fields.highlight(60.9, 3.6)
+    // fields.clear();
     faultlines.set(faultlineDataTroll);
     outlines.set(outlineDataTroll);
 

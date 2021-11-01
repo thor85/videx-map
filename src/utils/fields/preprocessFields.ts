@@ -17,6 +17,8 @@ export interface PreprocessedField {
   properties: {
     group: number;
     guid?: number;
+    hctype?: string;
+    status?: string;
     label: string;
     lat: number;
     long: number;
@@ -65,11 +67,12 @@ export default function preprocessFields(data: Field[]): PreprocessedField[] {
       unique[fieldName].geometry.push({
         coordinates: coordinates[index],
         properties: {
-          discname: field.properties.discname,
+          ...field.properties,
+          // discname: field.properties.discname,
           // hctype: field.properties.hctype,
           hctype: field.properties.dsc_hctype,
-          polygonId: field.properties.polygonId,
-          status: field.properties.status,
+          // polygonId: field.properties.polygonId,
+          // status: field.properties.status,
         },
       });
     }
@@ -87,11 +90,12 @@ export default function preprocessFields(data: Field[]): PreprocessedField[] {
           {
             coordinates: coordinates[0],
             properties: {
-              discname: field.properties.discname,
+              ...field.properties,
+              // discname: field.properties.discname,
               // hctype: field.properties.hctype,
               hctype: field.properties.dsc_hctype,
-              polygonId: field.properties.polygonId,
-              status: field.properties.status,
+              // polygonId: field.properties.polygonId,
+              // status: field.properties.status,
             }
           }
         ],
@@ -99,6 +103,8 @@ export default function preprocessFields(data: Field[]): PreprocessedField[] {
           group: field.properties.group,
           guid: field.properties.guid,
           label: field.properties.label,
+          hctype: field.properties.dsc_hctype,
+          status: field.properties.dscactstat,
           lat: field.properties.lat,
           long: field.properties.long,
         }
