@@ -695,7 +695,7 @@ export const layer = () => {
       // const { fillColor, lineColor } = ProspectColors.valid(period) ? ProspectColors.get(period) : { fillColor: '#666666', lineColor: '#444444' };
 
       return {
-        // label: feature.properties.prospectName,
+        label: feature.properties.prospectName,
         id: feature.properties.prospectAnalysisId,
         style: {
           // lineColor,

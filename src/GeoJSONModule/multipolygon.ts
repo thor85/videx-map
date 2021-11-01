@@ -84,6 +84,9 @@ export default class GeoJSONMultiPolygon {
   /** Fragment shader for the outlines. */
   static fragmentShaderOutline: string;
 
+  /** Are the labels hidden? */
+  labelsVisible: boolean;
+
   /** Collection of features with meshes. */
   features: FeatureMesh[] = [];
 
@@ -109,6 +112,8 @@ export default class GeoJSONMultiPolygon {
     this.container = new PIXI.Container();
     this.container.sortableChildren = true;
     root.addChild(this.container);
+
+    this.labelsVisible = true;
 
     this.pixiOverlay = pixiOverlay;
     this.features = [];
@@ -229,7 +234,7 @@ export default class GeoJSONMultiPolygon {
       if (zoom <= this.config.labelResize.threshold) {
         this.labels.hideLabels();
       } else {
-        this.labels.showLabels();
+        if (this.labelsVisible) this.labels.showLabels();
         this.labels.resize(labelSize);
       }
     }
