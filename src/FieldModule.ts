@@ -3,7 +3,8 @@ import { ModuleInterface } from './ModuleInterface';
 import Mesh, { MeshData, MeshNormalData } from './utils/Mesh';
 import centerOfMass from './utils/centerOfMass';
 import Highlighter from './utils/fields/Highlighter';
-import preprocessFields from './utils/fields/preprocessFields';
+// import preprocessFields from './utils/fields/preprocessFields';
+import preprocessDiscoveries from './utils/fields/preprocessDiscoveries';
 import LabelManager, { LabelData } from './utils/fields/LabelManager';
 import { EventHandler, DefaultEventHandler } from './EventHandler';
 import { clamp } from '@equinor/videx-math';
@@ -61,6 +62,8 @@ export interface Field {
     guid?: number;
     hctype?: string;
     dsc_hctype?: string;
+    dschctype?: string;
+    dscname?: string;
     dscactstat?: string;
     label: string;
     lat: number;
@@ -229,7 +232,9 @@ export default class FieldModule extends ModuleInterface {
       [0, 1.0, 1.0],
     );
 
-    const preprocessedData = preprocessFields(data);
+    // const preprocessedData = preprocessFields(data);
+    const preprocessedData = preprocessDiscoveries(data);
+    console.log(preprocessedData)
 
     let fieldID = 0;
     let baseZIndex = 0;
@@ -241,7 +246,12 @@ export default class FieldModule extends ModuleInterface {
 
       const entries: LabelData[] = [];
       const meshes: FieldMesh[] = [];
+      // console.log(field)
       field.geometry.forEach(polygon => {
+        // console.log(polygon)
+        // if (!polygon.hasOwnProperty('coordinates')) return;
+        // if (!polygon.coordinates) return;
+        // if ((polygon.coordinates).length === 0) return;
         const fieldStyle: FieldStyle = this.getFieldStyle(guid, polygon.properties.hctype);
         const projected = this.projectPolygons(polygon.coordinates);
         projected.pop(); // Remove overlapping

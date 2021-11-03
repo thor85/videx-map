@@ -43,7 +43,8 @@ const pipelineData = require('./.Samples/pipelines.json');
 const facilityData = require('./.Samples/facilities.json');
 // const prospectData = require('./Samples/Prospects100.json');
 const prospectData = require('./Samples/prospects.json');
-const fieldData = require('./Samples/Fields.json');
+// const fieldData = require('./Samples/Fields.json');
+const fieldData = require('./Samples/discoveries.json');
 console.log(fieldData)
 
 let explorationData = processExploration(
