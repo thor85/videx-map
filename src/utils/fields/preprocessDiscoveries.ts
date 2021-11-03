@@ -25,6 +25,10 @@ export interface PreprocessedField {
   };
 }
 
+function capitalizeFirstLetter(string) {
+  return string.charAt(0).toUpperCase() + string.slice(1).toLowerCase();
+}
+
 /**
  * Preprocess field data to a more managable format.
  * @param data Data to process
@@ -89,6 +93,16 @@ export default function preprocessDiscoveries(data: Field[]): PreprocessedField[
     // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
     // Push new polygon. Append additional.
     } else {
+      let label = field.properties.dscname;
+      if (field.properties.fldname) {
+        label = capitalizeFirstLetter(field.properties.fldname)
+      } else {
+        if (field.properties.wlbname !== field.properties.dscname) {
+          label = (field.properties.dscname).replace(field.properties.wlbname, '');
+          label = label.replace('(', '').replace(')', '')
+        }
+      }
+
       unique[fieldName] = {
         type: field.geometry.type,
         geometry: [
@@ -110,10 +124,12 @@ export default function preprocessDiscoveries(data: Field[]): PreprocessedField[
           group: field.properties.group,
           guid: field.properties.guid,
           // label: field.properties.label,
-          label: field.properties.dscname,
+          // label: field.properties.dscname,
+          label: label,
           // hctype: field.properties.dsc_hctype,
           hctype: field.properties.dschctype,
-          status: field.properties.dscactstat,
+          // status: field.properties.dscactstat,
+          status: field.properties.dsccurrentactivitystatus,
           lat: field.properties.lat,
           long: field.properties.long,
         }

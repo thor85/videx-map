@@ -61,6 +61,10 @@ export interface Field {
     group: number;
     guid?: number;
     hctype?: string;
+    dsccurrentactivitystatus?: string;
+    cmplongname?: string;
+    fldname?: string;
+    wlbname?: string;
     dsc_hctype?: string;
     dschctype?: string;
     dscname?: string;
@@ -234,7 +238,6 @@ export default class FieldModule extends ModuleInterface {
 
     // const preprocessedData = preprocessFields(data);
     const preprocessedData = preprocessDiscoveries(data);
-    console.log(preprocessedData)
 
     let fieldID = 0;
     let baseZIndex = 0;
