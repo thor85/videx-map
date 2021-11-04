@@ -64,6 +64,8 @@ export default class GeoJSONModule extends ModuleInterface {
       this.polygons = undefined;
     }
     if (this.multipolygons) {
+      this.multipolygons.container.removeChildren();
+      this.multipolygons.labels.container.removeChildren();
       this.multipolygons = undefined;
     }
   }

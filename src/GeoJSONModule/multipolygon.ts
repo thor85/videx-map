@@ -133,7 +133,7 @@ export default class GeoJSONMultiPolygon {
   }
 
   add(feature: GeoJSON.Feature, props: (feature: object) => FeatureProps) {
-
+    const zoom = this.pixiOverlay._map.getZoom();
     const geom = feature.geometry as GeoJSON.MultiPolygon;
     const properties: FeatureProps = props(feature);
     if (properties.style.labelScale) this.labels.baseScale = properties.style.labelScale;
@@ -146,7 +146,8 @@ export default class GeoJSONMultiPolygon {
 
         const meshData = Mesh.Polygon(projected);
         this.dict.add(coordinates[0], meshData.triangles, feature.properties);
-        const outlineData = Mesh.PolygonOutline(projected, Defaults.DEFAULT_LINE_WIDTH);
+        const outlineRadius = this.getOutlineRadius(zoom);
+        const outlineData = Mesh.PolygonOutline(projected, outlineRadius);
         const [position, mass] = centerOfMass(projected, meshData.triangles);
 
         meshes.push(
@@ -177,10 +178,13 @@ export default class GeoJSONMultiPolygon {
       hashWidth: this.config.initialHash,
     };
 
+    const zoom = this.pixiOverlay._map.getZoom();
+    const outlineRadius = this.getOutlineRadius(zoom);
     const lineColor = color(featureStyle.lineColor).rgb();
     const outlineUniform: OutlineUniform = {
       color: [lineColor.r, lineColor.g, lineColor.b],
-      outlineWidth: featureStyle.lineWidth,
+      outlineWidth: outlineRadius,
+      // outlineWidth: featureStyle.lineWidth,
     }
 
     const polygonMesh = Mesh.from(meshData.vertices, meshData.triangles, GeoJSONVertexShaderFill, GeoJSONFragmentShaderFill, fillUniform);

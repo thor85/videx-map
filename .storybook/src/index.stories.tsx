@@ -160,8 +160,10 @@ export const layer = () => {
   function parseGeometryType(geometryString: string) {
     const geometryType = geometryString.substr(0, geometryString.indexOf(' '));
     const lowercase = geometryType.toLowerCase();
-    if (lowercase === 'polygon') return { success: true, geometryType: 'Polygon' };
-    if (lowercase === 'multipolygon') return { success: true, geometryType: 'MultiPolygon' };
+    const geometryType2 = geometryString.substr(0, geometryString.indexOf('('));
+    const lowercase2 = geometryType2.toLowerCase();
+    if (lowercase === 'polygon' || lowercase2 === 'polygon') return { success: true, geometryType: 'Polygon' };
+    if (lowercase === 'multipolygon' || lowercase2 === 'multipolygon') return { success: true, geometryType: 'MultiPolygon' };
     return { success: false };
   }
 
@@ -720,13 +722,74 @@ export const layer = () => {
       }
     };
 
+    const prospectSegments  = {
+      toppand: 722869,
+      roversor: 741044,
+      kveikje: 705610,
+      nroll: 701532,
+      litago: 663938,
+      crino1: 731801,
+      crino2: 731245,
+      crino3: 630572,
+      mulder: 731292,
+      harden: 635754,
+      mokkurkalvelindstrom: 641688,
+      kvernbit1: 689432,
+      kvernbit2: 661997,
+      whitesnakegoldfinger: 690330,
+      karlkarbo: 656214,
+      vette: 658580,
+      larven1: 725950,
+      larven2: 687541,
+      eggen: 664161,
+      asteroc: 565356,
+      kvinandsor: 741047,
+      kvinandnord: 636106,
+      kvann: 664170,
+      krikkand: 664439,
+      ringand: 664414,
+    }
+
+    const prospectSegmentAnalysisIds = [
+      prospectSegments['toppand'],
+      prospectSegments['roversor'],
+      prospectSegments['kveikje'],
+      prospectSegments['nroll'],
+      prospectSegments['litago'],
+      prospectSegments['crino1'],
+      prospectSegments['crino2'],
+      prospectSegments['crino3'],
+      prospectSegments['mulder'],
+      prospectSegments['asteroc'],
+      prospectSegments['kvernbit1'],
+      prospectSegments['kvernbit2'],
+      prospectSegments['larven1'],
+      prospectSegments['larven2'],
+      prospectSegments['eggen'],
+      prospectSegments['whitesnakegoldfinger'],
+      prospectSegments['mokkurkalvelindstrom'],
+      prospectSegments['karlkarbo'],
+      prospectSegments['vette'],
+      prospectSegments['kvann'],
+      prospectSegments['krikkand'],
+      prospectSegments['ringand'],
+      prospectSegments['kvinandnord'],
+      prospectSegments['kvinandsor'],
+    ]
+
     let prospectDataNew = transformProspectData(prospectData);
     // let prospectDataNew = prospectData;
+    const prospectDataFiltered = prospectDataNew;
+    // let prospectDataFiltered = prospectDataNew.features = prospectDataNew.features.filter((item) => (
+    //   prospectSegmentAnalysisIds.includes(item.properties.segmentAnalysisId)
+    // ));
+    console.log(prospectDataFiltered)
 
     const licenseGeoJSON: SingleGeoJSON = { module: licenses, data: licenseData, props: licenseProps, visible: false };
     const pipelineGeoJSON: SingleGeoJSON = { module: pipelines, data: pipelineData, props: pipelineProps, visible: false };
     const facilityGeoJSON: SingleGeoJSON = { module: facilities, data: facilityData, props: facilityProps, visible: false };
-    const prospectGeoJSON: SingleGeoJSON = { module: prospects, data: prospectDataNew, props: prospectProps, visible: false };
+    const prospectGeoJSON: SingleGeoJSON = { module: prospects, data: prospectDataFiltered, props: prospectProps, visible: false };
+    console.log(prospectGeoJSON)
 
     const toggleGeoJSON = (collection: any) => {
       collection.visible = !collection.visible;
