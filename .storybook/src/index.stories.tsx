@@ -341,10 +341,11 @@ export const layer = () => {
     const facilities: GeoJSONModule = new GeoJSONModule({
       onFeatureHover: (event, data) => {
         if (data && data.length > 0) {
-          // console.log(data)
+          console.log(data)
+          // console.log(this.distanceThreshold )
         }
       },
-      distanceThreshold: 5
+      distanceThreshold: 0.02
     });
     const prospects: GeoJSONModule = new GeoJSONModule({
       outlineResize: {

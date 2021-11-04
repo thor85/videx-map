@@ -46,7 +46,7 @@ export default class GeoJSONPoint {
   textStyle: PIXI.TextStyle;
 
   constructor(root: PIXI.Container, pixiOverlay: pixiOverlayBase) {
-    this.dict = new PointDictionary<number>(0.25, 20, 4);
+    this.dict = new PointDictionary<number>(100, 500, 4);
     this.container = new PIXI.Container();
     this.container.sortableChildren = true;
     root.addChild(this.container);
