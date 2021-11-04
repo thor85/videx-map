@@ -18,6 +18,9 @@ export interface PreprocessedField {
     group: number;
     guid?: number;
     hctype?: string;
+    discoveryyear?: number;
+    company?: string;
+    owner?: string;
     status?: string;
     label: string;
     lat: number;
@@ -103,6 +106,9 @@ export default function preprocessDiscoveries(data: Field[]): PreprocessedField[
         }
       }
 
+      let hctype = field.properties.dschctype;
+      if (field.properties.dscname === '31/6-1 (Troll Øst)') hctype = 'GAS';
+
       unique[fieldName] = {
         type: field.geometry.type,
         geometry: [
@@ -114,7 +120,8 @@ export default function preprocessDiscoveries(data: Field[]): PreprocessedField[
               // discname: field.properties.dscname,
               // hctype: field.properties.hctype,
               // hctype: field.properties.dsc_hctype,
-              hctype: field.properties.dschctype,
+              // hctype: field.properties.dschctype,
+              hctype: hctype,
               // polygonId: field.properties.polygonId,
               // status: field.properties.status,
             }
@@ -127,7 +134,11 @@ export default function preprocessDiscoveries(data: Field[]): PreprocessedField[
           // label: field.properties.dscname,
           label: label,
           // hctype: field.properties.dsc_hctype,
-          hctype: field.properties.dschctype,
+          // hctype: field.properties.dschctype,
+          hctype: hctype,
+          discoveryyear: field.properties.dscdiscoveryyear,
+          owner: field.properties.dscownername,
+          company: field.properties.cmplongname,
           // status: field.properties.dscactstat,
           status: field.properties.dsccurrentactivitystatus,
           lat: field.properties.lat,

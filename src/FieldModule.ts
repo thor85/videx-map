@@ -63,9 +63,11 @@ export interface Field {
     hctype?: string;
     dsccurrentactivitystatus?: string;
     cmplongname?: string;
+    dscownername?: string;
     fldname?: string;
     wlbname?: string;
     dsc_hctype?: string;
+    dscdiscoveryyear?: number;
     dschctype?: string;
     dscname?: string;
     dscactstat?: string;
