@@ -35,6 +35,7 @@ export default class GeoJSONModule extends ModuleInterface {
   distanceThreshold: number;
   config?: Config;
   private _projector: Projector;
+  labelsDrawn: boolean;
 
   constructor(config?: Config) {
     super();
@@ -43,6 +44,7 @@ export default class GeoJSONModule extends ModuleInterface {
     this.onFeatureHover = config?.onFeatureHover;
     this.config = config;
     this.distanceThreshold = config.distanceThreshold || 200;
+    this.labelsDrawn = false;
   }
 
   get projector() {
@@ -68,9 +70,10 @@ export default class GeoJSONModule extends ModuleInterface {
       this.multipolygons.labels.container.removeChildren();
       this.multipolygons = undefined;
     }
+    this.labelsDrawn = false;
   }
 
-  set(data: GeoJSON.FeatureCollection, props?: (feature: any) => FeatureProps) {
+  set(data: GeoJSON.FeatureCollection, props?: (feature: any) => FeatureProps, labelsVisible = false) {
     this.labelRoot = new PIXI.Container();
     data.features.forEach(feature => {
       if(feature.geometry.type === 'Point') {
@@ -89,8 +92,45 @@ export default class GeoJSONModule extends ModuleInterface {
 
     });
     this.root.addChild(this.labelRoot);
-    if (this.polygons) this.polygons.drawLabels();
-    if (this.multipolygons) this.multipolygons.drawLabels();
+    if (labelsVisible) {
+      this.drawLabels();
+    }
+  }
+
+  drawLabels() {
+    if (!this.labelsDrawn) {
+      this.labelsDrawn = true;
+      if (this.polygons) this.polygons.drawLabels();
+      if (this.multipolygons) this.multipolygons.drawLabels();
+    }
+  }
+
+  showLabels() {
+    if (!this.labelsDrawn) {
+      this.drawLabels();
+    }
+    if (this.polygons) {
+      this.polygons.labelsVisible = true;
+      this.polygons.labels.showLabels();
+    }
+    if (this.multipolygons) {
+      this.multipolygons.labelsVisible = true;
+      this.multipolygons.labels.showLabels();
+    }
+  }
+
+  hideLabels() {
+    if (!this.labelsDrawn) {
+      this.drawLabels();
+    }
+    if (this.polygons) {
+      this.polygons.labelsVisible = false;
+      this.polygons.labels.hideLabels();
+    }
+    if (this.multipolygons) {
+      this.multipolygons.labelsVisible = false;
+      this.multipolygons.labels.hideLabels();
+    }
   }
 
     /**

@@ -637,7 +637,7 @@ export const layer = () => {
         lineColor: 'blue',
         // lineWidth: 0.1,
         outlineResize: {
-          min: { zoom: 7, scale: 0.8 },
+          min: { zoom: 7, scale: 0.2 },
           max: { zoom: 17, scale: 0.05 },
         },
         labelResize: {
@@ -656,9 +656,9 @@ export const layer = () => {
       label: feature.properties.pplName,
       id: feature.properties.pplNpdidPipeline,
       style: {
-        lineColor: 'red',
+        lineColor: 'black',
         lineWidth: 3,
-        fillColor: 'red',
+        fillColor: 'black',
         fillOpacity: 0.6,
       },
      additionalData: {},
@@ -797,7 +797,7 @@ export const layer = () => {
 
       if (collection.visible && !collection.loaded) {
         collection.loaded = true;
-        collection.module.set(collection.data, collection.props);
+        collection.module.set(collection.data, collection.props, false);
         // collection.module.cache();
       }
 

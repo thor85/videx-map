@@ -116,7 +116,7 @@ export default class GeoJSONPolygon {
     this.container.sortableChildren = true;
     root.addChild(this.container);
 
-    this.labelsVisible = true;
+    this.labelsVisible = false;
 
     this.pixiOverlay = pixiOverlay;
     this.features = [];
@@ -212,7 +212,7 @@ export default class GeoJSONPolygon {
   }
 
   drawLabels(): void {
-    // this.labels.draw();
+    this.labelsVisible = true;
     this.labels.draw(this.getLabelSize(this.pixiOverlay._map.getZoom()));
   }
 
@@ -233,7 +233,7 @@ export default class GeoJSONPolygon {
     if (!this.config.outlineResize) return;
     const outlineRadius = this.getOutlineRadius(zoom);
 
-    if (this.config.labelResize) {
+    if (this.config.labelResize && this.labelsVisible) {
       const labelSize = this.getLabelSize(zoom);
 
       // Labels will just get in the way after a certain threshold, so it is better to just hide them
