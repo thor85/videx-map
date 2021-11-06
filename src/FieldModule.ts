@@ -107,6 +107,8 @@ interface Config {
   /** Provide your custom event handler. */
   customEventHandler?: EventHandler;
 
+  labelsVisible?: boolean;
+
   onFeatureHover?: (event: MouseEvent, data: any) => void;
 }
 
@@ -160,10 +162,13 @@ export default class FieldModule extends ModuleInterface {
       max: { zoom: 17, scale: 0.025 },
       baseScale: 0.15,
     },
+    labelsVisible: true,
   };
 
   /** Are the labels hidden? */
   labelsVisible: boolean;
+
+  labelsDrawn: boolean;
 
   highlightActive: boolean = false;
   highlightHits: number[] = [];
@@ -191,6 +196,7 @@ export default class FieldModule extends ModuleInterface {
     this.root.addChild(this.labelContainer);
 
     this.labelsVisible = true;
+    this.labelsDrawn = false;
 
     // Don't continue without config
     this.mapmoving = false;
@@ -198,6 +204,7 @@ export default class FieldModule extends ModuleInterface {
     this.onFeatureHover = config?.onFeatureHover;
 
     if (!config) return;
+    if (config.hasOwnProperty('labelsVisible')) this.labelsVisible = config.labelsVisible;
     if (config.outlineResize) this.config.outlineResize = config.outlineResize;
     if (config.labelResize) this.config.labelResize = config.labelResize;
     if (config.initialHash && typeof config.initialHash === 'number') this.config.initialHash = config.initialHash;
@@ -280,12 +287,29 @@ export default class FieldModule extends ModuleInterface {
       this.highlighter.add(meshes)
     });
 
-    this.labelManager.draw(this.labelContainer);
+    this.drawLabels()
+  }
 
-    // TODO: improve this...
-    const zoom = this.pixiOverlay._map.getZoom();
-    const labelSize = this.getLabelSize(zoom);
-    this.labelManager.resize(labelSize);
+  drawLabels() {
+    if (this.labelsVisible) {
+      this.labelManager.draw(this.labelContainer);
+      // TODO: improve this...
+      const zoom = this.pixiOverlay._map.getZoom();
+      const labelSize = this.getLabelSize(zoom);
+      this.labelManager.resize(labelSize);
+      this.labelsDrawn = true;
+    }
+  }
+
+  showLabels() {
+    this.labelsVisible = true;
+    if (!this.labelsDrawn) this.drawLabels();
+    this.labelManager.showLabels();
+  }
+
+  hideLabels() {
+    this.labelsVisible = false;
+    this.labelManager.hideLabels();
   }
 
   /**
@@ -406,7 +430,7 @@ export default class FieldModule extends ModuleInterface {
     if (!this.config.outlineResize) return;
     const outlineRadius = this.getOutlineRadius(zoom);
 
-    if (this.config.labelResize && this.labelManager) {
+    if (this.config.labelResize && this.labelManager && this.labelsVisible && this.labelsDrawn) {
       const labelSize = this.getLabelSize(zoom);
 
       // Labels will just get in the way after a certain threshold, so it is better to just hide them
@@ -438,6 +462,7 @@ export default class FieldModule extends ModuleInterface {
       this.fieldMeshContainer.removeChildren();
       this.labelContainer.removeChildren();
       this.dict = new TriangleDictionary(1.2);
+      this.labelsDrawn = false;
   }
 
   getOutlineRadius(zoom: number = this.currentZoom) {

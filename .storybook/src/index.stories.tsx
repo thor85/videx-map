@@ -266,6 +266,7 @@ export const layer = () => {
         baseScale: 0.15,
       },
       initialHash: 5,
+      labelsVisible: true,
     });
     const outlines: OutlineModule = new OutlineModule({
       minExtraWidth: 0.0,
