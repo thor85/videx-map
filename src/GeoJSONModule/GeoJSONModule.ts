@@ -58,6 +58,7 @@ export default class GeoJSONModule extends ModuleInterface {
       this.points = undefined;
     }
     if (this.linestrings) {
+      this.linestrings.container.removeChildren();
       this.linestrings = undefined;
     }
     if (this.polygons) {
