@@ -803,6 +803,12 @@ export const layer = () => {
       }
 
       collection.module.setVisibility(collection.visible);
+
+      try {
+        collection.module.showLabels();
+      } catch (error) {
+        console.error(error);
+      }
     }
 
 

@@ -140,6 +140,7 @@ export default class GeoJSONMultiPolygon {
     const meshes: FeatureMesh[] = [];
     const coordinateGroup = geom.coordinates as [number, number][][][];
     if(coordinateGroup?.length > 0) {
+      let polygonMass = []
       coordinateGroup.forEach(coordinates => {
         const projected = this.projectPolygons(coordinates[0]);
         projected.pop(); // Remove overlapping
@@ -149,13 +150,38 @@ export default class GeoJSONMultiPolygon {
         const outlineRadius = this.getOutlineRadius(zoom);
         const outlineData = Mesh.PolygonOutline(projected, outlineRadius);
         const [position, mass] = centerOfMass(projected, meshData.triangles);
+        polygonMass.push([position, mass]);
 
         meshes.push(
           this.drawPolygons(this.container, meshData, outlineData, properties.style, Defaults.DEFAULT_Z_INDEX),
         );
 
-        if (properties.label) this.labels.addLabel(properties.label, { position, mass });
+        let label = ''
+        if (properties.label) label = properties.label;
+        polygonMass.push([position, mass, label]);
+        // if (properties.label) this.labels.addLabel(properties.label, { position, mass });
       });
+      let massUse: number = 0;
+      let positionUse: Vector2, labelUse;
+      // console.log(polygonMass)
+      polygonMass.forEach((element) => {
+        // console.log(element[0])
+        // console.log(element[1])
+        // console.log(element[2])
+        const position = element[0]
+        const mass = element[1]
+        let label;
+        try { label = element[2]} catch (error) {console.log(error)}
+        if (label) console.log(label); labelUse = label;
+        if (mass > massUse) {
+          massUse = mass;
+          positionUse = position;
+        }
+      })
+      // console.log(massUse)
+      // console.log(positionUse)
+      // console.log(labelUse)
+      if (labelUse) this.labels.addLabel(labelUse, { position: positionUse, mass: massUse });
       this.features.push(...meshes);
 
     }
