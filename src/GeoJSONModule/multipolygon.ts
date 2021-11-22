@@ -163,24 +163,17 @@ export default class GeoJSONMultiPolygon {
       });
       let massUse: number = 0;
       let positionUse: Vector2, labelUse;
-      // console.log(polygonMass)
       polygonMass.forEach((element) => {
-        // console.log(element[0])
-        // console.log(element[1])
-        // console.log(element[2])
         const position = element[0]
         const mass = element[1]
         let label;
-        try { label = element[2]} catch (error) {console.log(error)}
+        try { label = element[2]} catch (error) {}
         if (label) console.log(label); labelUse = label;
         if (mass > massUse) {
           massUse = mass;
           positionUse = position;
         }
       })
-      // console.log(massUse)
-      // console.log(positionUse)
-      // console.log(labelUse)
       if (labelUse) this.labels.addLabel(labelUse, { position: positionUse, mass: massUse });
       this.features.push(...meshes);
 
