@@ -168,7 +168,7 @@ export default class GeoJSONMultiPolygon {
         const mass = element[1]
         let label;
         try { label = element[2]} catch (error) {}
-        if (label) console.log(label); labelUse = label;
+        if (label) labelUse = label;
         if (mass > massUse) {
           massUse = mass;
           positionUse = position;
