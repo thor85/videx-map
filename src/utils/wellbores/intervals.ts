@@ -34,12 +34,35 @@ export function compressIntervals(intervals: [number, number][]): [number, numbe
  * @param intervals Intervals to process
  * @returns Processed intervals
  */
-export function processIntervals(intervals: Interval[]): [number, number][] {
-  let output: [number, number][] = intervals.map(i => [i.l1, i.l2] as [number, number])
+export function processIntervals(intervals: Interval[]): {screens: [number, number][], perforations: [number, number][]} {
+  let screens = intervals.filter(obj => {
+    return obj.type === 'Screen'
+  })
+  let perforations = intervals.filter(obj => {
+    return obj.type === 'Perforation'
+  })
+  // console.log(screens)
+  // console.log(perforations)
+  let screensOutput: [number, number][] = screens.map(i => [i.l1, i.l2] as [number, number])
     .sort((a, b) => { // Sort intervals
       if (a[0] < b[0]) return -1;
       return (a[0] > b[0]) ? 1 : 0;
     });
-  if (output.length > 0) output = compressIntervals(output);
-  return output;
+  if (screensOutput.length > 0) screensOutput = compressIntervals(screensOutput);
+
+  let perforationsOutput: [number, number][] = perforations.map(i => [i.l1, i.l2] as [number, number])
+    .sort((a, b) => { // Sort intervals
+      if (a[0] < b[0]) return -1;
+      return (a[0] > b[0]) ? 1 : 0;
+    });
+  return {screens: screensOutput, perforations: perforationsOutput};
 }
+// export function processIntervals(intervals: Interval[]): [number, number][] {
+//   let output: [number, number][] = intervals.map(i => [i.l1, i.l2] as [number, number])
+//     .sort((a, b) => { // Sort intervals
+//       if (a[0] < b[0]) return -1;
+//       return (a[0] > b[0]) ? 1 : 0;
+//     });
+//   if (output.length > 0) output = compressIntervals(output);
+//   return output;
+// }

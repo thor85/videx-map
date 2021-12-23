@@ -104,13 +104,14 @@ export class WellboreShader {
               alpha = 0.03;
             }
           } else if (type == 1.0) {
+            col = vec3(1.0, 0.0, 0.0);
             if(completionVisible){
               if(mod(vCol.x, ${doubleDash}) > ${dash}) discard;
             } else if(!wellboreVisible){
               alpha = 0.03;
             }
           }
-          if (!completionVisible && type == 2.0) discard;
+          if (!completionVisible && type == 2.0) discard; // hides packers
 
           float dist = clamp(vCol.z * vCol.z + vCol.w * vCol.w, 0.0, 1.0);
 
@@ -138,6 +139,9 @@ export class WellboreShader {
         else discard;
 
         col *= alpha;
+        // if (type == 1.0) {
+        //   col = vec3(1.0, 0.0, 0.0);
+        // }
         gl_FragColor = vec4(col, alpha);
       }
     `;

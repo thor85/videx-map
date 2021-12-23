@@ -140,6 +140,7 @@ export default class WellboreModule extends ModuleInterface {
     this.containers.labels.addChild(wellbore.label.text);
     this.containers.labels.addChild(wellbore.label.background);
     group.append(wellbore);
+    root.recalculate(true);
 
     // Add to line dictionary
     if(!wellbore.interpolator.singlePoint) this.lineDict.add(projectedPath, wellbore);
@@ -153,7 +154,7 @@ export default class WellboreModule extends ModuleInterface {
     }
   }
 
-  set(wells: SourceData[], key: string = 'default') : Promise<void> {
+  set(wells: SourceData[], key: string = 'default', batchSize: number = null) : Promise<void> {
     return new Promise((resolve, reject) => {
       const group = this.groups[key];
       if (!group) {
@@ -165,14 +166,14 @@ export default class WellboreModule extends ModuleInterface {
 
         this.asyncLoop.Start(key, {
           iterations: wells.length,
-          batchSize: 20,
+          batchSize: batchSize || this.config.batchSize || 20,
           func: i => this.addWellbore(wells[i], group),
           postFunc: () => this.pixiOverlay.redraw(),
           endFunc: () => {
             this.pixiOverlay.redraw();
             resolve();
           }
-        });
+        }, 0);
       } catch (err) {
         reject(err);
       }

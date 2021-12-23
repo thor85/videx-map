@@ -38,9 +38,9 @@ export class WellboreMesh {
 
   /**
    * Generate mesh. Interval positioning should be relative.
-   * @param intervals Collection of intervals on the format: [ [Start0, End0], ..., [StartN, EndN] ]
+   * @param screens Collection of intervals on the format: [ [Start0, End0], ..., [StartN, EndN] ]
    */
-  generate(intervals: [number, number][] = []): meshData {
+  generate(screens: [number, number][] = [], perforations: [number, number][] = []): meshData {
     // Vertices and triangulation
     const vertices: number[] = [];
     const triangles: number[] = [];
@@ -48,12 +48,12 @@ export class WellboreMesh {
     const extraData: number[] = []; // 0: Normal, 1: Interval, 2: Tick
 
     let j: number = 0;
-    if(intervals.length <= 0) {
+    if(screens.length <= 0) {
       const path: SegmentPoint[] = this.interp.GetSection(0, 1);
       this.appendSegment(path, 0, vertices, triangles, vertexData, extraData);
-    } else if (intervals.length > 0) { // If there are intervals
+    } else if (screens.length > 0) { // If there are intervals
       let p: number = 0;
-      intervals.forEach(i => {
+      screens.forEach(i => {
         const path1: SegmentPoint[] = this.interp.GetSection(p, i[0]);
         this.appendSegment(path1, 0, vertices, triangles, vertexData, extraData);
         const path2: SegmentPoint[] = this.interp.GetSection(i[0], i[1]);
@@ -61,7 +61,7 @@ export class WellboreMesh {
         p = i[1];
       })
       // Add last path
-      const end = intervals[intervals.length - 1][1];
+      const end = screens[screens.length - 1][1];
       if (end < 1) {
         const lastPath: SegmentPoint[] = this.interp.GetSection(end, 1);
         this.appendSegment(lastPath, 0, vertices, triangles, vertexData, extraData);
@@ -69,13 +69,19 @@ export class WellboreMesh {
     }
 
     // Iterate over intervals to create cross-lines
-    intervals.forEach(i => {
-      const p1: SegmentPoint = this.interp.GetPoint(i[0]);
-      this.generateCrossline(p1, vertices, triangles, vertexData, extraData);
-      if(Math.abs(i[0] - i[1]) < 0.001) return; // Don't draw second if close
-      const p2: SegmentPoint = this.interp.GetPoint(i[1]);
-      this.generateCrossline(p2, vertices, triangles, vertexData, extraData);
-    });
+    // intervals.forEach(i => {
+    //   const p1: SegmentPoint = this.interp.GetPoint(i[0]);
+    //   this.generateCrossline(p1, vertices, triangles, vertexData, extraData);
+    //   if(Math.abs(i[0] - i[1]) < 0.001) return; // Don't draw second if close
+    //   const p2: SegmentPoint = this.interp.GetPoint(i[1]);
+    //   this.generateCrossline(p2, vertices, triangles, vertexData, extraData);
+    // });
+
+    // create cross-lines
+    perforations.forEach(i => {
+        const p1: SegmentPoint = this.interp.GetPoint((i[0] + i[1]) / 2);
+        this.generateCrossline(p1, vertices, triangles, vertexData, extraData);
+      });
 
     return { vertices, triangles, vertexData, extraData };
   }
@@ -120,12 +126,20 @@ export class WellboreMesh {
     // 0    1
 
     const crosslinesWidth = this.tick.width;
+    // const crosslinesWidth = 0.01;
+    // const crosslinesWidth = 0.2;
     const dirX = p.direction[0] * crosslinesWidth;
     const dirY = p.direction[1] * crosslinesWidth;
 
     const crosslinesHeight = this.tick.height;
+    // const crosslinesHeight = 0.1;
+    // const crosslinesHeight = 0.5;
     const normX = -p.direction[1] * crosslinesHeight;
     const normY = p.direction[0] * crosslinesHeight;
+
+    // console.log(crosslinesWidth)
+    // console.log(crosslinesHeight)
+    // console.log(" ")
 
     vertices.push(
       px - dirX - normX, // Lower left:  X

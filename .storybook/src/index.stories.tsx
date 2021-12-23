@@ -289,10 +289,10 @@ export const layer = () => {
           min: { zoom: 0, scale: 1000.0 },
           max: { zoom: 18, scale: 0.2 },
         },
-        tick: {
-          width: 0.01,
-          height: 0.1,
-        },
+        // tick: {
+        //   width: 0.01,
+        //   height: 0.1,
+        // },
         fontSize: 64,
         // labelScale: 0.011,
         // wellboreWidth: 150,
@@ -499,8 +499,8 @@ export const layer = () => {
 
     // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
-    let completionDrilledVisible = true;
-    let completionPlannedVisible = true;
+    let completionDrilledVisible = false;
+    let completionPlannedVisible = false;
 
     const groupShowHideCompletion = sidebar.addGroup('Show/Hide completion');
 

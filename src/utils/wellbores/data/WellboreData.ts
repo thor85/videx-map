@@ -51,7 +51,6 @@ export class WellboreData {
     this.root = input.root;
     this.wellboreWidth = input.wellboreWidth;
     this.interpolator = new LineInterpolator(input.coords, input.pointThreshold);
-
     // console.log(input.data.labelShort)
     // console.log(input.data.label)
     // console.log(input.data)
@@ -62,7 +61,8 @@ export class WellboreData {
       this.label.attachToRoot = true;
     } else {
       // console.log(this.data.status)
-      const intervals = processIntervals(input.data.intervals);
+      // const intervals = processIntervals(input.data.intervals);
+      const {screens, perforations} = processIntervals(input.data.intervals);
       let wellboreColor;
       // console.log(this.colors.default)
       if (typeof this.group.colorFunction === 'function') {
@@ -72,7 +72,8 @@ export class WellboreData {
       } else {
         wellboreColor = this.colors.default;
       }
-      this.mesh = this.createWellboreMesh(intervals, input.tick, wellboreColor);
+      // this.mesh = this.createWellboreMesh(screens, perforations, input.tick, wellboreColor);
+      this.mesh = this.createWellboreMesh(screens, perforations, {width: input.tick.width, height: this.wellboreWidth * 1.05}, wellboreColor);
       // console.log(this.mesh)
     }
 
@@ -131,9 +132,9 @@ export class WellboreData {
     return this.mesh.shader.uniforms;
   }
 
-  private createWellboreMesh(intervals: [number, number][], tick: TickConfig, wellboreColor: Color): PIXI.Mesh {
+  private createWellboreMesh(screens: [number, number][], perforations: [number, number][], tick: TickConfig, wellboreColor: Color): PIXI.Mesh {
     const line = new WellboreMesh(this.interpolator, this.wellboreWidth, tick);
-    const { vertices, triangles, vertexData, extraData } = line.generate(intervals);
+    const { vertices, triangles, vertexData, extraData } = line.generate(screens, perforations);
 
     // Create geometry
     const geometry = new PIXI.Geometry();
