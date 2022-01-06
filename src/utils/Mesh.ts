@@ -9,6 +9,7 @@ export interface WellboreSegmentData {
   triangles: number[];
   vertexData: number[];
   extraData: number[];
+  logData: number[];
 }
 
 export interface MeshData {
@@ -52,11 +53,12 @@ export default class Mesh {
    * @param type 0: Normal, 1: Interval, 2: Tick
    * @returns Vertex and triangulation for mesh
    */
-  static WellboreSegment (points: SegmentPoint[], thickness: number = 1, type: number): WellboreSegmentData {
+  static WellboreSegment (points: SegmentPoint[], thickness: number = 1, type: number, log: number): WellboreSegmentData {
     const vertices: number[] = [];
     const triangles: number[] = [];
     const vertexData: number[] = [];
     const extraData: number[] = [];
+    const logData: number[] = [];
 
     // Half of thickness
     const _thickness: number = thickness * 0.5;
@@ -76,6 +78,7 @@ export default class Mesh {
       point0.distance,  0.0,  point0.direction[1],   -point0.direction[0],  // Lower
     );
     extraData.push(type, type);
+    logData.push(log, log)
 
     // Iterate over all points
     for (let i: number = 1; i < points.length - 1; i++) {
@@ -135,6 +138,7 @@ export default class Mesh {
         point.distance,  0.0,  point.direction[1],   -point.direction[0],  // Lower
       );
       extraData.push(type, type);
+      logData.push(log, log)
 
       //  0     2
       //
@@ -160,12 +164,13 @@ export default class Mesh {
       pointN.distance,  0.0,  pointN.direction[1],   -pointN.direction[0],  // Lower
     );
     extraData.push(type, type);
+    logData.push(log, log)
 
     // Add last triangles
     const n: number = points.length * 2 - 2;
     triangles.push(n - 1, n - 2, n, n - 1, n, n + 1);
 
-    return { vertices, triangles, vertexData, extraData };
+    return { vertices, triangles, vertexData, extraData, logData };
   }
 
   static SimpleLine = (points: VectorLike[], thickness: number = 1): MeshNormalData => {

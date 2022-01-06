@@ -9,6 +9,7 @@ interface meshData {
   triangles: number[];
   vertexData: number[];
   extraData: number[];
+  logData: number[]
 }
 
 export class WellboreMesh {
@@ -40,31 +41,44 @@ export class WellboreMesh {
    * Generate mesh. Interval positioning should be relative.
    * @param screens Collection of intervals on the format: [ [Start0, End0], ..., [StartN, EndN] ]
    */
-  generate(screens: [number, number][] = [], perforations: [number, number][] = []): meshData {
+  generate(screens: [number, number, number][] = [], packers: [number, number][] = []): meshData {
     // Vertices and triangulation
     const vertices: number[] = [];
     const triangles: number[] = [];
     const vertexData: number[] = [];
     const extraData: number[] = []; // 0: Normal, 1: Interval, 2: Tick
+    const logData: number[] = [];
 
     let j: number = 0;
     if(screens.length <= 0) {
       const path: SegmentPoint[] = this.interp.GetSection(0, 1);
-      this.appendSegment(path, 0, vertices, triangles, vertexData, extraData);
+      let logvalue = -999;
+      try {
+        logvalue = screens[0][2];
+      } catch (e) {};
+      this.appendSegment(path, 0, vertices, triangles, vertexData, extraData, logData, logvalue);
     } else if (screens.length > 0) { // If there are intervals
       let p: number = 0;
       screens.forEach(i => {
+        let logvalue = -999;
+        try {
+          logvalue = i[2];
+        } catch (e) {};
         const path1: SegmentPoint[] = this.interp.GetSection(p, i[0]);
-        this.appendSegment(path1, 0, vertices, triangles, vertexData, extraData);
+        this.appendSegment(path1, 0, vertices, triangles, vertexData, extraData, logData, logvalue);
         const path2: SegmentPoint[] = this.interp.GetSection(i[0], i[1]);
-        this.appendSegment(path2, 1, vertices, triangles, vertexData, extraData);
+        this.appendSegment(path2, 1, vertices, triangles, vertexData, extraData, logData, logvalue);
         p = i[1];
       })
       // Add last path
       const end = screens[screens.length - 1][1];
       if (end < 1) {
+        let logvalue = -999;
+        try {
+          logvalue = screens[screens.length - 1][2];
+        } catch (e) {};
         const lastPath: SegmentPoint[] = this.interp.GetSection(end, 1);
-        this.appendSegment(lastPath, 0, vertices, triangles, vertexData, extraData);
+        this.appendSegment(lastPath, 0, vertices, triangles, vertexData, extraData, logData, logvalue);
       }
     }
 
@@ -78,12 +92,12 @@ export class WellboreMesh {
     // });
 
     // create cross-lines
-    perforations.forEach(i => {
+    packers.forEach(i => {
         const p1: SegmentPoint = this.interp.GetPoint((i[0] + i[1]) / 2);
-        this.generateCrossline(p1, vertices, triangles, vertexData, extraData);
+        this.generateCrossline(p1, vertices, triangles, vertexData, extraData, logData);
       });
 
-    return { vertices, triangles, vertexData, extraData };
+    return { vertices, triangles, vertexData, extraData, logData };
   }
 
   /**
@@ -96,14 +110,15 @@ export class WellboreMesh {
    * @param extraData 1-dimensional array with type-data
    * @private
    */
-  appendSegment(section: SegmentPoint[], type: number, vertices: number[], triangles: number[], vertexData: number[], extraData: number[]) : void {
+  appendSegment(section: SegmentPoint[], type: number, vertices: number[], triangles: number[], vertexData: number[], extraData: number[], logData: number[], log: number) : void {
      // Make line mesh and use callback to add extra attributes
-     const mesh = Mesh.WellboreSegment(section, this.thickness, type);
+     const mesh = Mesh.WellboreSegment(section, this.thickness, type, log);
 
     vertices.push(...mesh.vertices);
     mesh.triangles.forEach(d => triangles.push(d + this.baseTris));
     vertexData.push(...mesh.vertexData);
     extraData.push(...mesh.extraData);
+    logData.push(...mesh.logData);
     this.baseTris += mesh.vertices.length / 2;
   }
 
@@ -117,7 +132,7 @@ export class WellboreMesh {
    * @param extraData 1-dimensional array with type-data
    * @private
    */
-  private generateCrossline(p: SegmentPoint, vertices: number[], triangles: number[], vertexData: number[], extraData: number[]): void {
+  private generateCrossline(p: SegmentPoint, vertices: number[], triangles: number[], vertexData: number[], extraData: number[], logData: number[]): void {
     const px = p.position[0];
     const py = p.position[1];
 
@@ -155,6 +170,7 @@ export class WellboreMesh {
     triangles.push(this.baseTris, this.baseTris + 2, this.baseTris + 3, this.baseTris, this.baseTris + 3, this.baseTris + 1);
 
     extraData.push(2, 2, 2, 2); // Push tick type
+    logData.push(0, 0, 0, 0); // TODO: Add log data
 
     // Get normalized normal
     const normalizedNormal = new Vector2(normX, normY).normalized();

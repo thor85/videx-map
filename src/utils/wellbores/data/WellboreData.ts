@@ -62,7 +62,7 @@ export class WellboreData {
     } else {
       // console.log(this.data.status)
       // const intervals = processIntervals(input.data.intervals);
-      const {screens, perforations} = processIntervals(input.data.intervals);
+      const {screens, packers} = processIntervals(input.data.intervals);
       let wellboreColor;
       // console.log(this.colors.default)
       if (typeof this.group.colorFunction === 'function') {
@@ -72,8 +72,8 @@ export class WellboreData {
       } else {
         wellboreColor = this.colors.default;
       }
-      // this.mesh = this.createWellboreMesh(screens, perforations, input.tick, wellboreColor);
-      this.mesh = this.createWellboreMesh(screens, perforations, {width: input.tick.width, height: this.wellboreWidth * 1.05}, wellboreColor);
+      // this.mesh = this.createWellboreMesh(screens, packers, input.tick, wellboreColor);
+      this.mesh = this.createWellboreMesh(screens, packers, {width: input.tick.width, height: this.wellboreWidth * 1.05}, wellboreColor);
       // console.log(this.mesh)
     }
 
@@ -132,15 +132,16 @@ export class WellboreData {
     return this.mesh.shader.uniforms;
   }
 
-  private createWellboreMesh(screens: [number, number][], perforations: [number, number][], tick: TickConfig, wellboreColor: Color): PIXI.Mesh {
+  private createWellboreMesh(screens: [number, number, number][], packers: [number, number][], tick: TickConfig, wellboreColor: Color): PIXI.Mesh {
     const line = new WellboreMesh(this.interpolator, this.wellboreWidth, tick);
-    const { vertices, triangles, vertexData, extraData } = line.generate(screens, perforations);
+    const { vertices, triangles, vertexData, extraData, logData } = line.generate(screens, packers);
 
     // Create geometry
     const geometry = new PIXI.Geometry();
     geometry.addAttribute('verts', vertices, 2);
     geometry.addAttribute('vertCol', vertexData, 4);
     geometry.addAttribute('typeData', extraData, 1);
+    geometry.addAttribute('logData', logData, 1);
     geometry.addIndex(triangles);
 
     // const shader: any = getWellboreShader(this.colors.default, this.group.state.completionVisible, this.group.state.wellboreVisible);
@@ -169,6 +170,7 @@ export class WellboreData {
       if (this.mesh) {
         this.mesh.shader.uniforms.wellboreColor1 = color.col1;
         this.mesh.shader.uniforms.wellboreColor2 = color.col2;
+        this.mesh.shader.uniforms.forceColor = true;
         this.mesh.zIndex = this._zIndex + 100000;
       }
       this.label.background.tint = color.labelBg;
@@ -187,6 +189,7 @@ export class WellboreData {
         }
         this.mesh.shader.uniforms.wellboreColor1 = wellboreColor.col1;
         this.mesh.shader.uniforms.wellboreColor2 = wellboreColor.col2;
+        this.mesh.shader.uniforms.forceColor = false;
         this.mesh.zIndex = this._zIndex;
       }
       this.label.background.tint = this.colors.default.labelBg;
@@ -204,6 +207,7 @@ export class WellboreData {
       if (this.mesh) {
         this.mesh.shader.uniforms.wellboreColor1 = this.colors.selected.col1;
         this.mesh.shader.uniforms.wellboreColor2 = this.colors.selected.col2;
+        this.mesh.shader.uniforms.forceColor = true;
         this.mesh.zIndex = this._zIndex + 1000000;
       }
       this.label.background.tint = this.colors.selected.labelBg;
@@ -214,6 +218,7 @@ export class WellboreData {
       if (this.mesh) {
         this.mesh.shader.uniforms.wellboreColor1 = this.colors.default.col1;
         this.mesh.shader.uniforms.wellboreColor2 = this.colors.default.col2;
+        this.mesh.shader.uniforms.forceColor = false;
         this.mesh.zIndex = this._zIndex;
       }
       this.label.background.tint = this.colors.default.labelBg;

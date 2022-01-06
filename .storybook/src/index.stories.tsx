@@ -394,54 +394,54 @@ export const layer = () => {
 
     wellbores.registerGroup('Drilled', {
       order: 0,
-      // colors: {
-      //   defaultColor1: [0.3, 0.3, 0.3],
-      //   defaultColor2: [0.05, 0.05, 0.05],
-      // },
-      // @ts-ignore
-      colorFunction: function (data: SourceData) {
-        let color;
-        switch (data.status) {
-          case 'top producer':
-          case 'producer':
-            color = {
-              col1: [0.0, 1.0, 0.0],
-              col2: [0.0, 0.5, 0.0],
-              labelBg: 16777215,
-            }
-            break;
-          case 'p&a':
-            color = {
-              col1: [1.0, 0.0, 0.0],
-              col2: [0.5, 0.0, 0.0],
-              labelBg: 16777215,
-            }
-            break;
-          case 'good on/off':
-            color = {
-              col1: [1.0, 1.0, 0.0],
-              col2: [0.5, 0.5, 0.0],
-              labelBg: 16777215,
-            }
-            break;
-          case 'bad on/off':
-            color = {
-              col1: [1.0, 0.5, 0.0],
-              col2: [0.5, 0.25, 0.0],
-              labelBg: 16777215,
-            }
-            break;
-          default:
-            color = {
-              col1: [0.3, 0.3, 0.3],
-              col2: [0.05, 0.05, 0.05],
-              labelBg: 16777215,
-            }
-            break;
-        }
-
-        return color;
+      colors: {
+        defaultColor1: [0.3, 0.3, 0.3],
+        defaultColor2: [0.05, 0.05, 0.05],
       },
+      // @ts-ignore
+      // colorFunction: function (data: SourceData) {
+      //   let color;
+      //   switch (data.status) {
+      //     case 'top producer':
+      //     case 'producer':
+      //       color = {
+      //         col1: [0.0, 1.0, 0.0],
+      //         col2: [0.0, 0.5, 0.0],
+      //         labelBg: 16777215,
+      //       }
+      //       break;
+      //     case 'p&a':
+      //       color = {
+      //         col1: [1.0, 0.0, 0.0],
+      //         col2: [0.5, 0.0, 0.0],
+      //         labelBg: 16777215,
+      //       }
+      //       break;
+      //     case 'good on/off':
+      //       color = {
+      //         col1: [1.0, 1.0, 0.0],
+      //         col2: [0.5, 0.5, 0.0],
+      //         labelBg: 16777215,
+      //       }
+      //       break;
+      //     case 'bad on/off':
+      //       color = {
+      //         col1: [1.0, 0.5, 0.0],
+      //         col2: [0.5, 0.25, 0.0],
+      //         labelBg: 16777215,
+      //       }
+      //       break;
+      //     default:
+      //       color = {
+      //         col1: [0.3, 0.3, 0.3],
+      //         col2: [0.05, 0.05, 0.05],
+      //         labelBg: 16777215,
+      //       }
+      //       break;
+      //   }
+
+      //   return color;
+      // },
     });
 
     wellbores.registerGroup('Planned', {
