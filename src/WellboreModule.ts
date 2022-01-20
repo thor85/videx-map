@@ -3,7 +3,7 @@ import { clamp, lerp } from '@equinor/videx-math';
 import Vector2 from '@equinor/videx-vector2';
 
 import { ModuleInterface } from './ModuleInterface';
-import { Config, InputConfig, getDefaultConfig } from './utils/wellbores/Config';
+import { Config, InputConfig, getDefaultConfig, IntervalsType } from './utils/wellbores/Config';
 import { RootShader, WellboreShader } from './utils/wellbores/Shader';
 import { SourceData, Group, GroupOptions, WellboreData, RootData } from './utils/wellbores/data';
 import LineDictionary from './utils/LineDictionary';
@@ -17,6 +17,7 @@ import { EventHandler, DefaultEventHandler } from './EventHandler';
 import RealtimeWellbore from './utils/wellbores/RealtimeWellbore';
 import { ResizeConfig } from './ResizeConfigInterface';
 
+
 export default class WellboreModule extends ModuleInterface {
   config: Config;
   groups: { [key: string]: Group } = {};
@@ -26,6 +27,8 @@ export default class WellboreModule extends ModuleInterface {
   lineDict: LineDictionary<WellboreData>;
   pointDict: PointDictionary<RootData>;
   highlight: Highlight = new Highlight();
+
+  intervals?: IntervalsType;
 
   currentZoom: number = 20;
 
@@ -47,6 +50,8 @@ export default class WellboreModule extends ModuleInterface {
     super();
     const [ config, extra ] = getDefaultConfig(inputConfig);
     this.config = config;
+
+    if (inputConfig.intervals) this.intervals = inputConfig.intervals;
 
     this.scaling = extra.scaling;
 
@@ -111,8 +116,32 @@ export default class WellboreModule extends ModuleInterface {
   addWellbore(data: SourceData, group: Group = this.groups.default) : void {
     if (data.path.length === 0) throw Error('Empty wellbore path!');
 
+    // console.log(data)
+
+    const updatedData = Object.create(data);
+
+    Object.defineProperties(updatedData, {
+      'intervals': {
+        writable: true
+      },
+    });
+
+    let intervals = [];
+    try {
+      intervals = this.intervals[data.branch];
+      // console.log(intervals);
+      // updatedData.intervals = intervals;
+      // console.log(data.branch)
+    } catch (e) {
+      // console.log(e)
+      // updatedData.intervals = [];
+      // console.log("Did not find intervals for branch " + data.branch)
+    }
+    // console.log(updatedData)
+    updatedData.intervals = intervals;
+
     // Place root for wellbore
-    const projectedPath = this.projector.batchVector2(data.path);
+    const projectedPath = this.projector.batchVector2(updatedData.path);
     const root = this.addRoot(projectedPath[0]);
 
     // const { rootResize, wellboreResize, tick } = this.config;
@@ -128,7 +157,7 @@ export default class WellboreModule extends ModuleInterface {
     }
 
     const wellbore = new WellboreData({
-      data: data,
+      data: updatedData,
       group,
       root,
       coords: projectedPath,
@@ -252,6 +281,24 @@ export default class WellboreModule extends ModuleInterface {
   setCompletionVisibility(visible: boolean, ...keys: string[]) {
     this.forEachGroup(keys, group => group.setCompletionVisibility(visible));
   }
+
+  /**
+   * Enable/disable coloring wellbores by log values
+   * @param colorByLog
+   * @param keys
+   */
+   setColorByLog(colorByLog: boolean, ...keys: string[]) {
+    this.forEachGroup(keys, group => group.setColorByLog(colorByLog));
+  }
+
+    /**
+   * Hide normal type segments of wellbores
+   * @param hideNormalPath
+   * @param keys
+   */
+     setHideNormalPath(hideNormalPath: boolean, ...keys: string[]) {
+      this.forEachGroup(keys, group => group.setHideNormalPath(hideNormalPath));
+    }
 
   /**
    * Enable/disable wellbores

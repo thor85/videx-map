@@ -10,6 +10,8 @@ export interface TickConfig {
 
 /** Interface for wellbore config. */
 export interface Config {
+
+  intervals?: IntervalsType;
   /** Relative scale of all components (Default: 1.0). */
   scale: number;
   /** Amount of wellbores per batch. (Default: 20) */
@@ -46,7 +48,13 @@ export interface ExtraConfig {
   wellboreDash: number;
 }
 
+export interface IntervalsType {
+  [key: string]: any[];
+}
+
 export interface InputConfig {
+
+  intervals?: IntervalsType;
   /** Relative scale of all components. (Default: 1.0) */
   scale?: number;
   /** Scale of labels. (Default: 0.011) */

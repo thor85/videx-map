@@ -1,9 +1,17 @@
+import * as PIXI from 'pixi.js';
+
 type vec3 = [number, number, number];
 
 export interface Color {
   col1: vec3;
   col2: vec3;
   labelBg: number;
+}
+
+export interface ColorOffset {
+  color: string;
+  offset: number;
+  label?: string;
 }
 
 export interface Colors {
@@ -38,6 +46,82 @@ export interface InputColors {
   selectedColor1?: vec3;
   selectedColor2?: vec3;
   selectedLabelBg?: number;
+}
+
+
+export const RGB_REGEX = /^rgb\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)$/;
+export const HEX_REGEX = /(?:#)[0-9a-f]{8}|(?:#)[0-9a-f]{6}|(?:#)[0-9a-f]{4}|(?:#)[0-9a-f]{3}/ig;
+
+/**
+ * hexToRGB converts a color from hex format to rgba.
+ * const [r, g, b, a] = hexToRGB("#ffeeaaff")
+ */
+ export const hexToRGB = (hex: string) => {
+  const hasAlpha = hex.length === 9;
+  const start = hasAlpha ? 24 : 16;
+  const bigint = parseInt(hex.slice(1), 16);
+  const r = (bigint >> start) & 255;
+  const g = (bigint >> (start - 8)) & 255;
+  const b = (bigint >> (start - 16)) & 255;
+  const a = hasAlpha ? (bigint >> (start - 24)) & 255 : 255;
+  return [r, g, b, a];
+};
+
+/**
+ * Parses a color string of the form 'rgb({rVal}, {gVal}, {bVal})' and converts the resulting values
+ * to an array with ints 0 - 255.
+ */
+ export function colorStringToInts(colorstring: string): number[] {
+  if (colorstring === 'transparent') {
+    return [0, 0, 0, 0];
+  }
+  const rgbmatch = colorstring.match(RGB_REGEX);
+  const hexmatch = colorstring.match(HEX_REGEX);
+  if (rgbmatch !== null) {
+    const [, r, g, b] = rgbmatch;
+    return [+r, +g, +b, 255];
+  } else if (hexmatch !== null) {
+    return hexToRGB(colorstring);
+  } else {
+    throw new Error(`'${colorstring}' is not a valid RGB or hex color expression.`);
+  }
+}
+
+/**
+ * colormapToFlatArray takes the input colormap and returns a flat array to be
+ * used as input to a texture. The first row in the array contains the colors.
+ * The second row contains the encoded offset values.
+ */
+ export const colormapToFlatArray = (colormap: ColorOffset[]) => {
+  const offsets: number[] = [];
+  let colors: number[] = [];
+  for (let i = 0; i < colormap.length; i++) {
+    offsets.push(colormap[i].offset);
+    const colorsnew = colorStringToInts(colormap[i].color);
+    colors = colors.concat(colorsnew);
+  }
+
+  const floatOffsets = new Float32Array(offsets);
+  const uintOffsets = new Uint8Array(floatOffsets.buffer);
+  const normalOffsets = Array.from(uintOffsets);
+  const colormapArray: number[] = colors.concat(normalOffsets);
+
+  return colormapArray;
+};
+
+/**
+ * Creates a texture with colors on first row and offsets on second row
+ */
+ export function createColormapTexture(colormapInput: ColorOffset[] ) {
+  const colormapFlatArray = colormapToFlatArray(colormapInput);
+  const colormapUint8 = Uint8Array.from(colormapFlatArray);
+  const colormapTexture = PIXI.BaseTexture.fromBuffer(
+    colormapUint8,
+    colormapInput.length,
+    2,
+  )
+
+  return colormapTexture;
 }
 
 /** Get default configuration for wellbores. */

@@ -3,6 +3,7 @@ import Vector2 from '@equinor/videx-vector2';
 import { SegmentPoint, LineInterpolator } from './LineInterpolator';
 import Mesh from './Mesh';
 import { TickConfig } from './wellbores/Config';
+import { WellboreData } from './wellbores/data/WellboreData';
 
 interface meshData {
   vertices: number[];
@@ -13,6 +14,9 @@ interface meshData {
 }
 
 export class WellboreMesh {
+
+  /** Parent wellboreData */
+  wellboreData: WellboreData;
 
   /** Line interpolator used to construct mesh. */
   interp: LineInterpolator;
@@ -30,7 +34,8 @@ export class WellboreMesh {
    * Constructor for creating a new line interpolator.
    * @param interp Interpolator used to generate line
    */
-  constructor(interp: LineInterpolator, thickness: number, tick: TickConfig) {
+  constructor(interp: LineInterpolator, thickness: number, tick: TickConfig, wellboreData?: WellboreData) {
+    if (wellboreData) this.wellboreData = wellboreData;
     this.interp = interp;
     this.thickness = thickness;
     this.baseTris = 0;
@@ -41,17 +46,19 @@ export class WellboreMesh {
    * Generate mesh. Interval positioning should be relative.
    * @param screens Collection of intervals on the format: [ [Start0, End0], ..., [StartN, EndN] ]
    */
-  generate(screens: [number, number, number][] = [], packers: [number, number][] = []): meshData {
+  generate(screens: [number, number, number, string][] = [], packers: [number, number][] = []): meshData {
     // Vertices and triangulation
     const vertices: number[] = [];
     const triangles: number[] = [];
     const vertexData: number[] = [];
-    const extraData: number[] = []; // 0: Normal, 1: Interval, 2: Tick
+    const extraData: number[] = []; // 0: Normal, 1: Screen, 2: Packer, 3: Blank
     const logData: number[] = [];
 
     let j: number = 0;
     if(screens.length <= 0) {
       const path: SegmentPoint[] = this.interp.GetSection(0, 1);
+      // console.log(path)
+      // console.log(this)
       let logvalue = -999;
       try {
         logvalue = screens[0][2];
@@ -64,38 +71,50 @@ export class WellboreMesh {
         try {
           logvalue = i[2];
         } catch (e) {};
+        const diff = i[0] - p;
         const path1: SegmentPoint[] = this.interp.GetSection(p, i[0]);
-        this.appendSegment(path1, 0, vertices, triangles, vertexData, extraData, logData, logvalue);
         const path2: SegmentPoint[] = this.interp.GetSection(i[0], i[1]);
-        this.appendSegment(path2, 1, vertices, triangles, vertexData, extraData, logData, logvalue);
+        // if (this.wellboreData.data.branch === '31_2-P-14_BY1H') {
+        //   console.log(i)
+        //   // console.log(path1)
+        //   // console.log(path2)
+        //   console.log(diff)
+        // }
+
+        let type = 0;
+        if (i[3] === "Blank") {
+          type = 3;
+        } else if (i[3] === "Screen") {
+          type = 1;
+        }
+
+        // do not create tiny normal segments
+        let logvalueBetweenIntervals = -999;
+        let typeBetweenIntervals = 0;
+        if (diff < 0.01) {
+          logvalueBetweenIntervals = logvalue;
+          typeBetweenIntervals = type;
+        }
+
+        this.appendSegment(path1, typeBetweenIntervals, vertices, triangles, vertexData, extraData, logData, logvalueBetweenIntervals);
+        this.appendSegment(path2, type, vertices, triangles, vertexData, extraData, logData, logvalue);
+
         p = i[1];
       })
       // Add last path
       const end = screens[screens.length - 1][1];
       if (end < 1) {
         let logvalue = -999;
-        try {
-          logvalue = screens[screens.length - 1][2];
-        } catch (e) {};
         const lastPath: SegmentPoint[] = this.interp.GetSection(end, 1);
         this.appendSegment(lastPath, 0, vertices, triangles, vertexData, extraData, logData, logvalue);
       }
     }
 
-    // Iterate over intervals to create cross-lines
-    // intervals.forEach(i => {
-    //   const p1: SegmentPoint = this.interp.GetPoint(i[0]);
-    //   this.generateCrossline(p1, vertices, triangles, vertexData, extraData);
-    //   if(Math.abs(i[0] - i[1]) < 0.001) return; // Don't draw second if close
-    //   const p2: SegmentPoint = this.interp.GetPoint(i[1]);
-    //   this.generateCrossline(p2, vertices, triangles, vertexData, extraData);
-    // });
-
     // create cross-lines
     packers.forEach(i => {
-        const p1: SegmentPoint = this.interp.GetPoint((i[0] + i[1]) / 2);
-        this.generateCrossline(p1, vertices, triangles, vertexData, extraData, logData);
-      });
+      const p1: SegmentPoint = this.interp.GetPoint((i[0] + i[1]) / 2);
+      this.generateCrossline(p1, vertices, triangles, vertexData, extraData, logData);
+    });
 
     return { vertices, triangles, vertexData, extraData, logData };
   }

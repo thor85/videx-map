@@ -3,6 +3,106 @@ import { WellboreData, FilterStatus } from './WellboreData';
 import { RootData } from './RootData';
 import { SourceData } from './SourceData';
 import { ResizeConfig } from '../../../ResizeConfigInterface';
+import { ColorOffset } from '../Colors';
+
+
+const defaultColormap: ColorOffset[] = [
+  {
+      "offset": 0,
+      "color": "rgb(249, 249, 249)",
+      "label": "Blank"
+  },
+  {
+      "offset": 1,
+      "color": "rgb(0, 0, 0)",
+      "label": "Packet"
+  },
+  {
+      "offset": 2,
+      "color": "rgb(67, 254, 0)",
+      "label": "Zone control packer"
+  },
+  {
+      "offset": 3,
+      "color": "rgb(24, 8, 255)",
+      "label": "Openhole"
+  },
+  {
+      "offset": 4,
+      "color": "rgb(192, 17, 240)",
+      "label": "Perforation"
+  },
+  {
+      "offset": 5,
+      "color": "rgb(33, 97, 34)",
+      "label": "Screen only"
+  },
+  {
+      "offset": 6,
+      "color": "rgb(255, 217, 0)",
+      "label": "SICD 0.2 bar"
+  },
+  {
+      "offset": 7,
+      "color": "rgb(254, 143, 7)",
+      "label": "SICD 0.4 bar"
+  },
+  {
+      "offset": 8,
+      "color": "rgb(220, 84, 0)",
+      "label": "SICD 0.8 bar"
+  },
+  {
+      "offset": 9,
+      "color": "rgb(159, 0, 0)",
+      "label": "SICD 1.6 bar"
+  },
+  {
+      "offset": 10,
+      "color": "rgb(255, 0, 0)",
+      "label": "SICD 3.2 bar"
+  },
+  {
+      "offset": 11,
+      "color": "rgb(254, 12, 210)",
+      "label": "Nozzle"
+  },
+  {
+      "offset": 12,
+      "color": "rgb(0, 255, 226)",
+      "label": "RCP AR2"
+  },
+  {
+      "offset": 13,
+      "color": "rgb(0, 153, 255)",
+      "label": "RCP TR7"
+  },
+  {
+      "offset": 14,
+      "color": "rgb(159, 132, 255)",
+      "label": "Equiflow"
+  },
+  {
+      "offset": 15,
+      "color": "rgb(255, 255, 0)",
+      "label": "Slotted liner"
+  },
+  {
+      "offset": 16,
+      "color": "rgb(102, 0, 204)",
+      "label": "AICV"
+  },
+  {
+      "offset": 17,
+      "color": "rgb(33, 113, 181)",
+      "label": "RCP TR7 MK2.5"
+  },
+  {
+    "offset": 99,
+    "color": "rgb(249, 249, 249)",
+    "label": "RCP TR7 MK2.5"
+  },
+]
 
 export interface GroupOptions {
   // colors?: InputColors | Function;
@@ -11,12 +111,15 @@ export interface GroupOptions {
   wellboreResize?: ResizeConfig;
   wellboreWidth?: number;
   colorFunction?: Function;
+  logColormap?: ColorOffset[];
 }
 
 interface WellboreState {
   completionVisible: boolean;
   wellboreVisible: boolean;
   labelsVisible: boolean;
+  colorByLog: boolean;
+  hideNormalPath: boolean;
 }
 
 type Filter = (data: SourceData) => boolean;
@@ -33,12 +136,15 @@ export class Group {
   options: GroupOptions = {};
   wellboreWidth: number;
   colorFunction?: Function;
+  logColormap: ColorOffset[] = defaultColormap;
 
   /** State of wellbores attached to group */
   state: WellboreState = {
-    completionVisible: false,
+    completionVisible: true,
     wellboreVisible: true,
     labelsVisible: false,
+    colorByLog: false,
+    hideNormalPath: false,
   };
 
   constructor(key: string, options?: GroupOptions) {
@@ -49,6 +155,7 @@ export class Group {
       if(!isNaN(options.order)) this.order = options.order;
       if(options.wellboreWidth) this.wellboreWidth = options.wellboreWidth;
       if(options.colorFunction) this.colorFunction = options.colorFunction;
+      if(options.logColormap) this.logColormap = options.logColormap;
     } else {
       this.colors = getDefaultColors();
     }
@@ -124,6 +231,20 @@ export class Group {
     this.state.completionVisible = visible;
     this.wellbores.forEach(wellbore => {
       if (wellbore.mesh) wellbore.uniforms.completionVisible = visible;
+    });
+  }
+
+  setColorByLog(colorByLog: boolean) {
+    this.state.colorByLog = colorByLog;
+    this.wellbores.forEach(wellbore => {
+      if (wellbore.mesh) wellbore.uniforms.colorByLog = colorByLog;
+    });
+  }
+
+  setHideNormalPath(hideNormalPath: boolean) {
+    this.state.hideNormalPath = hideNormalPath;
+    this.wellbores.forEach(wellbore => {
+      if (wellbore.mesh) wellbore.uniforms.hideNormalPath = hideNormalPath;
     });
   }
 

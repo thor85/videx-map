@@ -1,16 +1,5 @@
 import * as PIXI from 'pixi.js';
-import { Color } from './Colors';
-import REGL from 'regl';
-
-export interface ColorOffset {
-  color: string;
-  offset: number;
-  label?: string;
-}
-
-export interface SentinelValue extends Color {
-  label: string;
-}
+import { Color, ColorOffset, createColormapTexture } from './Colors';
 
 type vec3 = [number, number, number];
 
@@ -29,194 +18,6 @@ function machineIsLittleEndian() {
   return uint16array[0] === 0xBBAA;
 }
 
-export const RGB_REGEX = /^rgb\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)$/;
-export const HEX_REGEX = /(?:#)[0-9a-f]{8}|(?:#)[0-9a-f]{6}|(?:#)[0-9a-f]{4}|(?:#)[0-9a-f]{3}/ig;
-
-/**
- * hexToRGB converts a color from hex format to rgba.
- * const [r, g, b, a] = hexToRGB("#ffeeaaff")
- */
- export const hexToRGB = (hex: string) => {
-  const hasAlpha = hex.length === 9;
-  const start = hasAlpha ? 24 : 16;
-  const bigint = parseInt(hex.slice(1), 16);
-  const r = (bigint >> start) & 255;
-  const g = (bigint >> (start - 8)) & 255;
-  const b = (bigint >> (start - 16)) & 255;
-  const a = hasAlpha ? (bigint >> (start - 24)) & 255 : 255;
-  return [r, g, b, a];
-};
-
-/**
- * Parses a color string of the form 'rgb({rVal}, {gVal}, {bVal})' and converts the resulting values
- * to an array with ints 0 - 255.
- */
- export function colorStringToInts(colorstring: string): number[] {
-  if (colorstring === 'transparent') {
-    return [0, 0, 0, 0];
-  }
-  const rgbmatch = colorstring.match(RGB_REGEX);
-  const hexmatch = colorstring.match(HEX_REGEX);
-  if (rgbmatch !== null) {
-    const [, r, g, b] = rgbmatch;
-    return [+r, +g, +b, 255];
-  } else if (hexmatch !== null) {
-    return hexToRGB(colorstring);
-  } else {
-    throw new Error(`'${colorstring}' is not a valid RGB or hex color expression.`);
-  }
-}
-
-/**
- * colormapToFlatArray takes the input colormap and returns a flat array to be
- * used as input to a texture. The first row in the array contains the colors.
- * The second row contains the encoded offset values.
- */
- export const colormapToFlatArray = (colormap: ColorOffset[]) => {
-  const offsets: number[] = [];
-  let colors: number[] = [];
-  for (let i = 0; i < colormap.length; i++) {
-    offsets.push(colormap[i].offset);
-    const colorsnew = colorStringToInts(colormap[i].color);
-    colors = colors.concat(colorsnew);
-  }
-
-  const floatOffsets = new Float32Array(offsets);
-  const uintOffsets = new Uint8Array(floatOffsets.buffer);
-  const normalOffsets = Array.from(uintOffsets);
-  const colormapArray: number[] = colors.concat(normalOffsets);
-
-  return colormapArray;
-};
-
-/**
- * Creates a texture with colors on first row and offsets on second row
- */
- export function createColormapTexture(colormapInput: ColorOffset[] | SentinelValue[], regl: REGL.Regl) {
-   // @ts-ignore
-  const colormapFlatArray = colormapToFlatArray(colormapInput);
-  const colormapUint8 = Uint8Array.from(colormapFlatArray);
-  console.log(colormapInput)
-  console.log(colormapFlatArray)
-  // let colormapTexture: REGL.Texture2D;
-  // if (colormapInput.length === 0) {
-  //   // empty texture
-  //   colormapTexture = regl.texture({
-  //     shape: [2, 2]
-  //   });
-  // } else {
-  //   colormapTexture = regl.texture({
-  //     width: colormapInput.length,
-  //     height: 2,
-  //     data: colormapFlatArray
-  //   });
-  // }
-
-  let colormapTexture = PIXI.BaseTexture.fromBuffer(
-    colormapUint8,
-    colormapInput.length,
-    2,
-  )
-
-  return colormapTexture;
-}
-
-const sentinelInput = [
-  {
-      "offset": 0,
-      "color": "rgb(249, 249, 249)",
-      "label": "Blank"
-  },
-  {
-      "offset": 1,
-      "color": "rgb(0, 0, 0)",
-      "label": "Packet"
-  },
-  {
-      "offset": 2,
-      "color": "rgb(67, 254, 0)",
-      "label": "Zone control packer"
-  },
-  {
-      "offset": 3,
-      "color": "rgb(24, 8, 255)",
-      "label": "Openhole"
-  },
-  {
-      "offset": 4,
-      "color": "rgb(192, 17, 240)",
-      "label": "Perforation"
-  },
-  {
-      "offset": 5,
-      "color": "rgb(33, 97, 34)",
-      "label": "Screen only"
-  },
-  {
-      "offset": 6,
-      "color": "rgb(255, 217, 0)",
-      "label": "SICD 0.2 bar"
-  },
-  {
-      "offset": 7,
-      "color": "rgb(254, 143, 7)",
-      "label": "SICD 0.4 bar"
-  },
-  {
-      "offset": 8,
-      "color": "rgb(220, 84, 0)",
-      "label": "SICD 0.8 bar"
-  },
-  {
-      "offset": 9,
-      "color": "rgb(159, 0, 0)",
-      "label": "SICD 1.6 bar"
-  },
-  {
-      "offset": 10,
-      "color": "rgb(255, 0, 0)",
-      "label": "SICD 3.2 bar"
-  },
-  {
-      "offset": 11,
-      "color": "rgb(254, 12, 210)",
-      "label": "Nozzle"
-  },
-  {
-      "offset": 12,
-      "color": "rgb(0, 255, 226)",
-      "label": "RCP AR2"
-  },
-  {
-      "offset": 13,
-      "color": "rgb(0, 153, 255)",
-      "label": "RCP TR7"
-  },
-  {
-      "offset": 14,
-      "color": "rgb(159, 132, 255)",
-      "label": "Equiflow"
-  },
-  {
-      "offset": 15,
-      "color": "rgb(255, 255, 0)",
-      "label": "Slotted liner"
-  },
-  {
-      "offset": 16,
-      "color": "rgb(102, 0, 204)",
-      "label": "AICV"
-  },
-  {
-      "offset": 17,
-      "color": "rgb(33, 113, 181)",
-      "label": "RCP TR7 MK2.5"
-  },
-]
-
-let sentinelColormap = createColormapTexture(sentinelInput, REGL({}));
-console.log(sentinelColormap)
-
 // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 // WELLBORE SHADER
 
@@ -230,10 +31,14 @@ export interface WellboreUniforms {
   completionVisible: boolean,
   /** True if wellbore should be visible. */
   wellboreVisible: boolean,
+  /* Color wellbore by log values */
+  colorByLog: boolean,
   /* Force wellbore color instead of coloring by log value*/
   forceColor: boolean,
   /* Status of wellbore. (0: Active, 1: Filtered, 2: Ghost, 3: Hidden) */
   status: number,
+  /* Hide normal type wellbore segments */
+  hideNormalPath: boolean,
 }
 
 /**
@@ -242,19 +47,30 @@ export interface WellboreUniforms {
  * @param wellboreWidth Width of wellbore
  * @return PIXI shader
  */
-export function getWellboreShader(color: Color, completionVisible: boolean, wellboreVisible: boolean): PIXI.Shader {
+export function getWellboreShader(
+  color: Color,
+  completionVisible: boolean,
+  wellboreVisible: boolean,
+  colorByLog: boolean,
+  hideNormalPath: boolean,
+  logColormap: ColorOffset[],
+): PIXI.Shader {
+  const sentinelColormap = createColormapTexture(logColormap);
+
   return PIXI.Shader.from(
     WellboreShader.vertexShader,
     WellboreShader.fragmentShader,
     {
       wellboreColor1: color.col1,
       wellboreColor2: color.col2,
-      completionVisible,
-      wellboreVisible,
+      completionVisible: completionVisible,
+      wellboreVisible: wellboreVisible,
+      colorByLog: colorByLog,
       forceColor: false,
       status: 0,
       sentinelLength: 24,
       sentinelColormap: sentinelColormap,
+      hideNormalPath: hideNormalPath,
     } as WellboreUniforms,
   );
 }
@@ -387,12 +203,13 @@ export class WellboreShader {
       uniform vec3 wellboreColor1;
       uniform vec3 wellboreColor2;
       uniform bool completionVisible;
+      uniform bool colorByLog;
+      uniform bool hideNormalPath;
       uniform bool wellboreVisible;
       uniform bool forceColor;
       uniform int status;
       uniform int sentinelLength;
       uniform sampler2D sentinelColormap;
-      // uniform bool littleEndian;
 
       const vec3 sunDir = vec3(0.6247, -0.6247, 0.4685);
 
@@ -403,17 +220,12 @@ export class WellboreShader {
         bool littleEndian = ${littleEndian};
 
         if (status == 0) {
-          if(type == 0.0) {
+          if (type == 0.0 || type == 3.0) {
             if (!wellboreVisible) {
               alpha = 0.03;
             }
           } else if (type == 1.0) {
             col = vec3(1.0, 0.0, 0.0);
-            if(completionVisible){
-              if(mod(vCol.x, ${doubleDash}) > ${dash}) discard;
-            } else if(!wellboreVisible){
-              alpha = 0.03;
-            }
           }
           if (!completionVisible && type == 2.0) discard; // hides packers
 
@@ -424,7 +236,7 @@ export class WellboreShader {
           float light = 0.4 + dot(dir3D, sunDir) * 0.6;
           light = clamp(light, 0.0, 1.0);
 
-          if (completionVisible && logvalue > 0.0) {
+          if (colorByLog && logvalue > 0.0) {
             vec4 logColor = computeColor(
               logvalue,
               sentinelColormap,
@@ -432,23 +244,18 @@ export class WellboreShader {
               littleEndian
             );
 
-            col = mix(vec3(logvalue / 17.0, 0.0, 0.0), vec3(logvalue / 17.0, 0.0, 0.0), light);
-          // } else if (completionVisible && logvalue == 9.0) {
-          //   col = mix(vec3(1.0, 0.0, 0.0), vec3(1.0, 0.0, 0.0), light);
-          // } else if (completionVisible && logvalue == 17.0) {
-          //   col = mix(vec3(0.0, 1.0, 0.0), vec3(0.0, 1.0, 0.0), light);
+            col = vec3(logColor.r, logColor.g, logColor.b);
           } else {
             col = mix(wellboreColor2, wellboreColor1, light);
           }
 
-          vec4 logColor = computeColor(
-            logvalue,
-            sentinelColormap,
-            sentinelLength,
-            littleEndian
-          );
+          if (type == 2.0) {
+              col = vec3(0.1, 0.1, 0.1);
+          }
 
-          col = vec3(logColor.r, logColor.g, logColor.b);
+          if (type == 0.0 && hideNormalPath) {
+            alpha = 0.0;
+          }
 
           if (forceColor) {
             col = mix(wellboreColor2, wellboreColor1, light);
@@ -471,9 +278,7 @@ export class WellboreShader {
         else discard;
 
         col *= alpha;
-        // if (type == 1.0) {
-        //   col = vec3(1.0, 0.0, 0.0);
-        // }
+
         gl_FragColor = vec4(col, alpha);
       }
     `;

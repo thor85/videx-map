@@ -35,7 +35,9 @@ const initialZoom: number = 11;
 // Sample data
 const faultlineDataTroll = require('./Samples/Troll-Faultlines.json');
 const outlineDataTroll = require('./Samples/Troll-Outlines.json');
-const wellboreDataTroll = require('./Samples/Troll-Wellbores.json');
+// const wellboreDataTroll = require('./Samples/Troll-Wellbores.json');
+const wellboreDataTroll = require('./Samples/Troll-Wellbores_nointerval.json');
+const intervalDataTroll = require('./Samples/intervals_drilled_completion.json');
 // console.log(wellboreDataTroll)
 const wbDataOld = Object.values(wellboreDataTroll) as any[];
 const licenseData = require('./.Samples/licenses.json');
@@ -45,11 +47,12 @@ const facilityData = require('./.Samples/facilities.json');
 const prospectData = require('./Samples/prospects.json');
 // const fieldData = require('./Samples/Fields.json');
 const fieldData = require('./Samples/discoveries.json');
-console.log(fieldData)
 
 let explorationData = processExploration(
   require('./Samples/Exploration.json'),
 );
+
+// console.log(intervalDataTroll)
 
 explorationData = removeExpDuplicates(explorationData, wbDataOld);
 // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -274,6 +277,7 @@ export const layer = () => {
     });
     const wellbores: WellboreModule = new WellboreModule(
       {
+        intervals: intervalDataTroll,
         scale: 1.5,
         // labelScale: 1,
         labelBgOpacity: 0.2,
@@ -290,8 +294,8 @@ export const layer = () => {
           max: { zoom: 18, scale: 0.2 },
         },
         // tick: {
-        //   width: 0.01,
-        //   height: 0.1,
+        //   width: 0.02,
+        //   height: 5.9,
         // },
         fontSize: 64,
         // labelScale: 0.011,
@@ -312,6 +316,8 @@ export const layer = () => {
         // }
       },
     );
+    // @ts-ignore
+    window.parent.window.wellbores = wellbores;
 
     const licenses: GeoJSONModule = new GeoJSONModule({
       outlineResize: {
@@ -465,6 +471,8 @@ export const layer = () => {
       },
     });
 
+    // @ts-ignore
+    window.parent.window.drilledData = drilled;
     wellbores.set(drilled, 'Drilled'); // Set first half (Emulate 'Drilled')
 
     wellbores.set(planned, 'Planned'); // Set second half (Emulate 'Planned')
@@ -509,6 +517,29 @@ export const layer = () => {
       completionDrilledVisible = completionVisible;
       completionPlannedVisible = completionVisible;
       wellbores.setCompletionVisibility(completionDrilledVisible);
+    });
+
+    groupShowHideCompletion.add('Toggle inflow', () => {
+      const completionVisible = !(completionDrilledVisible && completionPlannedVisible);
+      completionDrilledVisible = completionVisible;
+      completionPlannedVisible = completionVisible;
+      wellbores.setWellboresVisibility(completionDrilledVisible, 'Drilled');
+    });
+
+    // this.module.setWellboresVisibility(visible, wellboreGroup);
+
+    groupShowHideCompletion.add('Toggle color by log', () => {
+      const colorByLog = !(completionDrilledVisible && completionPlannedVisible);
+      completionDrilledVisible = colorByLog;
+      completionPlannedVisible = colorByLog;
+      wellbores.setColorByLog(completionDrilledVisible);
+    });
+
+    groupShowHideCompletion.add('Toggle hide normal type', () => {
+      const hideNormalPath = !(completionDrilledVisible && completionPlannedVisible);
+      completionDrilledVisible = hideNormalPath;
+      completionPlannedVisible = hideNormalPath;
+      wellbores.setHideNormalPath(hideNormalPath);
     });
 
     groupShowHideCompletion.add('Toggle \'Drilled\'', () => {
@@ -785,13 +816,11 @@ export const layer = () => {
     // let prospectDataFiltered = prospectDataNew.features = prospectDataNew.features.filter((item) => (
     //   prospectSegmentAnalysisIds.includes(item.properties.segmentAnalysisId)
     // ));
-    console.log(prospectDataFiltered)
 
     const licenseGeoJSON: SingleGeoJSON = { module: licenses, data: licenseData, props: licenseProps, visible: false };
     const pipelineGeoJSON: SingleGeoJSON = { module: pipelines, data: pipelineData, props: pipelineProps, visible: false };
     const facilityGeoJSON: SingleGeoJSON = { module: facilities, data: facilityData, props: facilityProps, visible: false };
     const prospectGeoJSON: SingleGeoJSON = { module: prospects, data: prospectDataFiltered, props: prospectProps, visible: false };
-    console.log(prospectGeoJSON)
 
     const toggleGeoJSON = (collection: any) => {
       collection.visible = !collection.visible;

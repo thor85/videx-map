@@ -73,7 +73,7 @@ export class WellboreData {
         wellboreColor = this.colors.default;
       }
       // this.mesh = this.createWellboreMesh(screens, packers, input.tick, wellboreColor);
-      this.mesh = this.createWellboreMesh(screens, packers, {width: input.tick.width, height: this.wellboreWidth * 1.05}, wellboreColor);
+      this.mesh = this.createWellboreMesh(this, screens, packers, {width: input.tick.width, height: this.wellboreWidth * input.tick.height}, wellboreColor);
       // console.log(this.mesh)
     }
 
@@ -132,9 +132,30 @@ export class WellboreData {
     return this.mesh.shader.uniforms;
   }
 
-  private createWellboreMesh(screens: [number, number, number][], packers: [number, number][], tick: TickConfig, wellboreColor: Color): PIXI.Mesh {
-    const line = new WellboreMesh(this.interpolator, this.wellboreWidth, tick);
+  private createWellboreMesh(wellboreData: WellboreData, screens: [number, number, number, string][], packers: [number, number][], tick: TickConfig, wellboreColor: Color): PIXI.Mesh {
+    // console.log(this)
+    //TODO: REMOVE AFTER
+    // Just for testing
+    const branchname = this.data.branch;
+
+    const line = new WellboreMesh(this.interpolator, this.wellboreWidth, tick, wellboreData);
+    // if (branchname === '31_2-P-14_BY3H') {
+    //   console.log(line)
+    // }
     const { vertices, triangles, vertexData, extraData, logData } = line.generate(screens, packers);
+
+    // if (branchname === '31_2-P-14_BY3H') {
+    //   console.log('P-14!!')
+    //   console.log(this)
+    //   console.log(line)
+    //   console.log(vertices)
+    //   console.log(triangles)
+    //   console.log(vertexData)
+    //   console.log(extraData)
+    //   console.log(logData)
+    //   console.log(screens)
+    //   console.log(packers)
+    // }
 
     // Create geometry
     const geometry = new PIXI.Geometry();
@@ -145,7 +166,14 @@ export class WellboreData {
     geometry.addIndex(triangles);
 
     // const shader: any = getWellboreShader(this.colors.default, this.group.state.completionVisible, this.group.state.wellboreVisible);
-    const shader: any = getWellboreShader(wellboreColor, this.group.state.completionVisible, this.group.state.wellboreVisible);
+    const shader: any = getWellboreShader(
+      wellboreColor,
+      this.group.state.completionVisible,
+      this.group.state.wellboreVisible,
+      this.group.state.colorByLog,
+      this.group.state.hideNormalPath,
+      this.group.logColormap,
+    );
     return new PIXI.Mesh(geometry, shader);
   }
 
@@ -155,6 +183,10 @@ export class WellboreData {
 
   setWellboreVisibility(visible: boolean) {
     if (this.mesh) this.uniforms.wellboreVisible = visible;
+  }
+
+  setColorByLog(colorByLog: boolean) {
+    if (this.mesh) this.uniforms.colorByLog = colorByLog;
   }
 
   setHighlight(isHighlighted: boolean, multiple: boolean = false) : void {

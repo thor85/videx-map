@@ -3,6 +3,7 @@ import * as PIXI from "pixi.js";
 
 import { LineInterpolator } from '../../../src/utils/LineInterpolator';
 import { WellboreMesh } from '../../../src/utils/WellboreMesh';
+// import { WellboreData } from '../../../src/utils/wellbores/data';
 
 export default { title: 'utils/WellboreMesh' };
 
@@ -134,7 +135,7 @@ export const SpiralTicks = () => {
 
   const interp = new LineInterpolator(circleWellbore, 0.001);
 
-  const intervals: [number, number, number][] = [[0.1, 0.2, 1], [0.3, 0.5, 1], [0.7, 0.75, 1], [0.8, 0.8, 1], [0.85, 0.95, 1]];
+  const intervals: [number, number, number, string][] = [[0.1, 0.2, 1, "Screen"], [0.3, 0.5, 1, "Screen"], [0.7, 0.75, 1, "Screen"], [0.8, 0.8, 1, "Screen"], [0.85, 0.95, 1, "Screen"]];
 
   const mesh = new WellboreMesh(interp, 5, { width: 1, height: 7});
   const { vertices, triangles, vertexData, extraData } = mesh.generate(intervals);

@@ -3,33 +3,33 @@ import * as d3 from 'd3';
 
 export default { title: 'utils/compressInterval' };
 
-const intervals: [number, number, number][] = [
-  [0.5038362007755104, 0.5646949758012324, 1],
-  [0.5147306063801429, 0.5795326645752564, 1],
-  [0.5646949758012324, 0.6349754382877081, 1],
-  [0.5795326645752564, 0.6458696193359563, 1],
-  [0.6349754382877081, 0.7239945393031167, 1],
-  [0.6458696193359563, 0.7348885935177998, 1],
-  [0.7239945393031167, 0.8166263611915113, 1],
-  [0.7348885935177998, 0.8275210846926794, 1],
-  [0.8166263611915113, 0.9089055221583787, 1],
-  [0.8275210846926794, 0.9197946911502879, 1],
-  [0.9089055221583787, 0.9934476589888107, 1],
-  [0.9197946911502879, 1, 1],
+const intervals: [number, number, number, string][] = [
+  [0.5038362007755104, 0.5646949758012324, 1, "Screen"],
+  [0.5147306063801429, 0.5795326645752564, 1, "Screen"],
+  [0.5646949758012324, 0.6349754382877081, 1, "Screen"],
+  [0.5795326645752564, 0.6458696193359563, 1, "Screen"],
+  [0.6349754382877081, 0.7239945393031167, 1, "Screen"],
+  [0.6458696193359563, 0.7348885935177998, 1, "Screen"],
+  [0.7239945393031167, 0.8166263611915113, 1, "Screen"],
+  [0.7348885935177998, 0.8275210846926794, 1, "Screen"],
+  [0.8166263611915113, 0.9089055221583787, 1, "Screen"],
+  [0.8275210846926794, 0.9197946911502879, 1, "Screen"],
+  [0.9089055221583787, 0.9934476589888107, 1, "Screen"],
+  [0.9197946911502879, 1, 1, "Screen"],
 ];
 
-const intervals2: [number, number, number][] = [
-  [0.05, 0.1, 1],
-  [0.125, 0.25, 1],
-  [0.2, 0.3, 1],
-  [0.4, 0.45, 1],
-  [0.425, 0.5, 1],
-  [0.425, 0.5, 1],
-  [0.6, 0.85, 1],
-  [0.67, 0.72, 1],
-  [0.75, 0.81, 1],
-  [0.84, 0.91, 1],
-  [0.93, 0.99, 1],
+const intervals2: [number, number, number, string][] = [
+  [0.05, 0.1, 1, "Screen"],
+  [0.125, 0.25, 1, "Screen"],
+  [0.2, 0.3, 1, "Screen"],
+  [0.4, 0.45, 1, "Screen"],
+  [0.425, 0.5, 1, "Screen"],
+  [0.425, 0.5, 1, "Screen"],
+  [0.6, 0.85, 1, "Screen"],
+  [0.67, 0.72, 1, "Screen"],
+  [0.75, 0.81, 1, "Screen"],
+  [0.84, 0.91, 1, "Screen"],
+  [0.93, 0.99, 1, "Screen"],
 ]
 
 // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -63,7 +63,7 @@ export const Interval1 = () => {
     }
 
     // Compressed
-    const compressed: [number, number, number][] = compressIntervals(intervals);
+    const compressed: [number, number, number, string][] = compressIntervals(intervals);
     const compressedHeight: number = barHeight * compressed.length;
 
     root.append('p')
@@ -123,7 +123,7 @@ export const Interval2 = () => {
     }
 
     // Compressed
-    const compressed: [number, number, number][] = compressIntervals(intervals2);
+    const compressed: [number, number, number, string][] = compressIntervals(intervals2);
     const compressedHeight: number = barHeight * compressed.length;
 
     root.append('p')
