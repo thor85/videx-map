@@ -37,8 +37,10 @@ export interface WellboreUniforms {
   forceColor: boolean,
   /* Status of wellbore. (0: Active, 1: Filtered, 2: Ghost, 3: Hidden) */
   status: number,
-  /* Hide normal type wellbore segments */
-  hideNormalPath: boolean,
+  /* Hide path with no log interval */
+  hidePathWithoutInterval: boolean,
+  /* Shading of wellbore */
+  shadeWellbore: boolean,
 }
 
 /**
@@ -52,7 +54,8 @@ export function getWellboreShader(
   completionVisible: boolean,
   wellboreVisible: boolean,
   colorByLog: boolean,
-  hideNormalPath: boolean,
+  hidePathWithoutInterval: boolean,
+  shadeWellbore: boolean,
   logColormap: ColorOffset[],
 ): PIXI.Shader {
   const sentinelColormap = createColormapTexture(logColormap);
@@ -68,9 +71,10 @@ export function getWellboreShader(
       colorByLog: colorByLog,
       forceColor: false,
       status: 0,
-      sentinelLength: 24,
+      sentinelLength: Object.keys(logColormap).length + 1,
       sentinelColormap: sentinelColormap,
-      hideNormalPath: hideNormalPath,
+      hidePathWithoutInterval: hidePathWithoutInterval,
+      shadeWellbore: shadeWellbore,
     } as WellboreUniforms,
   );
 }
@@ -126,7 +130,6 @@ export class WellboreShader {
         return sign * (1.0 + sig / 8388607.0) * pow(2.0, expo);
       }
     `
-
     const isCloseEnough = `
       #ifndef RELATIVE_TOLERANCE
       #define RELATIVE_TOLERANCE 0.0001
@@ -147,11 +150,11 @@ export class WellboreShader {
 
     const computeColor = `
       #ifndef DEFAULT_COLOR
-      #define DEFAULT_COLOR vec4(1.0)
+      #define DEFAULT_COLOR vec4(0.0)
       #endif
 
       #ifndef SENTINEL_MAX_LENGTH
-      #define SENTINEL_MAX_LENGTH 24
+      #define SENTINEL_MAX_LENGTH 150
       #endif
 
       vec4 computeColor(
@@ -177,6 +180,7 @@ export class WellboreShader {
             // retrieve the offset from the colormap
             float sentinelOffset = getTexelValue(sentinelColormap, vec2((i_f + 0.5) / sentinelLengthFloat, offsetRow), littleEndian);
             if (isCloseEnough(inputVal, sentinelOffset)) {
+            // if (inputVal == sentinelOffset) {
               // retrieve the color from the colormap
               vec2 colormapCoord = vec2((i_f + 0.5) / sentinelLengthFloat, colorRow);
               return texture2D(sentinelColormap, colormapCoord);
@@ -204,9 +208,10 @@ export class WellboreShader {
       uniform vec3 wellboreColor2;
       uniform bool completionVisible;
       uniform bool colorByLog;
-      uniform bool hideNormalPath;
+      uniform bool hidePathWithoutInterval;
       uniform bool wellboreVisible;
       uniform bool forceColor;
+      uniform bool shadeWellbore;
       uniform int status;
       uniform int sentinelLength;
       uniform sampler2D sentinelColormap;
@@ -216,11 +221,10 @@ export class WellboreShader {
       void main() {
         vec3 col = vec3(0.0);
         float alpha = 1.0;
-
         bool littleEndian = ${littleEndian};
 
         if (status == 0) {
-          if (type == 0.0 || type == 3.0) {
+          if (type == 0.0 || type == 3.0 || type == 4.0) {
             if (!wellboreVisible) {
               alpha = 0.03;
             }
@@ -230,13 +234,15 @@ export class WellboreShader {
           if (!completionVisible && type == 2.0) discard; // hides packers
 
           float dist = clamp(vCol.z * vCol.z + vCol.w * vCol.w, 0.0, 1.0);
-
           vec3 dir3D = vec3(vCol.zw, sqrt(1.0 - dist * dist));
-
           float light = 0.4 + dot(dir3D, sunDir) * 0.6;
           light = clamp(light, 0.0, 1.0);
 
-          if (colorByLog && logvalue > 0.0) {
+          if (colorByLog && isCloseEnough(logvalue, -999999.0)) {
+            alpha = 0.0;
+          }
+
+          if (colorByLog && logvalue > -999.0) {
             vec4 logColor = computeColor(
               logvalue,
               sentinelColormap,
@@ -244,27 +250,47 @@ export class WellboreShader {
               littleEndian
             );
 
-            col = vec3(logColor.r, logColor.g, logColor.b);
+            if (shadeWellbore) {
+              vec3 col1 = vec3(logColor.r, logColor.g, logColor.b);
+              vec3 col2 = vec3(logColor.r / 2.0, logColor.g / 2.0, logColor.b / 2.0);
+              col = mix(col2, col1, light);
+            } else {
+              col = vec3(logColor.r, logColor.g, logColor.b);
+            }
           } else {
-            col = mix(wellboreColor2, wellboreColor1, light);
+            if (shadeWellbore) {
+              col = mix(wellboreColor2, wellboreColor1, light);
+            } else {
+              col = wellboreColor1;
+            }
           }
 
           if (type == 2.0) {
+            if (shadeWellbore) {
+              vec3 col1 = vec3(0.3, 0.3, 0.3);
+              vec3 col2 = vec3(0.1, 0.1, 0.1);
+              col = mix(col2, col1, light);
+            } else {
               col = vec3(0.1, 0.1, 0.1);
+            }
           }
 
-          if (type == 0.0 && hideNormalPath) {
+          if (type == 0.0 && hidePathWithoutInterval) {
             alpha = 0.0;
           }
 
           if (forceColor) {
-            col = mix(wellboreColor2, wellboreColor1, light);
+            if (shadeWellbore) {
+              col = mix(wellboreColor2, wellboreColor1, light);
+            } else {
+              col = wellboreColor1;
+            }
           }
         }
 
         else if (status == 1) {
           if (type == 2.0) discard;
-          if(mod(vCol.x + vCol.y * 0.2, ${quadrupleDash}) > ${doubleDash}) discard;
+          // if(mod(vCol.x + vCol.y * 0.2, ${quadrupleDash}) > ${doubleDash}) discard;
           vec3 c = wellboreColor2 + wellboreColor1 * 0.5;
           vec3 gray = vec3(0.9);
           col = mix(gray, c, 0.3);

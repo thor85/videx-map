@@ -193,37 +193,96 @@ export default class LineDictionary<T> {
     // Get all involved segments
     const segments: Set<LineSegment> = this.getSegmentsOn3Grid(target);
 
-    // console.log("before segments")
-    // console.log(segments)
     // Do not return anything if no segments
     if (segments.size === 0) return undefined;
-    // console.log("after segments")
 
-    // Find closest line
+    // Calculate distance to all segments in block
     let minDist: number = Infinity;
     let minLineID: number = -1;
-    let minSeg: LineSegment;
+    // let minSeg: LineSegment;
+    let distances = {}
     segments.forEach(seg => {
       const dist: number = distanceToLine(
         target,
         new Vector2(seg.geometry.x1, seg.geometry.y1),
         new Vector2(seg.geometry.x2, seg.geometry.y2),
       );
-      if (dist < minDist) {
-        minDist = dist;
-        minLineID = seg.lineID;
-        minSeg = seg;
+      // if (dist < minDist) {
+      //   minDist = dist;
+      //   minLineID = seg.lineID;
+      //   minSeg = seg;
+      // }
+
+      if (!(seg.lineID in distances)) {
+        distances[seg.lineID] = dist;
+      } else {
+        if (dist < distances[seg.lineID]) {
+          distances[seg.lineID] = dist;
+        }
       }
+
     });
+
+    // Find closest line
+    for (const id in distances) {
+      const wellDist = distances[id];
+      const wellbore = this.lineValues.get(Number(id)).value;
+      // @ts-ignore
+      const branchName = wellbore.data.branch;
+      let sidestepNumber = 0
+      if ((branchName).includes('T')) {
+        const index = (branchName).indexOf("T")
+        sidestepNumber = Number((branchName).charAt(index+1));
+      }
+
+      let oldWellNameBase = '';
+      let oldSidestepNumber = 0;
+      try {
+        const wellboreOld = this.lineValues.get(Number(minLineID)).value;
+        // @ts-ignore
+        oldWellNameBase = wellboreOld.data.branch;
+        if ((oldWellNameBase).includes('T')) {
+          const index = (oldWellNameBase).indexOf("T")
+          oldSidestepNumber = Number((oldWellNameBase).charAt(index+1));
+          oldWellNameBase = oldWellNameBase.substring(0, index);
+        }
+      } catch (e) {}
+
+      const wellboreNew = this.lineValues.get(Number(id)).value;
+      // @ts-ignore
+      let newWellNameBase = wellboreNew.data.branch;
+      let newSidestepNumber = 0;
+
+      // If same well, make sure newest technical sidetrack is selected
+      if ((newWellNameBase).includes('T')) {
+        const index = (newWellNameBase).indexOf("T")
+        newSidestepNumber = Number((newWellNameBase).charAt(index+1));
+        newWellNameBase = newWellNameBase.substring(0, index);
+      }
+
+      if ((oldWellNameBase === newWellNameBase) && (Math.abs(wellDist - minDist) < 0.005)) {
+        // @ts-ignore
+        // console.log(`Same basename, but ${(this.lineValues.get(Number(id)).value).data.branch} newer than ${(this.lineValues.get(Number(minLineID)).value).data.branch}`)
+        if (newSidestepNumber > oldSidestepNumber) {
+          minDist = wellDist;
+          minLineID = Number(id);
+        }
+      } else {
+        // If not same well, just use distance
+        if (wellDist < minDist) {
+          // @ts-ignore
+          // if (minLineID !== -1) console.log(`Old shortest: ${(this.lineValues.get(Number(minLineID)).value).data.branch} with distance ${minDist}`)
+          // @ts-ignore
+          // console.log(`New shortest: ${(this.lineValues.get(Number(id)).value).data.branch} with distance ${wellDist}`)
+          minDist = wellDist;
+          minLineID = Number(id);
+        }
+      }
+    }
 
     if(minDist > maxDist * this.gridsize) return undefined;
 
     // Return value of line with smallest distance
-    // console.log("")
-    // console.log("minSeg")
-    // console.log(minSeg)
-    // console.log("getClosest")
-    // console.log(this.lineValues.get(minLineID).value)
     return this.lineValues.get(minLineID).value;
   }
 

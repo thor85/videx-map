@@ -1,13 +1,13 @@
 /** Date for each interval. */
 export interface Interval {
   /** Type of interval [Screen, Packer]. */
-  type: string,
+  type: number,
   /** Log value . */
-  log: number,
+  log?: number,
   /** Start of interval as distance along wellbore. */
-  start: number,
+  start?: number,
   /** End of interval as distance along wellbore. */
-  end: number,
+  end?: number,
   /** Start of interval along wellbore as a value between 0 and 1. */
   l1: number,
   /** End of interval along wellbore as a value between 0 and 1. */

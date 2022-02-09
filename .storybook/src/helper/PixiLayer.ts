@@ -1,6 +1,7 @@
 import * as PIXI from 'pixi.js';
 import * as L from 'leaflet';
-import 'leaflet-pixi-overlay';
+// import 'leaflet-pixi-overlay';
+import './L.PixiOverlay';
 import { ModuleInterface } from '../../../src';
 
 // @ts-ignore

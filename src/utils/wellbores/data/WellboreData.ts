@@ -62,7 +62,8 @@ export class WellboreData {
     } else {
       // console.log(this.data.status)
       // const intervals = processIntervals(input.data.intervals);
-      const {screens, packers} = processIntervals(input.data.intervals);
+      // console.log(input.data.branch)
+      const {intervals, packers} = processIntervals(input.data.intervals);
       let wellboreColor;
       // console.log(this.colors.default)
       if (typeof this.group.colorFunction === 'function') {
@@ -72,8 +73,13 @@ export class WellboreData {
       } else {
         wellboreColor = this.colors.default;
       }
-      // this.mesh = this.createWellboreMesh(screens, packers, input.tick, wellboreColor);
-      this.mesh = this.createWellboreMesh(this, screens, packers, {width: input.tick.width, height: this.wellboreWidth * input.tick.height}, wellboreColor);
+
+      if (wellboreColor) {
+        this.mesh = this.createWellboreMesh(this, intervals, packers, {width: input.tick.width, height: this.wellboreWidth * input.tick.height}, wellboreColor);
+      } else {
+        this.mesh = undefined;
+      }
+
       // console.log(this.mesh)
     }
 
@@ -83,6 +89,8 @@ export class WellboreData {
 
   set zIndex (val: number) {
     this._zIndex = val;
+    // console.log(this.data.branch)
+    // console.log(val)
     if (this.mesh) this.mesh.zIndex = this._zIndex;
   }
 
@@ -132,30 +140,9 @@ export class WellboreData {
     return this.mesh.shader.uniforms;
   }
 
-  private createWellboreMesh(wellboreData: WellboreData, screens: [number, number, number, string][], packers: [number, number][], tick: TickConfig, wellboreColor: Color): PIXI.Mesh {
-    // console.log(this)
-    //TODO: REMOVE AFTER
-    // Just for testing
-    const branchname = this.data.branch;
-
+  private createWellboreMesh(wellboreData: WellboreData, screens: [number, number, number, number][], packers: [number, number][], tick: TickConfig, wellboreColor: Color): PIXI.Mesh {
     const line = new WellboreMesh(this.interpolator, this.wellboreWidth, tick, wellboreData);
-    // if (branchname === '31_2-P-14_BY3H') {
-    //   console.log(line)
-    // }
     const { vertices, triangles, vertexData, extraData, logData } = line.generate(screens, packers);
-
-    // if (branchname === '31_2-P-14_BY3H') {
-    //   console.log('P-14!!')
-    //   console.log(this)
-    //   console.log(line)
-    //   console.log(vertices)
-    //   console.log(triangles)
-    //   console.log(vertexData)
-    //   console.log(extraData)
-    //   console.log(logData)
-    //   console.log(screens)
-    //   console.log(packers)
-    // }
 
     // Create geometry
     const geometry = new PIXI.Geometry();
@@ -171,7 +158,8 @@ export class WellboreData {
       this.group.state.completionVisible,
       this.group.state.wellboreVisible,
       this.group.state.colorByLog,
-      this.group.state.hideNormalPath,
+      this.group.state.hidePathWithoutInterval,
+      this.group.state.shadeWellbore,
       this.group.logColormap,
     );
     return new PIXI.Mesh(geometry, shader);
@@ -273,7 +261,5 @@ export class WellboreData {
     // Workaround to make labels start hidden
     if (labelForceHide) this.label.visible = false;
     else this.label.visible = active;
-
   }
-
 }

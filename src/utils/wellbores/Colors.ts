@@ -100,8 +100,10 @@ export const HEX_REGEX = /(?:#)[0-9a-f]{8}|(?:#)[0-9a-f]{6}|(?:#)[0-9a-f]{4}|(?:
     const colorsnew = colorStringToInts(colormap[i].color);
     colors = colors.concat(colorsnew);
   }
+  // console.log(colors)
 
   const floatOffsets = new Float32Array(offsets);
+  // console.log(floatOffsets)
   const uintOffsets = new Uint8Array(floatOffsets.buffer);
   const normalOffsets = Array.from(uintOffsets);
   const colormapArray: number[] = colors.concat(normalOffsets);
@@ -114,6 +116,7 @@ export const HEX_REGEX = /(?:#)[0-9a-f]{8}|(?:#)[0-9a-f]{6}|(?:#)[0-9a-f]{4}|(?:
  */
  export function createColormapTexture(colormapInput: ColorOffset[] ) {
   const colormapFlatArray = colormapToFlatArray(colormapInput);
+  // console.log(colormapFlatArray)
   const colormapUint8 = Uint8Array.from(colormapFlatArray);
   const colormapTexture = PIXI.BaseTexture.fromBuffer(
     colormapUint8,

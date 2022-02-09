@@ -1,5 +1,7 @@
+// @ts-nocheck
 import * as d3 from 'd3';
 import * as L from 'leaflet';
+import './utils/Leaflet.geometryutil';
 import { FaultlineModule, OutlineModule, WellboreModule, GeoJSONModule, FieldModule } from '../../src';
 import { RootData } from '../../src/utils/wellbores/data';
 import processExploration from './processExploration';
@@ -29,6 +31,119 @@ const factors: any = {
   20: 0.0025,
 };
 
+function closestPointIndex(map, lineArray, mousePoint) {
+  let minIndex = -1;
+  let minDist = Infinity;
+
+  for (let i = 0; i < lineArray.length; i++) {
+    const linePoint = lineArray[i];
+    const distance = map.latLngToLayerPoint(mousePoint).distanceTo(map.latLngToLayerPoint(linePoint));
+    if (distance < minDist) {
+      minDist = distance;
+      minIndex = i;
+    }
+  }
+  return minIndex;
+}
+
+function interpolateWellpath(map, lineArray, mousePoint, closestIndex, pointData, lineInterpolator) {
+  // convert latlng array to leaflet LatLng objects
+  // TODO: remove need to convert to leaflet latlngs?
+  let latlngs = [];
+  lineArray.forEach(point => {
+    latlngs.push(new L.LatLng(point[0], point[1]))
+  })
+
+  // Check if nextClosestIndex is before or after
+  // Start with before
+  let nextClosestIndex = closestIndex - 1;
+  let linePoint = lineArray[nextClosestIndex];
+  let nextClosestDistance = - 999;
+  try {
+    nextClosestDistance = map.latLngToLayerPoint(mousePoint).distanceTo(map.latLngToLayerPoint(linePoint));
+  } catch (e) {}
+  // Check if segment after is closer
+  try {
+    let linePoint = lineArray[closestIndex + 1];
+    let distanceAfter = map.latLngToLayerPoint(mousePoint).distanceTo(map.latLngToLayerPoint(linePoint));
+    if (distanceAfter < nextClosestDistance) {
+      nextClosestIndex = closestIndex + 1;
+      nextClosestDistance = distanceAfter;
+    }
+  } catch (e) {}
+
+  if (nextClosestDistance === -999) {
+    return {md: pointData[0].md, tvd: pointData[0].tvd}
+  }
+
+  // find md and tvd data. See if closest or nextClosest is the earlier segment in the wellbore
+  let closestPointData = pointData[closestIndex]
+  let nextClosestPointData = pointData[nextClosestIndex]
+
+  let tvdDelta = closestPointData.tvd - nextClosestPointData.tvd;
+  // let relativeDelta = lineInterpolator.path[closestIndex].relative - lineInterpolator.path[nextClosestIndex].relative;
+  let relativeDelta = lineInterpolator.path[nextClosestIndex].relative - lineInterpolator.path[closestIndex].relative;
+  let startRelative = lineInterpolator.path[closestIndex].relative;
+  let startPointData = closestPointData;
+  let startDistance = closestDistance;
+  if (nextClosestPointData.md < closestPointData.md) {
+    tvdDelta = nextClosestPointData.tvd - closestPointData.tvd;
+    // relativeDelta = lineInterpolator.path[nextClosestIndex].relative - lineInterpolator.path[closestIndex].relative;
+    relativeDelta = lineInterpolator.path[closestIndex].relative - lineInterpolator.path[nextClosestIndex].relative;
+    startRelative = lineInterpolator.path[nextClosestIndex].relative;
+    startPointData = nextClosestPointData;
+    startDistance = nextClosestDistance;
+  }
+
+  // Find which relative distance along segment (0 - 1) the mouse pointer is hovering
+  nextClosestDistance = L.GeometryUtil.locateOnLine(map, latlngs, new L.LatLng(lineArray[nextClosestIndex][0], lineArray[nextClosestIndex][1]));
+  let closestDistance = L.GeometryUtil.locateOnLine(map, latlngs, new L.LatLng(lineArray[closestIndex][0], lineArray[closestIndex][1]));
+  let mousePointDistance = L.GeometryUtil.locateOnLine(map, latlngs, mousePoint);
+  startDistance = (mousePointDistance - Math.min(closestDistance, nextClosestDistance)) / Math.abs(closestDistance - nextClosestDistance);
+
+  // linear interpolate readout values
+  const totalDistance = 1.0;
+  const mdDelta = Math.abs(closestPointData.md - nextClosestPointData.md)
+  // console.log(`startPointData: ${startPointData.md}`)
+
+  // console.log(" ")
+  // console.log(`startRelative: ${startRelative}`)
+  // console.log(`relativeDelta: ${relativeDelta}`)
+  // console.log(startRelative + (startDistance)*((relativeDelta)/(totalDistance)))
+
+  return {
+    md: startPointData.md + (startDistance)*((mdDelta)/(totalDistance)),
+    tvd: startPointData.tvd + (startDistance)*((tvdDelta)/(totalDistance)),
+    relative: startRelative + (startDistance)*((relativeDelta)/(totalDistance)),
+  };
+}
+
+function findLogLabel(intervals, relativePoint, colormap) {
+  let log = '';
+  let type = '';
+  for (let interval of intervals) {
+    if (interval.l1 < relativePoint && relativePoint < interval.l2) {
+      log = interval.log;
+      type = interval.type;
+      break;
+    }
+  }
+
+  let logLabel = '';
+  for (let c of colormap) {
+    if (c.offset === log) {
+      logLabel = c.label;
+      break;
+    }
+  }
+
+  // console.log(`log: ${log}`)
+  // console.log(`type: ${type}`)
+  // console.log(`logLabel: ${logLabel}`)
+
+  return logLabel
+}
+
 const initialZoom: number = 11;
 
 // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -37,7 +152,9 @@ const faultlineDataTroll = require('./Samples/Troll-Faultlines.json');
 const outlineDataTroll = require('./Samples/Troll-Outlines.json');
 // const wellboreDataTroll = require('./Samples/Troll-Wellbores.json');
 const wellboreDataTroll = require('./Samples/Troll-Wellbores_nointerval.json');
-const intervalDataTroll = require('./Samples/intervals_drilled_completion.json');
+// const intervalDataTroll = require('./Samples/intervals_drilled_completion.json');
+// const intervalDataTroll = require('./Samples/intervals_drilled_kh.json');
+const intervalDataTroll = require('./Samples/intervals_drilled_zonelog.json');
 // console.log(wellboreDataTroll)
 const wbDataOld = Object.values(wellboreDataTroll) as any[];
 const licenseData = require('./.Samples/licenses.json');
@@ -290,7 +407,7 @@ export const layer = () => {
           max: { zoom: 18, scale: 0.05 },
         },
         rootResize: {
-          min: { zoom: 0, scale: 1000.0 },
+          min: { zoom: 0, scale: 0.5 },
           max: { zoom: 18, scale: 0.2 },
         },
         // tick: {
@@ -301,12 +418,42 @@ export const layer = () => {
         // labelScale: 0.011,
         // wellboreWidth: 150,
         onHighlightOn: event => {
-          const latLng = map.mouseEventToLatLng(event.originalEvent);
-          // console.log(latLng)
-          // console.log(event.eventData[0].data.labelShort)
-          // console.log(event)
-          if (event.count === 1) mapRoot.node().style.cursor = 'pointer'; // Set cursor style
-          else mapRoot.node().style.cursor = null; // Remove cursor style
+          if (event && event.count === 1) {
+            const latLng = map.mouseEventToLatLng(event.originalEvent);
+            const wellbore = event.eventData[0];
+            // console.log(event)
+            const path = wellbore.data.path;
+            const closestPointIndexVar = closestPointIndex(map, path, latLng);
+
+            // let info = {
+            //   name: wellbore.data.labelShortNoYear,
+            //   // drilled: wellbore.data['Drilled year'] || '',
+            // };
+
+            if (wellbore.data.pointData[closestPointIndexVar]) {
+              // let interpResult = interpolateWellpath(map, path, latLng, closestPointIndexVar, wellbore.data.pointData, wellbore.interpolator)
+              // info.MD = (interpResult.md).toFixed(0) || '';
+              // info.TVD = (interpResult.tvd).toFixed(1) || '';
+
+              // console.log(" ")
+              // console.log(wellbore.data.labelShort)
+              // console.log(wellbore)
+              // console.log(wellbore._zIndex)
+              // console.log(`MD: ${(interpResult.md).toFixed(0)}`)
+              // let logLabel;
+              // try {
+              //   logLabel = findLogLabel(wellbore.data.intervals, interpResult.relative, wellbores.groups['Drilled'].logColormap);
+              // } catch (e) {}
+              // info.RELATIVE = (interpResult.relative).toFixed(4) || '';
+              // if (logLabel) {
+              //   innerlog = {};
+              //   innerlog[`Inner - ${this.logLabel}`] = logLabel || '';
+              // }
+            };
+            // mapRoot.node().style.cursor = 'pointer'; // Set cursor style
+          } else {
+            // mapRoot.node().style.cursor = null; // Remove cursor style
+          }
         },
         // onHighlightOff: () => {
         //   mapRoot.node().style.cursor = null; // Remove cursor style
@@ -316,6 +463,7 @@ export const layer = () => {
         // }
       },
     );
+    // wellbores.highlight.changeColor = false;
     // @ts-ignore
     window.parent.window.wellbores = wellbores;
 
@@ -535,11 +683,18 @@ export const layer = () => {
       wellbores.setColorByLog(completionDrilledVisible);
     });
 
-    groupShowHideCompletion.add('Toggle hide normal type', () => {
-      const hideNormalPath = !(completionDrilledVisible && completionPlannedVisible);
-      completionDrilledVisible = hideNormalPath;
-      completionPlannedVisible = hideNormalPath;
-      wellbores.setHideNormalPath(hideNormalPath);
+    groupShowHideCompletion.add('Toggle shading wellbore', () => {
+      const shadeWellbore = !(completionDrilledVisible && completionPlannedVisible);
+      completionDrilledVisible = shadeWellbore;
+      completionPlannedVisible = shadeWellbore;
+      wellbores.setShadeWellbore(shadeWellbore);
+    });
+
+    groupShowHideCompletion.add('Toggle hide path with no log', () => {
+      const hidePathWithoutInterval = !(completionDrilledVisible && completionPlannedVisible);
+      completionDrilledVisible = hidePathWithoutInterval;
+      completionPlannedVisible = hidePathWithoutInterval;
+      wellbores.setHidePathWithoutInterval(hidePathWithoutInterval);
     });
 
     groupShowHideCompletion.add('Toggle \'Drilled\'', () => {

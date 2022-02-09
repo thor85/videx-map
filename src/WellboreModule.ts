@@ -209,11 +209,11 @@ export default class WellboreModule extends ModuleInterface {
     });
   }
 
-  private forEachGroup(keys: string[], func: (group: Group, key: string) => void): void {
+  private forEachGroup(keys: string[], func: (group: Group, key: string) => void, redraw: boolean = true): void {
     const registeredKeys = Object.keys(this.groups);
     keys = (keys.length == 0) ? registeredKeys : keys.filter(key => registeredKeys.includes(key));
     keys.forEach(key => func(this.groups[key], key));
-    this.pixiOverlay.redraw();
+    if (redraw) this.pixiOverlay.redraw();
   }
 
   private setActive(active: boolean, keys: string[]) : void {
@@ -253,6 +253,7 @@ export default class WellboreModule extends ModuleInterface {
       this.config.onWellboreClick({
         group: wellbore.group.key,
         data: wellbore.data,
+        interpolator: wellbore.interpolator,
       });
       return true;
     }
@@ -287,18 +288,27 @@ export default class WellboreModule extends ModuleInterface {
    * @param colorByLog
    * @param keys
    */
-   setColorByLog(colorByLog: boolean, ...keys: string[]) {
+  setColorByLog(colorByLog: boolean, ...keys: string[]) {
     this.forEachGroup(keys, group => group.setColorByLog(colorByLog));
   }
 
-    /**
-   * Hide normal type segments of wellbores
-   * @param hideNormalPath
-   * @param keys
-   */
-     setHideNormalPath(hideNormalPath: boolean, ...keys: string[]) {
-      this.forEachGroup(keys, group => group.setHideNormalPath(hideNormalPath));
-    }
+  /**
+ * Hide normal type segments of wellbores
+ * @param hidePathWithoutInterval
+ * @param keys
+ */
+  setHidePathWithoutInterval(hidePathWithoutInterval: boolean, ...keys: string[]) {
+    this.forEachGroup(keys, group => group.setHidePathWithoutInterval(hidePathWithoutInterval));
+  }
+
+  /**
+ * Shade wellbore
+ * @param shadeWellbore
+ * @param keys
+ */
+  setShadeWellbore(shadeWellbore: boolean, ...keys: string[]) {
+    this.forEachGroup(keys, group => group.setShadeWellbore(shadeWellbore));
+  }
 
   /**
    * Enable/disable wellbores

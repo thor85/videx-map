@@ -1,20 +1,24 @@
 import { SourceData } from "./SourceData";
 import { WellboreData } from "./WellboreData";
+import { LineInterpolator } from "../../../utils/LineInterpolator"
 
 export class WellboreEventData {
   public group: string;
   public data: SourceData;
+  public interpolator: LineInterpolator;
 
 
-  constructor(group: string, data: SourceData) {
+  constructor(group: string, data: SourceData, interpolator: LineInterpolator) {
     this.group = group;
     this.data = data;
+    this.interpolator = interpolator;
   }
 
   static from(wellbore: WellboreData): WellboreEventData {
     return new WellboreEventData(
       wellbore.group.key,
       wellbore.data,
+      wellbore.interpolator,
     );
   }
 }
@@ -31,7 +35,7 @@ export class HighlightEvent {
   }
 
   static from(wellbores: WellboreData[], changed: boolean, originalEvent: any) {
-    return new HighlightEvent(wellbores.map(w => new WellboreEventData(w.group.key, w.data)), changed, originalEvent);
+    return new HighlightEvent(wellbores.map(w => new WellboreEventData(w.group.key, w.data, w.interpolator)), changed, originalEvent);
   }
 
   get count() {

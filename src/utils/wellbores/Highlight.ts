@@ -4,6 +4,7 @@ export class Highlight {
   active: boolean = false;
   root: RootData;
   wellbores: WellboreData[];
+  changeColor: boolean = true;
 
   /** Return true of highlight is single. */
   get single() {

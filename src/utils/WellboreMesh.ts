@@ -46,12 +46,12 @@ export class WellboreMesh {
    * Generate mesh. Interval positioning should be relative.
    * @param screens Collection of intervals on the format: [ [Start0, End0], ..., [StartN, EndN] ]
    */
-  generate(screens: [number, number, number, string][] = [], packers: [number, number][] = []): meshData {
+  generate(screens: [number, number, number, number][] = [], packers: [number, number][] = []): meshData {
     // Vertices and triangulation
     const vertices: number[] = [];
     const triangles: number[] = [];
     const vertexData: number[] = [];
-    const extraData: number[] = []; // 0: Normal, 1: Screen, 2: Packer, 3: Blank
+    const extraData: number[] = []; // 0: Normal, 1: Screen, 2: Packer, 3: Blank, 4 = Normal with log
     const logData: number[] = [];
 
     let j: number = 0;
@@ -74,19 +74,10 @@ export class WellboreMesh {
         const diff = i[0] - p;
         const path1: SegmentPoint[] = this.interp.GetSection(p, i[0]);
         const path2: SegmentPoint[] = this.interp.GetSection(i[0], i[1]);
-        // if (this.wellboreData.data.branch === '31_2-P-14_BY1H') {
-        //   console.log(i)
-        //   // console.log(path1)
-        //   // console.log(path2)
-        //   console.log(diff)
-        // }
 
         let type = 0;
-        if (i[3] === "Blank") {
-          type = 3;
-        } else if (i[3] === "Screen") {
-          type = 1;
-        }
+        if (i[3]) type = i[3];
+        if (type === 2) type = 5; // temp fix. type 2 is crosslines, type 5 is log values of packers
 
         // do not create tiny normal segments
         let logvalueBetweenIntervals = -999;

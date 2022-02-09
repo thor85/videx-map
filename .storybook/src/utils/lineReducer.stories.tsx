@@ -14,7 +14,7 @@ export const Quick = () => {
 
   let draw: (data: Vector2[]) => void = () => {};
 
-  let maxDeviation: number = 0.00001;
+  let maxDeviation: number = 10000.00001;
   let distWeight: number = 0;
 
   slider(root, {
@@ -23,10 +23,12 @@ export const Quick = () => {
     max: 0.001,
     step: 0.00001,
     value: 0.00001,
+    // value: 100000.0000,
     dualInput: true,
   },
     d => {
       maxDeviation = d;
+      // draw(reduce(data, maxDeviation, distWeight));
       draw(reduce(data, maxDeviation, distWeight));
     },
   );
@@ -36,7 +38,8 @@ export const Quick = () => {
     min: -1,
     max: 0.1,
     step: .01,
-    value: 0,
+    // value: 0,
+    value: -1,
     dualInput: true,
   },
   d => {

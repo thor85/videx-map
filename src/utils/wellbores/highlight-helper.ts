@@ -31,10 +31,11 @@ function testLabel(pos: Vector2, roots: RootData[]) : WellboreData[] {
 function testWellborePath(pos: Vector2, lineDict: LineDictionary<WellboreData>, distanceThreshold = 0.5) : WellboreData[] {
   // console.log(pos)
   const hit = lineDict.getClosest(pos, distanceThreshold);
-  if(hit) {
-    // console.log("hit")
-    // console.log(hit)
-  }
+  // console.log(hit)
+  // if(hit) {
+  //   console.log("hit")
+  //   console.log(hit)
+  // }
   return hit ? [ hit ] : null;
 }
 
@@ -65,14 +66,18 @@ export function updateHighlighted(module: WellboreModule, pos: Vector2, onHighli
     return;
   };
 
+  // console.log(wellbores)
+
   // Get root from first wellbore
   const root = wellbores[0].root;
 
   let changed = false;
   if (highlight && !highlight.equals(root, wellbores)) { // If highlight and changed
-    changed = true;
-    highlight.set(root, wellbores);
-    pixiOverlay.redraw();
+    if (highlight.changeColor) {
+      changed = true;
+      highlight.set(root, wellbores);
+      pixiOverlay.redraw();
+    }
   }
 
   if (onHighlightOn) {
