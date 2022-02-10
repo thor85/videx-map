@@ -23,10 +23,20 @@ export function positionAlongWellbore(wellbore: WellboreData) : void {
   wellbore.label.attachToRoot = false;
 
   const { text, background, metrics } = wellbore.label;
+
   const end = wellbore.interpolator.GetPoint(1).position;
   const width = metrics.width * Label.state.scale; // Multiply by scale
-  const start = wellbore.interpolator.GetPointFromEnd(width);
+  // const start = wellbore.interpolator.GetPointFromEnd(width);
+  const start = wellbore.interpolator.GetPointFromEnd(0.9999);
   const dir = Vector2.sub(end, start.position).mutable;
+
+  // if (metrics.lines[0] === '(1998) P-14 AHT2') {
+  //   console.log(text)
+  //   console.log(metrics)
+  //   console.log(start)
+  //   console.log(end)
+  //   console.log(dir)
+  // }
 
   let anchorX, anchorY;
   let pivotX, pivotY;
@@ -36,17 +46,19 @@ export function positionAlongWellbore(wellbore: WellboreData) : void {
   // X+: Right
   // Y+: Down
   if (dir.x < 0) { // Left
-    anchorX = 0;
-    anchorY = 0;
+    anchorX = 1.03;
+    anchorY = 0.7;
     pivotX = -metrics.width * 0.5;
     pivotY = -metrics.height * 0.5;
     angle = Vector2.signedAngle(Vector2.left, dir);
     pos = dir.rotate270()
-      .rescale(wellbore.wellboreWidth * 0.5 + 0.075)
-      .add(end);
+      // .rescale(wellbore.wellboreWidth * 0.5 + 0.075)
+      .rescale(wellbore.wellboreWidth * 0.5 + 0)
+      .add(end)
+      // .add(-0.5, -0.5);
   } else { // Right
-    anchorX = 1;
-    anchorY = 0;
+    anchorX = -0.03;
+    anchorY = 0.7;
     pivotX = metrics.width * 0.5;
     pivotY = -metrics.height * 0.5;
     angle = Vector2.signedAngle(Vector2.right, dir);
@@ -55,6 +67,10 @@ export function positionAlongWellbore(wellbore: WellboreData) : void {
       .add(end);
   }
 
+  // if (metrics.lines[0] === '(1998) P-14 AHT2') {
+  //   console.log(pos)
+  //   console.log(angle)
+  // }
   text.position.set(pos[0], pos[1]);
   text.rotation = angle;
   text.anchor.set(anchorX, anchorY);

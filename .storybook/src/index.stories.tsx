@@ -414,7 +414,7 @@ export const layer = () => {
         //   width: 0.02,
         //   height: 5.9,
         // },
-        fontSize: 64,
+        fontSize: 8,
         // labelScale: 0.011,
         // wellboreWidth: 150,
         onHighlightOn: event => {
