@@ -12,7 +12,7 @@ interface State {
 
 /** Common configurations. */
 interface Common {
-  backgroundOpacity: number;
+  // backgroundOpacity: number;
 }
 
 export class Label {
@@ -31,7 +31,7 @@ export class Label {
   static height: number; // Height of labels
 
   text: PIXI.Text;
-  background: PIXI.Graphics;
+  // background: PIXI.Graphics;
   metrics: PIXI.TextMetrics;
 
   private _attachToRoot: boolean = false;
@@ -71,15 +71,15 @@ export class Label {
     this.metrics = metrics;
 
     // Background
-    const background = new PIXI.Graphics();
-    background.beginFill(0xFFFFFF);
-    background.drawRect(-metrics.width * 0.55, -Label.height * 0.525, metrics.width * 1.1, Label.height * 1.05);
-    background.endFill();
-    background.visible = Label.state.visible;
-    background.alpha = Label.config.backgroundOpacity;
-    background.tint = bgColor;
-    background.zIndex = 0;
-    this.background = background;
+    // const background = new PIXI.Graphics();
+    // background.beginFill(0xFFFFFF);
+    // background.drawRect(-metrics.width * 0.55, -Label.height * 0.525, metrics.width * 1.1, Label.height * 1.05);
+    // background.endFill();
+    // background.visible = Label.state.visible;
+    // background.alpha = Label.config.backgroundOpacity;
+    // background.tint = bgColor;
+    // background.zIndex = 0;
+    // this.background = background;
   }
 
   get visible() {
@@ -88,7 +88,7 @@ export class Label {
 
   set visible(flag) {
     this.text.visible = flag && Label.state.visible;
-    this.background.visible = flag && Label.state.visible;
+    // this.background.visible = flag && Label.state.visible;
   }
 
   get attachToRoot() {
@@ -101,9 +101,9 @@ export class Label {
     }
   }
 
-  getBoundingBox() {
-    const { y, width, height } = this.background;
-    const x = this.background.x - width / 2;
-    return new PIXI.Rectangle(x, y, width, height);
-  }
+  // getBoundingBox() {
+  //   const { y, width, height } = this.background;
+  //   const x = this.background.x - width / 2;
+  //   return new PIXI.Rectangle(x, y, width, height);
+  // }
 }

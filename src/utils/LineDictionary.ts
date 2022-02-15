@@ -268,14 +268,25 @@ export default class LineDictionary<T> {
           minLineID = Number(id);
         }
       } else {
-        // If not same well, just use distance
-        if (wellDist < minDist) {
+        // If not same well
+        // Check if small distance. Then show well with highest zorder
+          // console.log(wellboreNew)
+        if (Math.abs(wellDist - minDist) < 0.05) {
+          // console.log("CLOSE DISTANCE")
           // @ts-ignore
-          // if (minLineID !== -1) console.log(`Old shortest: ${(this.lineValues.get(Number(minLineID)).value).data.branch} with distance ${minDist}`)
-          // @ts-ignore
-          // console.log(`New shortest: ${(this.lineValues.get(Number(id)).value).data.branch} with distance ${wellDist}`)
-          minDist = wellDist;
-          minLineID = Number(id);
+          if (wellboreNew._zIndex > wellboreOld._zIndex) {
+            minDist = wellDist;
+            minLineID = Number(id);
+          }
+        } else {
+          if (wellDist < minDist) {
+            // @ts-ignore
+            // if (minLineID !== -1) console.log(`Old shortest: ${(this.lineValues.get(Number(minLineID)).value).data.branch} with distance ${minDist}`)
+            // @ts-ignore
+            // console.log(`New shortest: ${(this.lineValues.get(Number(id)).value).data.branch} with distance ${wellDist}`)
+            minDist = wellDist;
+            minLineID = Number(id);
+          }
         }
       }
     }

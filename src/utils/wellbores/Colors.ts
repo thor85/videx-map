@@ -132,7 +132,7 @@ export function getDefaultColors(input?: InputColors): Colors {
 
   const output: Colors = {
     fontColor: 0x000000,
-    interactFontColor: 0x000000,
+    interactFontColor: 0x01747d,
     default: {
       col1: [0.3, 0.3, 0.3],
       col2: [0.05, 0.05, 0.05],

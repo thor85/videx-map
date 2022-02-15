@@ -5,24 +5,26 @@ import { WellboreData } from "../data";
 export function positionAtRoot(wellbore: WellboreData, position: number) : void {
   wellbore.label.attachToRoot = true;
 
-  const { text, background } = wellbore.label;
+  // const { text, background } = wellbore.label;
+  const { text } = wellbore.label;
   const { scale, rootDisplacement } = Label.state;
 
   text.anchor.set(0.5, 0);
   text.rotation = 0;
-  background.rotation = 0;
-  background.pivot.set(0, -Label.height * 0.5);
+  // background.rotation = 0;
+  // background.pivot.set(0, -Label.height * 0.5);
   const yPos = (rootDisplacement + 5 * scale) + (position * (Label.height + 5) * scale) + wellbore.root.position[1];
   text.position.set(wellbore.root.position[0], yPos);
   text.scale.set(scale); // Resize
-  background.position.set(wellbore.root.position[0], yPos);
-  background.scale.set(scale); // Resize
+  // background.position.set(wellbore.root.position[0], yPos);
+  // background.scale.set(scale); // Resize
 }
 
 export function positionAlongWellbore(wellbore: WellboreData) : void {
   wellbore.label.attachToRoot = false;
 
-  const { text, background, metrics } = wellbore.label;
+  // const { text, background, metrics } = wellbore.label;
+  const { text, metrics } = wellbore.label;
 
   const end = wellbore.interpolator.GetPoint(1).position;
   const width = metrics.width * Label.state.scale; // Multiply by scale
@@ -39,7 +41,7 @@ export function positionAlongWellbore(wellbore: WellboreData) : void {
   // }
 
   let anchorX, anchorY;
-  let pivotX, pivotY;
+  // let pivotX, pivotY;
   let angle;
   let pos;
 
@@ -48,8 +50,8 @@ export function positionAlongWellbore(wellbore: WellboreData) : void {
   if (dir.x < 0) { // Left
     anchorX = 1.03;
     anchorY = 0.7;
-    pivotX = -metrics.width * 0.5;
-    pivotY = -metrics.height * 0.5;
+    // pivotX = -metrics.width * 0.5;
+    // pivotY = -metrics.height * 0.5;
     angle = Vector2.signedAngle(Vector2.left, dir);
     pos = dir.rotate270()
       // .rescale(wellbore.wellboreWidth * 0.5 + 0.075)
@@ -59,8 +61,8 @@ export function positionAlongWellbore(wellbore: WellboreData) : void {
   } else { // Right
     anchorX = -0.03;
     anchorY = 0.7;
-    pivotX = metrics.width * 0.5;
-    pivotY = -metrics.height * 0.5;
+    // pivotX = metrics.width * 0.5;
+    // pivotY = -metrics.height * 0.5;
     angle = Vector2.signedAngle(Vector2.right, dir);
     pos = dir.rotate90()
       .rescale(wellbore.wellboreWidth * 0.5 + 0.075)
@@ -77,8 +79,8 @@ export function positionAlongWellbore(wellbore: WellboreData) : void {
   text.scale.set(Label.state.scale); // Resize
 
   // Place background
-  background.position.set(pos[0], pos[1]);
-  background.pivot.set(pivotX, pivotY);
-  background.rotation = angle;
-  background.scale.set(Label.state.scale); // Resize
+  // background.position.set(pos[0], pos[1]);
+  // background.pivot.set(pivotX, pivotY);
+  // background.rotation = angle;
+  // background.scale.set(Label.state.scale); // Resize
 }

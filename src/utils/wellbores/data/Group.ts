@@ -431,7 +431,7 @@ export class Group {
     let zIndexExtra = 0;
     try {
 
-      if ((wellbore.data.branch).includes('T')) {
+      if (this.key === 'drilled' && (wellbore.data.branch).includes('T')) {
         // console.log(wellbore.data.branch)
         const index = (wellbore.data.branch).indexOf("T")
         // console.log((wellbore.data.branch).charAt(index+1))

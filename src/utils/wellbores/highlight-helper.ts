@@ -16,13 +16,13 @@ function testLabel(pos: Vector2, roots: RootData[]) : WellboreData[] {
   for (let i = 0; i < candidates.length; i++) {
     for (let j = 0; j < candidates[i].wellbores.length; j++) {
       const wellbore = candidates[i].wellbores[j];
-      if (wellbore.active && wellbore.label.attachToRoot) {
-        const bbox = wellbore.label.getBoundingBox();
-        if (bbox.y > pos.y) break; // it is below pos and cannot have any hits
-        if (bbox.contains(pos.x, pos.y)) {
-          return [wellbore];
-        }
-      }
+      // if (wellbore.active && wellbore.label.attachToRoot) {
+      //   const bbox = wellbore.label.getBoundingBox();
+      //   if (bbox.y > pos.y) break; // it is below pos and cannot have any hits
+      //   if (bbox.contains(pos.x, pos.y)) {
+      //     return [wellbore];
+      //   }
+      // }
     }
   }
   return null;

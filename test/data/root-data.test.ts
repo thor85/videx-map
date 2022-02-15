@@ -34,7 +34,7 @@ const getInput2 = (root: RootData) => {
   }
 };
 
-Label.setCommon({ backgroundOpacity: 0.4 });
+// Label.setCommon({ backgroundOpacity: 0.4 });
 
 test('Can instantiate root data', () => {
   const root = new RootData(Vector2.zero, 1);

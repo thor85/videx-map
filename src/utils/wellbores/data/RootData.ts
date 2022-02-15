@@ -27,25 +27,25 @@ export class RootData {
     return this.target && this.target.active;
   }
 
-  private updateLabelsBBox(label : Label) : void {
-    const bbox = label.getBoundingBox();
+  // private updateLabelsBBox(label : Label) : void {
+  //   const bbox = label.getBoundingBox();
 
-    if (!this.rootLabelsBBox) {
-      this.rootLabelsBBox = bbox;
-    } else {
-      this.rootLabelsBBox.height = (bbox.y + bbox.height) - this.rootLabelsBBox.y;
-      if (bbox.width > this.rootLabelsBBox.width) {
-        this.rootLabelsBBox.x = bbox.x;
-        this.rootLabelsBBox.width = bbox.width;
-      }
-    }
-  }
+  //   if (!this.rootLabelsBBox) {
+  //     this.rootLabelsBBox = bbox;
+  //   } else {
+  //     this.rootLabelsBBox.height = (bbox.y + bbox.height) - this.rootLabelsBBox.y;
+  //     if (bbox.width > this.rootLabelsBBox.width) {
+  //       this.rootLabelsBBox.x = bbox.x;
+  //       this.rootLabelsBBox.width = bbox.width;
+  //     }
+  //   }
+  // }
 
   private positionLabel(wellbore: WellboreData) : void {
     if (wellbore.label.attachToRoot) {
       const index = this.labelIndex++;
       positionAtRoot(wellbore, index);
-      this.updateLabelsBBox(wellbore.label);
+      // this.updateLabelsBBox(wellbore.label);
     } else {
       positionAlongWellbore(wellbore);
     }

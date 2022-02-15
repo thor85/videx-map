@@ -193,9 +193,9 @@ export class WellboreData {
         this.mesh.shader.uniforms.forceColor = true;
         this.mesh.zIndex = this._zIndex + 100000;
       }
-      this.label.background.tint = color.labelBg;
-      this.label.background.alpha = 0.75;
-      this.label.background.zIndex = 2;
+      // this.label.background.tint = color.labelBg;
+      // this.label.background.alpha = 0.75;
+      // this.label.background.zIndex = 2;
       this.label.text.zIndex = 3;
       this.label.text.tint = this.colors.interactFontColor;
     } else {
@@ -212,11 +212,12 @@ export class WellboreData {
         this.mesh.shader.uniforms.forceColor = false;
         this.mesh.zIndex = this._zIndex;
       }
-      this.label.background.tint = this.colors.default.labelBg;
-      this.label.background.alpha = Label.config.backgroundOpacity;
-      this.label.background.zIndex = 0;
+      // this.label.background.tint = this.colors.default.labelBg;
+      // this.label.background.alpha = Label.config.backgroundOpacity;
+      // this.label.background.zIndex = 0;
       this.label.text.zIndex = 1;
       this.label.text.tint = this.colors.fontColor;
+      // this.label.text.tint = 0xFF0000;
     }
   }
 
@@ -230,9 +231,9 @@ export class WellboreData {
         this.mesh.shader.uniforms.forceColor = true;
         this.mesh.zIndex = this._zIndex + 1000000;
       }
-      this.label.background.tint = this.colors.selected.labelBg;
-      this.label.background.alpha = 0.75;
-      this.label.background.zIndex = 2
+      // this.label.background.tint = this.colors.selected.labelBg;
+      // this.label.background.alpha = 0.75;
+      // this.label.background.zIndex = 2
       this.label.text.zIndex = 3;
     } else {
       if (this.mesh) {
@@ -241,10 +242,11 @@ export class WellboreData {
         this.mesh.shader.uniforms.forceColor = false;
         this.mesh.zIndex = this._zIndex;
       }
-      this.label.background.tint = this.colors.default.labelBg;
-      this.label.background.alpha = Label.config.backgroundOpacity;
-      this.label.background.zIndex = 0;
+      // this.label.background.tint = this.colors.default.labelBg;
+      // this.label.background.alpha = Label.config.backgroundOpacity;
+      // this.label.background.zIndex = 0;
       this.label.text.zIndex = 1;
+      // this.label.text.tint = 0xFF0000;
     }
     this.label.text.tint = this.colors.fontColor;
     this.root.recalculate();

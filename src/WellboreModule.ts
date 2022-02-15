@@ -167,7 +167,7 @@ export default class WellboreModule extends ModuleInterface {
     });
     if (wellbore.mesh) this.containers.wellbores.addChild(wellbore.mesh);
     this.containers.labels.addChild(wellbore.label.text);
-    this.containers.labels.addChild(wellbore.label.background);
+    // this.containers.labels.addChild(wellbore.label.background);
     group.append(wellbore);
     root.recalculate(true);
 
@@ -448,7 +448,7 @@ export default class WellboreModule extends ModuleInterface {
         // remove PIXI elements
         this.containers.wellbores.removeChild(w.mesh);
         this.containers.labels.removeChild(w.label.text);
-        this.containers.labels.removeChild(w.label.background);
+        // this.containers.labels.removeChild(w.label.background);
       });
       group.wellbores = [];
     });
