@@ -80,6 +80,7 @@ export default class GeoJSONModule extends ModuleInterface {
       if(feature.geometry.type === 'Point') {
         if (this.points === undefined) this.points = new GeoJSONPoint(this.root, this.pixiOverlay);
         this.points.add(feature, props);
+      // MultiLineString not supported yet
       } else if (feature.geometry.type === 'LineString') {
         if (this.linestrings === undefined) this.linestrings = new GeoJSONLineString(this.root, this.pixiOverlay, this.config);
         this.linestrings.add(feature, props);
