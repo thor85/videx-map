@@ -226,21 +226,13 @@ export default class LineDictionary<T> {
     // Find closest line
     for (const id in distances) {
       const wellDist = distances[id];
-      const wellbore = this.lineValues.get(Number(id)).value;
-      // @ts-ignore
-      const branchName = wellbore.data.branch;
-      let sidestepNumber = 0
-      if ((branchName).includes('T')) {
-        const index = (branchName).indexOf("T")
-        sidestepNumber = Number((branchName).charAt(index+1));
-      }
 
-      let oldWellNameBase = '';
+      let oldWellNameBase = 'old';
       let oldSidestepNumber = 0;
       try {
         const wellboreOld = this.lineValues.get(Number(minLineID)).value;
         // @ts-ignore
-        oldWellNameBase = wellboreOld.data.branch;
+        if ("data" in wellboreOld) if ("branch" in wellboreOld.data) oldWellNameBase = wellboreOld.data.branch;
         if ((oldWellNameBase).includes('T')) {
           const index = (oldWellNameBase).indexOf("T")
           oldSidestepNumber = Number((oldWellNameBase).charAt(index+1));
@@ -249,8 +241,9 @@ export default class LineDictionary<T> {
       } catch (e) {}
 
       const wellboreNew = this.lineValues.get(Number(id)).value;
+      let newWellNameBase = 'new';
       // @ts-ignore
-      let newWellNameBase = wellboreNew.data.branch;
+      if ("data" in wellboreNew) if ("branch" in wellboreNew.data) newWellNameBase = wellboreNew.data.branch;
       let newSidestepNumber = 0;
 
       // If same well, make sure newest technical sidetrack is selected
