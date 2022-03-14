@@ -27,6 +27,7 @@ export default class WellboreModule extends ModuleInterface {
   lineDict: LineDictionary<WellboreData>;
   pointDict: PointDictionary<RootData>;
   highlight: Highlight = new Highlight();
+  highlightEnabled: boolean;
 
   intervals?: IntervalsType;
 
@@ -54,6 +55,7 @@ export default class WellboreModule extends ModuleInterface {
     if (inputConfig.intervals) this.intervals = inputConfig.intervals;
 
     this.scaling = extra.scaling;
+    this.highlightEnabled = true;
 
     this.lineDict = new LineDictionary<WellboreData>(config.gridSize, value => value.active);
     this.pointDict = new PointDictionary<RootData>(0.25, config.gridSize * 10, this.getRootRadius(20), value => value.active);
@@ -227,6 +229,8 @@ export default class WellboreModule extends ModuleInterface {
    * @returns True if there is someting to highlight
    */
   private handleMouseMove(event: MouseEvent): boolean {
+    if (!this.highlightEnabled) return;
+
     const map = this.pixiOverlay.utils.getMap();
     const latLng = map.mouseEventToLatLng(event);
 

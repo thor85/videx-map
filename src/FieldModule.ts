@@ -142,6 +142,8 @@ export default class FieldModule extends ModuleInterface {
 
   mapmoving: boolean;
 
+  highlightEnabled: boolean = true;
+
   onFeatureHover: (event: MouseEvent, data: any) => void;
 
   private _eventHandler: EventHandler;
@@ -538,26 +540,27 @@ export default class FieldModule extends ModuleInterface {
    * @returns List of features at the given position
    */
   // testPosition(pos: Vector2) : any {
-    testPosition(event: MouseEvent) : any {
-      const map = this.pixiOverlay.utils.getMap();
-      const latLng = map.mouseEventToLatLng(event);
-      const layerCoords = new Vector2([latLng.lng, latLng.lat]);
-      // const worldspaceCoord = this.projector.getVector2(latLng);
+  testPosition(event: MouseEvent) : any {
+    const map = this.pixiOverlay.utils.getMap();
+    const latLng = map.mouseEventToLatLng(event);
+    const layerCoords = new Vector2([latLng.lng, latLng.lat]);
+    // const worldspaceCoord = this.projector.getVector2(latLng);
 
-      // return this.dict.getPolygonAt([pos.x, pos.y]);
+    // return this.dict.getPolygonAt([pos.x, pos.y]);
 
-      let result = [];
-      result.push(this.dict.getPolygonAt([layerCoords.x, layerCoords.y]));
-      // if (this.polygons) result.push(this.polygons.testPosition(layerCoords));
-      // if (this.multipolygons) result.push(this.multipolygons.testPosition(layerCoords));
-      // if (this.linestrings) result.push(this.linestrings.testPosition(worldspaceCoord, this.distanceThreshold));
-      // if (this.points) result.push(this.points.testPosition(worldspaceCoord, this.distanceThreshold));
-      result = result.filter(v => v);
-      // console.log(result)
-      return result;
-    }
+    let result = [];
+    result.push(this.dict.getPolygonAt([layerCoords.x, layerCoords.y]));
+    // if (this.polygons) result.push(this.polygons.testPosition(layerCoords));
+    // if (this.multipolygons) result.push(this.multipolygons.testPosition(layerCoords));
+    // if (this.linestrings) result.push(this.linestrings.testPosition(worldspaceCoord, this.distanceThreshold));
+    // if (this.points) result.push(this.points.testPosition(worldspaceCoord, this.distanceThreshold));
+    result = result.filter(v => v);
+    // console.log(result)
+    return result;
+  }
 
   private handleMouseMove(event: MouseEvent): boolean {
+    if (!this.highlightEnabled) return;
     if(this.mapmoving) return false;
     const hits = this.testPosition(event);
     if (hits.length !== 0 && !arraysEqual(this.highlightHits, hits)) {
@@ -585,6 +588,7 @@ export default class FieldModule extends ModuleInterface {
   }
 
   private handleMouseOut(event: MouseEvent) : boolean {
+    if (!this.highlightEnabled) return;
     if(this.onFeatureHover) this.onFeatureHover(event, []);
     return true;
   }

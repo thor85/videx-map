@@ -34,6 +34,7 @@ export default class GeoJSONModule extends ModuleInterface {
   labelRoot: PIXI.Container
   distanceThreshold: number;
   config?: Config;
+  highlightEnabled: boolean;
   private _projector: Projector;
   labelsDrawn: boolean;
 
@@ -45,6 +46,7 @@ export default class GeoJSONModule extends ModuleInterface {
     this.config = config;
     this.distanceThreshold = config.distanceThreshold || 200;
     this.labelsDrawn = false;
+    this.highlightEnabled = true;
   }
 
   get projector() {
@@ -181,6 +183,7 @@ export default class GeoJSONModule extends ModuleInterface {
   }
 
   private handleMouseMove(event: MouseEvent): boolean {
+    if (!this.highlightEnabled) return;
     if(this.mapmoving) return false;
     const hits = this.testPosition(event);
     if(this.onFeatureHover) this.onFeatureHover(event, hits);
@@ -188,6 +191,7 @@ export default class GeoJSONModule extends ModuleInterface {
   }
 
   private handleMouseOut(event: MouseEvent) : boolean {
+    if (!this.highlightEnabled) return;
     if(this.onFeatureHover) this.onFeatureHover(event, []);
     return true;
   }
