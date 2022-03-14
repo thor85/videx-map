@@ -1,3 +1,5 @@
+import { toShader } from '../utils/wellbores/Shader';
+
 /**
  * Shared shaders for polygon and multipolygon
  */
@@ -56,12 +58,18 @@ export const GeoJSONVertexShaderOutline = `
   }
   `;
 
+const wellboreDash = 0.08;
+const dash = toShader(wellboreDash);
+const doubleDash = toShader(wellboreDash * 2);
+const quadrupleDash = toShader(wellboreDash * 4);
+
 export const GeoJSONFragmentShaderOutline = `
   precision mediump float;
 
   uniform vec3 color;
 
   void main() {
+    // if(mod(vCol.x + vCol.y * 0.2, ${quadrupleDash}) > ${doubleDash}) discard;
     gl_FragColor = vec4(color / 255., 1.0);
   }
   `;

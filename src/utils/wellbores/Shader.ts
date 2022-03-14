@@ -7,7 +7,7 @@ type vec3 = [number, number, number];
 // SHARED LOGIC
 
 /** Stringify number for shader. If whole number, ensure one decimal slot. */
-function toShader(n: number): string {
+export function toShader(n: number): string {
   if(n - Math.floor(n) === 0) return n.toString() + '.0';
   else return n.toString();
 }
@@ -277,6 +277,10 @@ export class WellboreShader {
 
           if (type == 0.0 && hidePathWithoutInterval) {
             alpha = 0.0;
+          }
+
+          if (type == 0.0 && colorByLog && !hidePathWithoutInterval) {
+            alpha = 0.5;
           }
 
           if (forceColor) {
