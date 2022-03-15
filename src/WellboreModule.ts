@@ -92,6 +92,11 @@ export default class WellboreModule extends ModuleInterface {
     WellboreShader.build(config.wellboreResize.max.scale, extra.wellboreDash);
   }
 
+  destroy(): void {
+    this.asyncLoop.StopAll();
+    super.destroy();
+  }
+
   registerGroup(key: string, options?: GroupOptions) : void {
     if (this.groups[key]) throw Error(`Group [${key}] already registered!`);
     this.groups[key] = new Group(key, options);
@@ -171,7 +176,8 @@ export default class WellboreModule extends ModuleInterface {
     this.containers.labels.addChild(wellbore.label.text);
     // this.containers.labels.addChild(wellbore.label.background);
     group.append(wellbore);
-    root.recalculate(true);
+    // root.recalculate(true);
+    root?.recalculate(true);
 
     // Add to line dictionary
     if(!wellbore.interpolator.singlePoint) this.lineDict.add(projectedPath, wellbore);
@@ -420,9 +426,9 @@ export default class WellboreModule extends ModuleInterface {
     this.roots = [];
 
     // remove PIXI elements
-    this.containers.wellbores.removeChildren();
-    this.containers.labels.removeChildren();
-    this.containers.roots.removeChildren();
+    this.containers.wellbores.removeChildren().forEach(child => child.destroy());
+    this.containers.labels.removeChildren().forEach(child => child.destroy());
+    this.containers.roots.removeChildren().forEach(child => child.destroy());
     this.pixiOverlay.redraw();
   }
 
@@ -450,9 +456,12 @@ export default class WellboreModule extends ModuleInterface {
         }
 
         // remove PIXI elements
-        this.containers.wellbores.removeChild(w.mesh);
-        this.containers.labels.removeChild(w.label.text);
+        // this.containers.wellbores.removeChild(w.mesh);
+        // this.containers.labels.removeChild(w.label.text);
         // this.containers.labels.removeChild(w.label.background);
+        w.mesh?.destroy();
+        w.label?.text?.destroy();
+        // w.label?.background?.destroy();
       });
       group.wellbores = [];
     });

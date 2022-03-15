@@ -2,15 +2,13 @@ import * as PIXI from 'pixi.js';
 import Vector2 from '@equinor/videx-vector2';
 import { ModuleInterface } from '../ModuleInterface';
 import { EventHandler, DefaultEventHandler } from '../EventHandler';
-import {
-  GeoJSONMultiPolygon,
-  GeoJSONPolygon,
-  GeoJSONLineString,
-  GeoJSONPoint,
-  FeatureProps,
-} from '.';
+import { default as GeoJSONMultiPolygon } from './multipolygon';
+import { default as GeoJSONPolygon } from './polygon';
+import { default as GeoJSONLineString } from './linestring';
+import { default as GeoJSONPoint } from './point';
 import { ResizeConfig, LabelResizeConfig } from '../ResizeConfigInterface';
 import Projector from '../utils/wellbores/Projector';
+import { FeatureProps } from './interfaces';
 
 /** Interface for config. */
 interface Config {
