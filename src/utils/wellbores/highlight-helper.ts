@@ -60,28 +60,29 @@ export function updateHighlighted(module: WellboreModule, pos: Vector2, onHighli
 
   // If no hits
   if (!wellbores) {
-    if (highlight) { // Clear highlight
+    // if (highlight) { // Clear highlight
+    if (highlight?.active) {
       clearHighlight(module, onHighlightOff);
     }
-    return;
-  };
+  } else {
 
-  // console.log(wellbores)
+    // console.log(wellbores)
 
-  // Get root from first wellbore
-  const root = wellbores[0].root;
+    // Get root from first wellbore
+    const root = wellbores[0].root;
 
-  let changed = false;
-  if (highlight && !highlight.equals(root, wellbores)) { // If highlight and changed
-    if (highlight.changeColor) {
-      changed = true;
-      highlight.set(root, wellbores);
-      pixiOverlay.redraw();
+    let changed = false;
+    if (highlight && !highlight.equals(root, wellbores)) { // If highlight and changed
+      if (highlight.changeColor) {
+        changed = true;
+        highlight.set(root, wellbores);
+        pixiOverlay.redraw();
+      }
     }
-  }
 
-  if (onHighlightOn) {
-    onHighlightOn(HighlightEvent.from(wellbores, changed, originalEvent));
+    if (onHighlightOn) {
+      onHighlightOn(HighlightEvent.from(wellbores, changed, originalEvent));
+    }
   }
 }
 
@@ -93,12 +94,14 @@ export function forceHighlight(module: WellboreModule, wellbore: WellboreData) {
 
   if (highlight && !highlight.equals(root, wellbores)) { // If highlight and changed
     highlight.set(root, wellbores);
-    pixiOverlay.redraw();
+    // pixiOverlay.redraw();
+    module.requestRedraw();
   }
 }
 
 export function clearHighlight(module: WellboreModule, onHighlightOff?: () => void) {
   module.highlight.clear();
   if (onHighlightOff) onHighlightOff();
-  module.pixiOverlay.redraw();
+  // module.pixiOverlay.redraw();
+  module.requestRedraw();
 }

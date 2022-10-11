@@ -17,6 +17,15 @@ import { omit } from 'lodash';
 
 export default { title: 'Leaflet layer' };
 
+const colors = {
+  blue: '#6E84B9',
+  darkblue: '#32487D',
+  gray: '#6E8489',
+  darkgray: '#3C484D',
+  pink: '#f503f5',
+  purple: '#800080',
+};
+
 const factors: any = {
   10: 0.3,
   11: 0.1,
@@ -158,6 +167,7 @@ const intervalDataTroll = require('./Samples/intervals_drilled_zonelog.json');
 // console.log(wellboreDataTroll)
 const wbDataOld = Object.values(wellboreDataTroll) as any[];
 const licenseData = require('./.Samples/licenses.json');
+const regionsData = require('./Samples/regions.json');
 const pipelineData = require('./.Samples/pipelines.json');
 const facilityData = require('./.Samples/facilities.json');
 // const prospectData = require('./Samples/Prospects100.json');
@@ -484,6 +494,23 @@ export const layer = () => {
         }
       },
     });
+    const regions: GeoJSONModule = new GeoJSONModule({
+      outlineResize: {
+        min: { zoom: 6, scale: 6.0 },
+        max: { zoom: 18, scale: 5.05 },
+      },
+      labelResize: {
+        min: { zoom: 11, scale: 0.1 },
+        max: { zoom: 17, scale: 0.025 },
+        // threshold: 8,
+        baseScale: 0.15,
+      },
+      onFeatureHover: (event, data) => {
+        if (data && data.length > 0) {
+          // console.log(data)
+        }
+      },
+    });
     // (window as any).licenses = licenses;
     // console.log(licenses)
     const pipelines: GeoJSONModule = new GeoJSONModule({
@@ -525,6 +552,7 @@ export const layer = () => {
     pixiLayer.addModule(outlines);
     pixiLayer.addModule(wellbores);
     pixiLayer.addModule(licenses);
+    pixiLayer.addModule(regions);
     pixiLayer.addModule(pipelines);
     pixiLayer.addModule(facilities);
     pixiLayer.addModule(prospects);
@@ -799,16 +827,16 @@ export const layer = () => {
 
     const groupAnimate = sidebar.addGroup('Animate');
 
-    groupAnimate.add('Animate 1970 to 2020', () => {
-      let year = 1970;
+    groupAnimate.add('Animate 1990 to 2022', () => {
+      let year = 1990;
         let handle: any;
         const func = () => {
-          wellbores.softFilter(d => d.drillEndYear < year);
+          wellbores.softFilter(d => d['Drilled year'] < year);
           year++;
-          if (year > 2020) clearInterval(handle);
+          if (year > 2022) clearInterval(handle);
         };
 
-        handle = setInterval(func, 200);
+        handle = setInterval(func, 400);
     });
 
     // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -835,6 +863,19 @@ export const layer = () => {
         },
         fillColor: feature.properties.prlActive === 'Y' ? 'blue' : 'grey',
         fillOpacity: 0.6,
+      },
+      additionalData: {},
+    });
+
+    const regionsProps = (feature: any) => ({
+      label: feature.properties?.label || 'N/A',
+      id: feature.properties?.id || '0',
+      style: {
+        lineColor: colors.darkgray,
+        // lineWidth: 2.0,
+        fillColor: feature.properties?.type === 'segment' ? colors.purple : colors.purple,
+        fillOpacity: 0.5,
+        labelScale: 0.37,
       },
       additionalData: {},
     });
@@ -973,6 +1014,7 @@ export const layer = () => {
     // ));
 
     const licenseGeoJSON: SingleGeoJSON = { module: licenses, data: licenseData, props: licenseProps, visible: false };
+    const regionsGeoJSON: SingleGeoJSON = { module: regions, data: regionsData, props: regionsProps, visible: false };
     const pipelineGeoJSON: SingleGeoJSON = { module: pipelines, data: pipelineData, props: pipelineProps, visible: false };
     const facilityGeoJSON: SingleGeoJSON = { module: facilities, data: facilityData, props: facilityProps, visible: false };
     const prospectGeoJSON: SingleGeoJSON = { module: prospects, data: prospectDataFiltered, props: prospectProps, visible: false };
@@ -997,6 +1039,7 @@ export const layer = () => {
 
 
     groupGeoJSON.add('Toggle licenses', () => toggleGeoJSON(licenseGeoJSON));
+    groupGeoJSON.add('Toggle regions', () => toggleGeoJSON(regionsGeoJSON));
     groupGeoJSON.add('Toggle pipelines', () => toggleGeoJSON(pipelineGeoJSON));
     groupGeoJSON.add('Toggle facilities', () => toggleGeoJSON(facilityGeoJSON));
     groupGeoJSON.add('Toggle prospects', () => toggleGeoJSON(prospectGeoJSON));

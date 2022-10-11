@@ -37,6 +37,8 @@ export default class WellboreModule extends ModuleInterface {
   private _projector: Projector;
   private _eventHandler: EventHandler;
 
+  private _redrawAnimFrame: number = null;
+
   containers: {
     wellbores: PIXI.Container,
     roots: PIXI.Container,
@@ -49,6 +51,9 @@ export default class WellboreModule extends ModuleInterface {
 
   constructor(inputConfig?: InputConfig) {
     super();
+
+    this.requestRedraw = this.requestRedraw.bind(this);
+
     const [ config, extra ] = getDefaultConfig(inputConfig);
     this.config = config;
 
@@ -205,9 +210,11 @@ export default class WellboreModule extends ModuleInterface {
           iterations: wells.length,
           batchSize: batchSize || this.config.batchSize || 20,
           func: i => this.addWellbore(wells[i], group),
-          postFunc: () => this.pixiOverlay.redraw(),
+          // postFunc: () => this.pixiOverlay.redraw(),
+          postFunc: () => this.requestRedraw(),
           endFunc: () => {
-            this.pixiOverlay.redraw();
+            // this.pixiOverlay.redraw();
+            this.requestRedraw();
             resolve();
           }
         }, 0);
@@ -281,7 +288,8 @@ export default class WellboreModule extends ModuleInterface {
   setLabelVisibility(visible: boolean) {
     Label.state.visible = visible;
     this.roots.forEach(root => root.setLabelVisibility(visible));
-    this.pixiOverlay.redraw();
+    // this.pixiOverlay.redraw();
+    this.requestRedraw();
   }
 
   /**
@@ -429,7 +437,8 @@ export default class WellboreModule extends ModuleInterface {
     this.containers.wellbores.removeChildren().forEach(child => child.destroy());
     this.containers.labels.removeChildren().forEach(child => child.destroy());
     this.containers.roots.removeChildren().forEach(child => child.destroy());
-    this.pixiOverlay.redraw();
+    // this.pixiOverlay.redraw();
+    this.requestRedraw();
   }
 
   /**
@@ -482,7 +491,8 @@ export default class WellboreModule extends ModuleInterface {
       this.containers.roots.removeChild(root.mesh);
     });
 
-    this.pixiOverlay.redraw();
+    // this.pixiOverlay.redraw();
+    this.requestRedraw();
   }
 
   resize (zoom: number) {
@@ -553,5 +563,13 @@ export default class WellboreModule extends ModuleInterface {
     const zoomClamped = clamp(zoom, min.zoom, max.zoom) - min.zoom;
     const t = Math.pow(2, -zoomClamped);
     return lerp(max.scale, min.scale, t);
+  }
+
+  requestRedraw(){
+    if(this._redrawAnimFrame)return;
+    this._redrawAnimFrame = requestAnimationFrame(() => {
+      this.pixiOverlay.redraw();
+      this._redrawAnimFrame = null;
+    });
   }
 }
