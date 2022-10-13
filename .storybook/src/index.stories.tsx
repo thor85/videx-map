@@ -479,8 +479,8 @@ export const layer = () => {
 
     const licenses: GeoJSONModule = new GeoJSONModule({
       outlineResize: {
-        min: { zoom: 6, scale: 6.0 },
-        max: { zoom: 18, scale: 5.05 },
+        min: { zoom: 6, scale: 0.6 },
+        max: { zoom: 18, scale: 0.5 },
       },
       labelResize: {
         min: { zoom: 11, scale: 0.1 },
@@ -496,8 +496,8 @@ export const layer = () => {
     });
     const regions: GeoJSONModule = new GeoJSONModule({
       outlineResize: {
-        min: { zoom: 6, scale: 6.0 },
-        max: { zoom: 18, scale: 5.05 },
+        min: { zoom: 6, scale: 0.6 },
+        max: { zoom: 18, scale: 0.5 },
       },
       labelResize: {
         min: { zoom: 11, scale: 0.1 },
@@ -851,16 +851,16 @@ export const layer = () => {
       style: {
         lineColor: 'blue',
         // lineWidth: 0.1,
-        outlineResize: {
-          min: { zoom: 7, scale: 0.2 },
-          max: { zoom: 17, scale: 0.05 },
-        },
-        labelResize: {
-          min: { zoom: 0, scale: 4.0 },
-          max: { zoom: 17, scale: 2.45 },
-          threshold: -1,
-          // baseScale: 0.57,
-        },
+        // outlineResize: {
+        //   min: { zoom: 7, scale: 0.2 },
+        //   max: { zoom: 17, scale: 0.05 },
+        // },
+        // labelResize: {
+        //   min: { zoom: 0, scale: 4.0 },
+        //   max: { zoom: 17, scale: 2.45 },
+        //   threshold: -1,
+        //   // baseScale: 0.57,
+        // },
         fillColor: feature.properties.prlActive === 'Y' ? 'blue' : 'grey',
         fillOpacity: 0.6,
       },
@@ -871,7 +871,12 @@ export const layer = () => {
       label: feature.properties?.label || 'N/A',
       id: feature.properties?.id || '0',
       style: {
-        lineColor: colors.darkgray,
+        // outlineResize: {
+        //   min: { zoom: 0, scale: 0.02 },
+        //   max: { zoom: 17, scale: 0.005 },
+        // },
+        // lineColor: colors.darkgray,
+        lineColor: 'red',
         // lineWidth: 2.0,
         fillColor: feature.properties?.type === 'segment' ? colors.purple : colors.purple,
         fillOpacity: 0.5,
