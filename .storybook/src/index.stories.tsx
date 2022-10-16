@@ -170,6 +170,7 @@ const licenseData = require('./.Samples/licenses.json');
 const regionsData = require('./Samples/regions.json');
 const pipelineData = require('./.Samples/pipelines.json');
 const facilityData = require('./.Samples/facilities.json');
+const imageData = require('./.Samples/facilities.json');
 // const prospectData = require('./Samples/Prospects100.json');
 const prospectData = require('./Samples/prospects.json');
 // const fieldData = require('./Samples/Fields.json');
@@ -527,8 +528,36 @@ export const layer = () => {
           // console.log(this.distanceThreshold )
         }
       },
-      distanceThreshold: 0.02
+      distanceThreshold: 0.2
     });
+    // const prospects: GeoJSONModule = new GeoJSONModule({
+    //   outlineResize: {
+    //     min: { zoom: 6, scale: 1.5 },
+    //     max: { zoom: 18, scale: 0.15 },
+    //   },
+    //   labelResize: {
+    //     min: { zoom: 11, scale: 0.1 },
+    //     max: { zoom: 17, scale: 0.025 },
+    //     threshold: 8,
+    //     // baseScale: 0.15,
+    //   },
+    //   // onFeatureHover: (event, data) => {
+    //   //   if (data && data.length > 0) {
+    //   //     console.log(data)
+    //   //   }
+    //   // },
+    // });
+
+    const images: GeoJSONModule = new GeoJSONModule({
+      onFeatureHover: (event, data) => {
+        if (data && data.length > 0) {
+          // console.log(data)
+          // console.log(this.distanceThreshold )
+        }
+      },
+      distanceThreshold: 0.2
+    });
+    window.parent.window.images = images;
     const prospects: GeoJSONModule = new GeoJSONModule({
       outlineResize: {
         min: { zoom: 6, scale: 1.5 },
@@ -555,6 +584,7 @@ export const layer = () => {
     pixiLayer.addModule(regions);
     pixiLayer.addModule(pipelines);
     pixiLayer.addModule(facilities);
+    pixiLayer.addModule(images);
     pixiLayer.addModule(prospects);
     pixiLayer.addTo(map);
 
@@ -902,11 +932,11 @@ export const layer = () => {
       id: feature.properties.fclNpdidFacility,
       style: {
         lineColor: 'black',
-        lineWidth: 0.05,
+        lineWidth: 0.35,
         fillColor: 'grey',
         // fillColor2: 'red',
         fillOpacity: 0.7,
-        pointSize: 0.5,
+        pointSize: 1.5,
         // pointShape: 'circle',
         // pointShape: 'image',
         pointShape: 'filletrect',
@@ -917,7 +947,36 @@ export const layer = () => {
           // pointRotation: 0,
           pointScale: 0.01,
           // pointImage: feature.properties.fclKind === 'MULTI WELL TEMPLATE' ? 'https://trollmapsst.blob.core.windows.net/static/images/risks/radioactive.png?sv=2020-04-08&st=2021-09-29T18%3A56%3A17Z&se=2021-09-30T18%3A56%3A17Z&sr=b&sp=r&sig=gLldLoR4fiwBNBnmfxzQxKeTI8bOJD6vk9DjUShy%2F8I%3D' : 'https://trollmapsst.blob.core.windows.net/static/images/risks/loss.png?sv=2020-04-08&st=2021-09-29T19%3A05%3A01Z&se=2021-09-30T19%3A05%3A01Z&sr=b&sp=r&sig=9QIMAIm34XPgweDiXdZ92tl45%2FtxOtAor7X6jDsAMp8%3D',
-          pointImage: 'https://trollmapsst.blob.core.windows.net/static/images/risks/csand.png?sv=2020-04-08&st=2021-10-01T11%3A50%3A48Z&se=2021-10-16T11%3A50%3A00Z&sr=b&sp=r&sig=Aqv1jcGIj7SnRpbmnfj%2BX4uUZv6rw2Dgaatp%2Bs7sin8%3D',
+          pointImage: 'https://trollmapsst.blob.core.windows.net/static/images/risks/radioactive.png?sv=2016-05-31&spr=https%2Chttp&st=2022-10-13T07%3A58%3A54Z&se=2022-10-16T08%3A03%3A54Z&sip=0.0.0.0-255.255.255.255&sr=c&sp=r&sig=8Q2DTxtQ7Ph6ZSKwExeDQLaNXbMqQb1g40us0DlK0RA%3D',
+        }
+        // pointShape: 'square',
+        // hashed: true,
+        // labelScale: 1,
+      },
+     additionalData: {},
+    });
+
+    const imagesProps = (feature: any) => ({
+      label: feature.properties.fclName,
+      id: feature.properties.fclNpdidFacility,
+      style: {
+        lineColor: 'black',
+        lineWidth: 0.00009,
+        fillColor: 'grey',
+        // fillColor2: 'red',
+        fillOpacity: 0.7,
+        pointSize: 0.5,
+        // pointShape: 'circle',
+        // pointShape: 'image',
+        pointShape: 'image',
+        // pointShape: 'regularpolygon',
+        pointOptions: {
+          pointFillet: 1,
+          // pointRectangularSides: 3,
+          // pointRotation: 0,
+          pointScale: 0.01,
+          // pointImage: feature.properties.fclKind === 'MULTI WELL TEMPLATE' ? 'https://trollmapsst.blob.core.windows.net/static/images/risks/radioactive.png?sv=2020-04-08&st=2021-09-29T18%3A56%3A17Z&se=2021-09-30T18%3A56%3A17Z&sr=b&sp=r&sig=gLldLoR4fiwBNBnmfxzQxKeTI8bOJD6vk9DjUShy%2F8I%3D' : 'https://trollmapsst.blob.core.windows.net/static/images/risks/loss.png?sv=2020-04-08&st=2021-09-29T19%3A05%3A01Z&se=2021-09-30T19%3A05%3A01Z&sr=b&sp=r&sig=9QIMAIm34XPgweDiXdZ92tl45%2FtxOtAor7X6jDsAMp8%3D',
+          pointImage: 'https://trollmapsst.blob.core.windows.net/static/images/risks/csand.png?sv=2016-05-31&spr=https%2Chttp&st=2022-10-13T07%3A58%3A54Z&se=2022-10-16T08%3A03%3A54Z&sip=0.0.0.0-255.255.255.255&sr=c&sp=r&sig=8Q2DTxtQ7Ph6ZSKwExeDQLaNXbMqQb1g40us0DlK0RA%3D',
         }
         // pointShape: 'square',
         // hashed: true,
@@ -941,6 +1000,7 @@ export const layer = () => {
           // fillColor,
           fillColor: '#fff004',
           fillOpacity: 0.6,
+          labelFontSize: 650,
           // outlineResize: {
           //   min: { zoom: 7, scale: 0.8 },
           //   max: { zoom: 17, scale: 0.05 },
@@ -1022,6 +1082,7 @@ export const layer = () => {
     const regionsGeoJSON: SingleGeoJSON = { module: regions, data: regionsData, props: regionsProps, visible: false };
     const pipelineGeoJSON: SingleGeoJSON = { module: pipelines, data: pipelineData, props: pipelineProps, visible: false };
     const facilityGeoJSON: SingleGeoJSON = { module: facilities, data: facilityData, props: facilityProps, visible: false };
+    const imagesGeoJSON: SingleGeoJSON = { module: images, data: imageData, props: imagesProps, visible: false };
     const prospectGeoJSON: SingleGeoJSON = { module: prospects, data: prospectDataFiltered, props: prospectProps, visible: false };
 
     const toggleGeoJSON = (collection: any) => {
@@ -1040,6 +1101,8 @@ export const layer = () => {
       } catch (error) {
         console.error(error);
       }
+      console.log(collection)
+      collection.module.pixiOverlay.redraw();
     }
 
 
@@ -1047,6 +1110,7 @@ export const layer = () => {
     groupGeoJSON.add('Toggle regions', () => toggleGeoJSON(regionsGeoJSON));
     groupGeoJSON.add('Toggle pipelines', () => toggleGeoJSON(pipelineGeoJSON));
     groupGeoJSON.add('Toggle facilities', () => toggleGeoJSON(facilityGeoJSON));
+    groupGeoJSON.add('Toggle images', () => toggleGeoJSON(imagesGeoJSON));
     groupGeoJSON.add('Toggle prospects', () => toggleGeoJSON(prospectGeoJSON));
     groupGeoJSON.add('Toggle faultline', () => toggleFaultlines());
   });
