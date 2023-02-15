@@ -385,6 +385,9 @@ export const layer = () => {
       //     console.log(data)
       //   }
       // },
+      onFeatureClick: feature => {
+        console.log(feature);
+      },
       outlineResize: {
         min: { zoom: 6, scale: 1.5 },
         max: { zoom: 18, scale: 0.55 },
@@ -468,9 +471,9 @@ export const layer = () => {
         // onHighlightOff: () => {
         //   mapRoot.node().style.cursor = null; // Remove cursor style
         // },
-        // onWellboreClick: wellbore => {
-        //   wellbores.setSelected(d => d === wellbore.data);
-        // }
+        onWellboreClick: wellbore => {
+          console.log(wellbore);
+        }
       },
     );
     // wellbores.highlight.changeColor = false;
