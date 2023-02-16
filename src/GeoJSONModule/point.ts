@@ -1,5 +1,4 @@
 import * as PIXI from 'pixi.js';
-import '@pixi/graphics-extras';
 import { color } from 'd3';
 import Vector2 from '@equinor/videx-vector2';
 
@@ -7,6 +6,61 @@ import { pixiOverlayBase } from '../pixiOverlayInterfaces';
 import PointDictionary from '../utils/PointDictionary';
 import { FeatureProps } from '.';
 import Highlighter from './HighlighterGraphics';
+
+
+function drawRegularPolygon(
+  this: PIXI.Graphics,
+  x: number,
+  y: number,
+  radius: number,
+  sides: number,
+  rotation = 0) : PIXI.Graphics
+{
+  sides = Math.max(sides | 0, 3);
+  const startAngle = (-1 * Math.PI / 2) + rotation;
+  const delta = (Math.PI * 2) / sides;
+  const polygon = [];
+
+  for (let i = 0; i < sides; i++)
+  {
+      const angle = (i * delta) + startAngle;
+
+      polygon.push(
+          x + (radius * Math.cos(angle)),
+          y + (radius * Math.sin(angle))
+      );
+  }
+
+  return this.drawPolygon(polygon);
+}
+
+function drawTorus(
+  this: PIXI.Graphics,
+  x: number,
+  y: number,
+  innerRadius: number,
+  outerRadius: number,
+  startArc = 0,
+  endArc: number = Math.PI * 2) : PIXI.Graphics
+{
+  if (Math.abs(endArc - startArc) >= Math.PI * 2)
+  {
+      return this
+          .drawCircle(x, y, outerRadius)
+          .beginHole()
+          .drawCircle(x, y, innerRadius)
+          .endHole();
+  }
+
+  this.finishPoly();
+  this
+      .arc(x, y, innerRadius, endArc, startArc, true)
+      .arc(x, y, outerRadius, startArc, endArc, false)
+      .finishPoly();
+
+  return this;
+}
+
 
 export function drawPoint(point, properties, projected, forcedLineColor = null) {
   const fillColor = properties.style.fillColor ? PIXI.utils.string2hex(color(properties.style.fillColor).hex()) : 0x0;
@@ -17,6 +71,10 @@ export function drawPoint(point, properties, projected, forcedLineColor = null) 
   const pointFillet = properties.style?.pointOptions?.pointFillet || 1;
   const pointShape = properties.style.pointShape || 'square';
   const pointRectangularSides = properties.style?.pointOptions?.pointRectangularSides || 3;
+  const pointInnerRadius = properties.style?.pointOptions?.pointInnerRadius || 5;
+  const pointOuterRadius = properties.style?.pointOptions?.pointOuterRadius || 15;
+  const pointStartArc = properties.style?.pointOptions?.pointStartArc || 0;
+  const pointEndArc = properties.style?.pointOptions?.pointEndArc || Math.PI * 2;
   const pointRotation = properties.style?.pointOptions?.pointRotation || 0;
   point.lineStyle(properties.style.lineWidth, lineColor);
   point.beginFill(fillColor, opacity);
@@ -27,19 +85,23 @@ export function drawPoint(point, properties, projected, forcedLineColor = null) 
     const scale = 10;
     point.drawCircle(projected[0] * scale, projected[1] * scale, offset * scale);
     point.scale.set(1 / scale, 1 / scale);
-  } else if (pointShape == 'filletrect') {
+  } else if (pointShape == 'filletrect' || pointShape == 'roundedrect') {
     // Need to draw circle large and scale down to avoid jagged edges when zooming in
     const scale = 10;
-    point.drawFilletRect((projected[0] - offset*0.5) * scale, (projected[1] - offset*0.5) * scale, offset * scale, offset * scale, pointFillet);
-    // point.drawFilletRect((projected[0]) * scale, (projected[1]) * scale, offset * scale, offset * scale, pointFillet);
+    // point.drawFilletRect((projected[0] - offset*0.5) * scale, (projected[1] - offset*0.5) * scale, offset * scale, offset * scale, pointFillet);
+    point.drawRoundedRect((projected[0] - offset*0.5) * scale, (projected[1] - offset*0.5) * scale, offset * scale, offset * scale, pointFillet);
     point.scale.set(1 / scale, 1 / scale);
   } else if (pointShape == 'regularpolygon') {
+    point.drawRegularPolygon = drawRegularPolygon;
     // Need to draw circle large and scale down to avoid jagged edges when zooming in
     // const scale = 1;
     // point.drawRegularPolygon(projected[0] - offset, projected[1] - offset, offset, pointRectangularSides, pointRotation);
     point.drawRegularPolygon(projected[0], projected[1], offset, pointRectangularSides, pointRotation);
     // point.drawRegularPolygon((projected[0] - offset) * scale, (projected[1] - offset) * scale, offset * scale, offset * scale, pointFillet);
     // point.scale.set(1 / scale, 1 / scale);
+  } else if (pointShape == 'torus') {
+    point.drawTorus = drawTorus;
+    point.drawTorus(projected[0], projected[1], offset, pointInnerRadius, pointOuterRadius, pointStartArc, pointEndArc);
   }
 
   point.zIndex = 99999;
