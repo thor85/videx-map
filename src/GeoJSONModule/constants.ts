@@ -5,6 +5,7 @@ export class Defaults {
 
   public static readonly DEFAULT_FONT_FAMILY = 'Arial'
   public static readonly DEFAULT_FONT_SIZE = 64;
+  // public static readonly DEFAULT_FONT_SIZE = 256;
   public static readonly DEFAULT_FONT_WEIGHT = '600';
   public static readonly DEFAULT_LABEL_COLOR = 0x454545;
   public static readonly DEFAULT_LABEL_ALIGN = 'center';
@@ -13,4 +14,5 @@ export class Defaults {
   public static readonly DEFAULT_MIN_HASH = 0.0;
 
   public static readonly DEFAULT_BASE_SCALE = 0.1;
+  // public static readonly DEFAULT_BASE_SCALE = 0.025;
 }

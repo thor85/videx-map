@@ -110,6 +110,7 @@ interface Config {
   labelsVisible?: boolean;
 
   onFeatureHover?: (event: MouseEvent, data: any) => void;
+  onFeatureClick?: (data: any) => void;
 }
 
 // Colors
@@ -145,6 +146,7 @@ export default class FieldModule extends ModuleInterface {
   highlightEnabled: boolean = true;
 
   onFeatureHover: (event: MouseEvent, data: any) => void;
+  onFeatureClick: (data: any) => void;
 
   private _eventHandler: EventHandler;
 
@@ -204,6 +206,7 @@ export default class FieldModule extends ModuleInterface {
     this.mapmoving = false;
     this._eventHandler = config && config.customEventHandler || new DefaultEventHandler();
     this.onFeatureHover = config?.onFeatureHover;
+    this.onFeatureClick = config?.onFeatureClick;
 
     if (!config) return;
     if (config.hasOwnProperty('labelsVisible')) this.labelsVisible = config.labelsVisible;
@@ -593,7 +596,12 @@ export default class FieldModule extends ModuleInterface {
     return true;
   }
 
-  private handleMouseClick() : boolean {
+  private handleMouseClick(event: MouseEvent) : boolean {
+    if (!this.onFeatureClick) return;
+    // TODO: Set highlight in handleMouseMove and just retrieve it here?
+    const hits = this.testPosition(event);
+    if (!hits) {return false;};
+    if(this.onFeatureClick) this.onFeatureClick(this.fieldIdFeatures[hits]);
     return true;
   }
 
