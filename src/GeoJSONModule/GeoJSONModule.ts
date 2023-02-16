@@ -14,6 +14,7 @@ import { FeatureProps } from './interfaces';
 interface Config {
   customEventHandler?: EventHandler;
   onFeatureHover?: (event: MouseEvent, data: any) => void;
+  onFeatureClick?: (data: any) => void;
   outlineResize?: ResizeConfig;
   labelResize?: LabelResizeConfig;
   distanceThreshold?: number;
@@ -23,6 +24,7 @@ interface Config {
 export default class GeoJSONModule extends ModuleInterface {
 
   onFeatureHover: (event: MouseEvent, data: any) => void;
+  onFeatureClick: (data: any) => void;
   points: GeoJSONPoint;
   linestrings: GeoJSONLineString;
   polygons: GeoJSONPolygon;
@@ -41,6 +43,7 @@ export default class GeoJSONModule extends ModuleInterface {
     this.mapmoving = false;
     this._eventHandler = config?.customEventHandler || new DefaultEventHandler();
     this.onFeatureHover = config?.onFeatureHover;
+    this.onFeatureClick = config?.onFeatureClick;
     this.config = config;
     this.distanceThreshold = config.distanceThreshold || 200;
     this.labelsDrawn = false;
@@ -194,7 +197,12 @@ export default class GeoJSONModule extends ModuleInterface {
     return true;
   }
 
-  private handleMouseClick() : boolean {
+  private handleMouseClick(event: MouseEvent) : boolean {
+    if (!this.onFeatureClick) return;
+    // TODO: Set highlight in handleMouseMove and just retrieve it here?
+    const hits = this.testPosition(event);
+    if (!hits) {return false;};
+    if(this.onFeatureClick) this.onFeatureClick(this.fieldIdFeatures[hits]);
     return true;
   }
 

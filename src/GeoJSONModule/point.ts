@@ -1,6 +1,6 @@
 import * as PIXI from 'pixi.js';
 // import './pixi.graphics.extra.d.ts';
-import '@pixi/graphics-extras';
+// import '@pixi/graphics-extras';
 import { color } from 'd3';
 import Vector2 from '@equinor/videx-vector2';
 
