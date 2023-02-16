@@ -62,6 +62,7 @@ export interface Field {
     guid?: number;
     hctype?: string;
     dsccurrentactivitystatus?: string;
+    dscnpdiddiscovery?: number;
     cmplongname?: string;
     dscownername?: string;
     fldname?: string;

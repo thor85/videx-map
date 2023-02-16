@@ -213,7 +213,8 @@ export default class GeoJSONModule extends ModuleInterface {
     // TODO: Set highlight in handleMouseMove and just retrieve it here?
     const hits = this.testPosition(event);
     if (!hits) {return false;};
-    if(this.onFeatureClick) this.onFeatureClick(this.fieldIdFeatures[hits]);
+    // console.log(hits)
+    if(this.onFeatureClick) this.onFeatureClick(hits[0]);
     return true;
   }
 

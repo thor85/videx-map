@@ -22,6 +22,7 @@ export interface PreprocessedField {
     company?: string;
     owner?: string;
     status?: string;
+    dscnpdiddiscovery?: number;
     label: string;
     lat: number;
     long: number;
@@ -50,6 +51,7 @@ export default function preprocessDiscoveries(data: Field[]): PreprocessedField[
     const properties = Object.fromEntries(
       Object.entries(f.properties).map(([k, v]) => [k.toLowerCase(), v])
     );
+    // console.log(properties)
     // console.log(f)
     let field: Field = {
       type: f.type,
@@ -130,6 +132,7 @@ export default function preprocessDiscoveries(data: Field[]): PreprocessedField[
         properties: {
           group: field.properties.group,
           guid: field.properties.guid,
+          dscnpdiddiscovery: field.properties.dscnpdiddiscovery,
           // label: field.properties.label,
           // label: field.properties.dscname,
           label: label,

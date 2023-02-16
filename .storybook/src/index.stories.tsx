@@ -572,6 +572,9 @@ export const layer = () => {
         threshold: 8,
         baseScale: 0.15,
       },
+      onFeatureClick: feature => {
+        console.log(feature);
+      },
       // onFeatureHover: (event, data) => {
       //   if (data && data.length > 0) {
       //     console.log(data)
