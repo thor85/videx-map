@@ -37,6 +37,7 @@ export default class GeoJSONModule extends ModuleInterface {
   highlightEnabled: boolean;
   private _projector: Projector;
   labelsDrawn: boolean;
+  polygonContainer: PIXI.Container;
 
   constructor(config?: Config) {
     super();
@@ -48,6 +49,9 @@ export default class GeoJSONModule extends ModuleInterface {
     this.distanceThreshold = config.distanceThreshold || 200;
     this.labelsDrawn = false;
     this.highlightEnabled = true;
+    this.polygonContainer = new PIXI.Container();
+    this.polygonContainer.sortableChildren = true;
+    this.root.addChild(this.polygonContainer);
   }
 
   get projector() {
@@ -88,14 +92,21 @@ export default class GeoJSONModule extends ModuleInterface {
         if (this.linestrings === undefined) this.linestrings = new GeoJSONLineString(this.root, this.pixiOverlay, this.config);
         this.linestrings.add(feature, props);
       } else if (feature.geometry.type === 'Polygon') {
-        if (this.polygons === undefined) this.polygons = new GeoJSONPolygon(this.root, this.labelRoot, this.pixiOverlay, this.config);
+        if (this.polygons === undefined) this.polygons = new GeoJSONPolygon(this.polygonContainer, this.labelRoot, this.pixiOverlay, this.config);
+        // if (this.polygons === undefined) this.polygons = new GeoJSONPolygon(this.root, this.labelRoot, this.pixiOverlay, this.config);
         this.polygons.add(feature, props);
+        // this.highlighter.add(meshes)
       } else if (feature.geometry.type === 'MultiPolygon') {
-        if (this.multipolygons === undefined) this.multipolygons = new GeoJSONMultiPolygon(this.root, this.labelRoot, this.pixiOverlay, this.config);
+        if (this.multipolygons === undefined) this.multipolygons = new GeoJSONMultiPolygon(this.polygonContainer, this.labelRoot, this.pixiOverlay, this.config);
+        // if (this.multipolygons === undefined) this.multipolygons = new GeoJSONMultiPolygon(this.root, this.labelRoot, this.pixiOverlay, this.config);
         this.multipolygons.add(feature, props);
       }
 
     });
+    if (this.points) {
+      const map = this.pixiOverlay.utils.getMap()
+      this.points.highlighter.zoom = map.getZoom();
+    }
     this.root.addChild(this.labelRoot);
     if (labelsVisible) {
       this.drawLabels();

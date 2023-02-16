@@ -18,10 +18,11 @@ import {
 import { getRadius } from '../utils/Radius';
 import { ResizeConfig, LabelResizeConfig } from '../ResizeConfigInterface';
 import { Defaults } from './constants';
+import Highlighter from './HighlighterMesh';
 
 type vec3 = [number, number, number];
 
-interface FillUniform {
+export interface FillUniform {
   col1: vec3;
   col2: vec3;
   opacity: number;
@@ -30,13 +31,13 @@ interface FillUniform {
   hashWidth: number;
 }
 
-interface OutlineUniform {
+export interface OutlineUniform {
   color: vec3;
   outlineWidth: number;
 
 }
 
-export interface FeatureMesh {
+export interface PolygonFeatureMesh {
   fill: {
     mesh: PIXI.Mesh;
     uniform: FillUniform;
@@ -86,10 +87,12 @@ export default class GeoJSONPolygon {
   static fragmentShaderOutline: string;
 
   /** Collection of features with meshes. */
-  features: FeatureMesh[] = [];
+  features: PolygonFeatureMesh[] = [];
 
   /** Are the labels hidden? */
   labelsVisible: boolean;
+
+  highlighter: Highlighter;
 
   /** Settings for how to render data. */
   config: Config = {
@@ -107,14 +110,20 @@ export default class GeoJSONPolygon {
   outlineThickness: number = Defaults.DEFAULT_LINE_WIDTH;
   zIndex: number = Defaults.DEFAULT_Z_INDEX;
 
+  /** Index of previously highlighted polygon */
+  prevHighlighted: number = -1;
+
+  polygonId: number = 0;
+
   constructor(root: PIXI.Container, labelRoot: PIXI.Container, pixiOverlay: pixiOverlayBase, config?: Config) {
     if (config?.initialHash && typeof config.initialHash === 'number') this.config.initialHash = config.initialHash;
     if (config?.minHash && typeof config.minHash === 'number') this.config.minHash = config.minHash;
     if (config?.maxHash && typeof config.maxHash === 'number') this.config.maxHash = config.maxHash;
 
-    this.container = new PIXI.Container();
-    this.container.sortableChildren = true;
-    root.addChild(this.container);
+    // this.container = new PIXI.Container();
+    // this.container.sortableChildren = true;
+    // root.addChild(this.container);
+    this.container = root;
 
     this.labelsVisible = false;
 
@@ -131,6 +140,8 @@ export default class GeoJSONPolygon {
       align: config?.labelAlign || Defaults.DEFAULT_LABEL_ALIGN,
     });
 
+    this.highlighter = new Highlighter([0, 255, 255]);
+
     this.labels = new GeoJSONLabels(labelRoot || this.container, this.textStyle, this.config.labelResize?.baseScale || Defaults.DEFAULT_BASE_SCALE);
 
   }
@@ -140,18 +151,22 @@ export default class GeoJSONPolygon {
     const geom = feature.geometry as GeoJSON.Polygon;
     const properties: FeatureProps = props(feature);
     if (properties.style.labelScale) this.labels.baseScale = properties.style.labelScale;
-    const meshes: FeatureMesh[] = [];
+    const meshes: PolygonFeatureMesh[] = [];
     const coordinates = geom.coordinates as [number, number][][];
     if(coordinates?.length > 0) {
       const projected = this.projectPolygons(coordinates[0]);
       projected.pop(); // Remove overlapping
 
       const meshData = Mesh.Polygon(projected);
-      this.dict.add(coordinates[0], meshData.triangles, feature.properties);
+      this.dict.add(coordinates[0], meshData.triangles, {
+        id: this.polygonId,
+        properties: feature.properties
+      });
+      this.polygonId++;
 
-      //test
       const outlineRadius = this.getOutlineRadius(zoom);
       const outlineData = Mesh.PolygonOutline(projected, outlineRadius);
+      // this.highlighter.add(outlineData)
       // const outlineData = Mesh.PolygonOutline(projected, this.outlineThickness);
       const [position, mass] = centerOfMass(projected, meshData.triangles);
 
@@ -160,8 +175,7 @@ export default class GeoJSONPolygon {
       );
       if (properties.label) this.labels.addLabel(properties.label, { position, mass });
       this.features.push(...meshes);
-
-      // this.labelManager.draw(container);
+      this.highlighter.add(meshes);
     }
   }
 
@@ -169,7 +183,7 @@ export default class GeoJSONPolygon {
    * Draw each polygon in a polygon collection.
    * @param polygons
    */
-  drawPolygons(container: PIXI.Container, meshData: MeshData, outlineData: MeshNormalData, featureStyle: FeatureStyle, zIndex: number): FeatureMesh {
+  drawPolygons(container: PIXI.Container, meshData: MeshData, outlineData: MeshNormalData, featureStyle: FeatureStyle, zIndex: number): PolygonFeatureMesh {
     const fillColor = featureStyle.fillColor ? color(featureStyle.fillColor).rgb() : undefined;
     const fillColor2 = featureStyle.fillColor2 ? color(featureStyle.fillColor2).rgb() : undefined;
     const fillUniform: FillUniform = {
@@ -261,7 +275,27 @@ export default class GeoJSONPolygon {
   }
 
   testPosition(pos: Vector2) : any {
-    return this.dict.getPolygonAt([pos.x, pos.y]);
+    const hitPolygon = this.dict.getPolygonAt([pos.x, pos.y]);
+    if (hitPolygon) {
+      // console.log("Hit a polygon")
+      // console.log(hitPolygon)
+      // console.log(this.prevHighlighted )
+      // console.log(hitPolygon.id)
+      // Don't highlight field twice
+      if (this.prevHighlighted !== hitPolygon.id) {
+        this.highlighter.highlight(hitPolygon.id);
+        this.prevHighlighted = hitPolygon.id;
+        this.pixiOverlay.redraw();
+      }
+      return hitPolygon.properties
+    } else {
+      // console.log("Did not hit a polygon")
+      if (this.highlighter.revert()) {this.pixiOverlay.redraw();}
+      this.prevHighlighted = -1;
+      return hitPolygon;
+    }
+    // console.log(hitPolygon)
+    // return hitPolygon.properties
   }
 
   getOutlineRadius(zoom: number = this.currentZoom) {

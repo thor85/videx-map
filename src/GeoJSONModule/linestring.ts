@@ -10,6 +10,8 @@ import { GeoJSONFragmentShaderOutline, GeoJSONVertexShaderOutline } from './shad
 import { getRadius } from '../utils/Radius';
 import { ResizeConfig } from '../ResizeConfigInterface';
 import { Defaults } from './constants';
+import Highlighter from './HighlighterMesh';
+import { FeatureMesh } from './HighlighterMesh';
 
 type vec3 = [number, number, number];
 
@@ -18,12 +20,6 @@ interface OutlineUniform {
   outlineWidth: number;
 }
 
-export interface FeatureMesh {
-  outline: {
-    mesh: PIXI.Mesh;
-    uniform: OutlineUniform;
-  };
-}
 
 /** Interface for field config. */
 interface Config {
@@ -50,6 +46,12 @@ export default class GeoJSONLineString {
   dict: LineDictionary<any> = new LineDictionary(1.2);
   textStyle: PIXI.TextStyle;
   currentZoom: number = Defaults.INITIAL_ZOOM;
+  highlighter: Highlighter;
+
+  /** Index of previously highlighted line */
+  prevHighlighted: number = -1;
+
+  lineId: number = 0;
 
   constructor(root: PIXI.Container, pixiOverlay: pixiOverlayBase, config?: Config) {
 
@@ -60,6 +62,7 @@ export default class GeoJSONLineString {
     this.pixiOverlay = pixiOverlay;
     this.features = [];
     this.config = config;
+    this.highlighter = new Highlighter([0, 255, 255]);
   }
 
   add(feature: GeoJSON.Feature, props: (feature: object) => FeatureProps) {
@@ -73,13 +76,19 @@ export default class GeoJSONLineString {
       const projected = this.projectPolygons(coordinates);
       projected.pop(); // Remove overlapping
 
-      this.dict.add(projected, feature.properties);
+      // this.dict.add(projected, feature.properties);
+      this.dict.add(projected, {
+        id: this.lineId,
+        properties: feature.properties
+      });
+      this.lineId++;
       const outlineData = Mesh.SimpleLine(projected, Defaults.DEFAULT_LINE_WIDTH);
 
       meshes.push(
         this.drawPolygons(this.container, outlineData, properties.style, Defaults.DEFAULT_Z_INDEX),
       );
       this.features.push(...meshes);
+      this.highlighter.add(meshes);
     }
   }
 
@@ -141,7 +150,20 @@ export default class GeoJSONLineString {
 
   // TODO: Make distanceThreshold a config setting in the module
   testPosition(pos: Vector2, distanceThreshold: number = 2.0) : any {
-    return this.dict.getClosest(pos, distanceThreshold);
+    const hitPolygon = this.dict.getClosest(pos, distanceThreshold);
+    if (hitPolygon) {
+      // Don't highlight field twice
+      if (this.prevHighlighted !== hitPolygon.id) {
+        this.highlighter.highlight(hitPolygon.id);
+        this.prevHighlighted = hitPolygon.id;
+        this.pixiOverlay.redraw();
+      }
+      return hitPolygon.properties
+    } else {
+      if (this.highlighter.revert()) {this.pixiOverlay.redraw();}
+      this.prevHighlighted = -1;
+      return hitPolygon;
+    }
   }
 
   getOutlineRadius(zoom: number = this.currentZoom) {

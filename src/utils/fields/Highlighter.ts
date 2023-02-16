@@ -13,7 +13,7 @@ interface Cache {
 /**
  * Highlighter class for field layer.
  */
-export default class Hightlighter {
+export default class Highlighter {
   fields: FieldMesh[][] = [];
 
   // Cached data from highlight
