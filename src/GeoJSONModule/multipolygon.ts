@@ -18,6 +18,7 @@ import {
 import { ResizeConfig, LabelResizeConfig } from '../ResizeConfigInterface';
 import { getRadius } from '../utils/Radius';
 import { Defaults } from './constants';
+import Highlighter from './HighlighterMesh';
 
 type vec3 = [number, number, number];
 
@@ -103,15 +104,21 @@ export default class GeoJSONMultiPolygon {
   textStyle: PIXI.TextStyle;
   labels: GeoJSONLabels;
   currentZoom: number = Defaults.INITIAL_ZOOM;
+  highlighter: Highlighter;
+  /** Index of previously highlighted polygon */
+  prevHighlighted: number = -1;
+
+  multiPolygonId: number = 0;
 
   constructor(root: PIXI.Container, labelRoot: PIXI.Container, pixiOverlay: pixiOverlayBase, config?: Config) {
     if (config?.initialHash && typeof config.initialHash === 'number') this.config.initialHash = config.initialHash;
     if (config?.minHash && typeof config.minHash === 'number') this.config.minHash = config.minHash;
     if (config?.maxHash && typeof config.maxHash === 'number') this.config.maxHash = config.maxHash;
 
-    this.container = new PIXI.Container();
-    this.container.sortableChildren = true;
-    root.addChild(this.container);
+    // this.container = new PIXI.Container();
+    // this.container.sortableChildren = true;
+    // root.addChild(this.container);
+    this.container = root;
 
     this.labelsVisible = false;
 
@@ -127,6 +134,11 @@ export default class GeoJSONMultiPolygon {
       fill: config?.labelColor || Defaults.DEFAULT_LABEL_COLOR,
       align: config?.labelAlign || Defaults.DEFAULT_LABEL_ALIGN,
     });
+
+    this.highlighter = new Highlighter(
+      // [0, 1.0, 1.0],
+      [0, 255, 255],
+    );
 
     this.labels = new GeoJSONLabels(labelRoot || this.container, this.textStyle, this.config.labelResize?.baseScale || Defaults.DEFAULT_BASE_SCALE);
 
@@ -146,7 +158,13 @@ export default class GeoJSONMultiPolygon {
         projected.pop(); // Remove overlapping
 
         const meshData = Mesh.Polygon(projected);
-        this.dict.add(coordinates[0], meshData.triangles, feature.properties);
+        // this.dict.add(coordinates[0], meshData.triangles, feature.properties);
+        this.dict.add(coordinates[0], meshData.triangles, {
+          id: this.multiPolygonId,
+          properties: feature.properties
+        });
+
+
         const outlineRadius = this.getOutlineRadius(zoom);
         const outlineData = Mesh.PolygonOutline(projected, outlineRadius);
         const [position, mass] = centerOfMass(projected, meshData.triangles);
@@ -161,6 +179,7 @@ export default class GeoJSONMultiPolygon {
         polygonMass.push([position, mass, label]);
         // if (properties.label) this.labels.addLabel(properties.label, { position, mass });
       });
+      this.multiPolygonId++;
       let massUse: number = 0;
       let positionUse: Vector2, labelUse;
       polygonMass.forEach((element) => {
@@ -176,7 +195,7 @@ export default class GeoJSONMultiPolygon {
       })
       if (labelUse) this.labels.addLabel(labelUse, { position: positionUse, mass: massUse });
       this.features.push(...meshes);
-
+      this.highlighter.add(meshes);
     }
   }
 
@@ -278,7 +297,21 @@ export default class GeoJSONMultiPolygon {
   }
 
   testPosition(pos: Vector2) : any {
-    return this.dict.getPolygonAt([pos.x, pos.y]);
+    const hitPolygon = this.dict.getPolygonAt([pos.x, pos.y]);
+    if (hitPolygon) {
+      // Don't highlight field twice
+      if (this.prevHighlighted !== hitPolygon.id) {
+        this.highlighter.highlight(hitPolygon.id);
+        this.prevHighlighted = hitPolygon.id;
+        this.pixiOverlay.redraw();
+      }
+      return hitPolygon.properties
+    } else {
+      // console.log("Did not hit a polygon")
+      if (this.highlighter.revert()) {this.pixiOverlay.redraw();}
+      this.prevHighlighted = -1;
+      return hitPolygon;
+    }
   }
 
   getOutlineRadius(zoom: number = this.currentZoom) {
