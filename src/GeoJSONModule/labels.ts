@@ -44,11 +44,13 @@ export default class GeoJSONLabels {
     this.container.sortableChildren = true;
     root.addChild(this.container);
 
+    // textStyle.fontSize = textStyle.fontSize * 2;
     this.textStyle = textStyle;
+
     this.baseScale = baseScale;
     this.fontName = fontName || uuidv4();
     const charSet = PIXI.BitmapFont.ASCII.concat(['æ', 'ø', 'å', 'Æ', 'Ø', 'Å']);
-    this.font = PIXI.BitmapFont.from(this.fontName, this.textStyle, {resolution: window.devicePixelRatio, chars: charSet});
+    this.font = PIXI.BitmapFont.from(this.fontName, this.textStyle, {resolution: window.devicePixelRatio * 4, chars: charSet, textureHeight: 2048, textureWidth: 2048});
   }
 
   /**
@@ -73,7 +75,7 @@ export default class GeoJSONLabels {
     const drawLabel = (name: string, position: Vector2) => {
       const instance: PIXI.BitmapText = new PIXI.BitmapText(name, {fontName: this.fontName});
       instance.position.set(position[0], position[1]);
-      instance.scale.set(scale);
+      instance.scale.set(scale*0.25);
       // instance.scale.set(this.baseScale);
       instance.anchor = new PIXI.Point(0.5, 0.5);
       instance.zIndex = 1000; // High z-index
@@ -99,6 +101,6 @@ export default class GeoJSONLabels {
   }
 
   resize(scale: number) {
-    this.labels.forEach((lbl) => lbl.instance.scale.set(scale));
+    this.labels.forEach((lbl) => lbl.instance.scale.set(scale*0.25));
   }
 }

@@ -134,7 +134,7 @@ export default class GeoJSONPolygon {
 
     this.textStyle = new PIXI.TextStyle({
       fontFamily: config?.labelFontFamily || Defaults.DEFAULT_FONT_FAMILY,
-      fontSize: config?.labelFontSize || Defaults.DEFAULT_FONT_SIZE,
+      fontSize: config?.labelFontSize * 4 || Defaults.DEFAULT_FONT_SIZE * 4,
       fontWeight: config?.labelFontWeight || Defaults.DEFAULT_FONT_WEIGHT,
       fill: config?.labelColor || Defaults.DEFAULT_LABEL_COLOR,
       align: config?.labelAlign || Defaults.DEFAULT_LABEL_ALIGN,

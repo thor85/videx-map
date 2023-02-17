@@ -232,7 +232,7 @@ export default class FieldModule extends ModuleInterface {
 
     const textStyle: PIXI.TextStyle = new PIXI.TextStyle({
       fontFamily : 'Arial',
-      fontSize: 64,
+      fontSize: 64 * 4,
       fontWeight: '600',
       fill : 0x454545,
       align : 'center'

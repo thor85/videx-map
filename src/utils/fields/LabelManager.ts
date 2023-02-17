@@ -100,7 +100,7 @@ export default class LabelManager {
       const instance: PIXI.Text = new PIXI.Text(name, this.textStyle);
       instance.resolution = 2; // Increases text resolution
       instance.position.set(position[0], position[1]);
-      instance.scale.set(this.baseScale);
+      instance.scale.set(this.baseScale * 0.25);
       instance.anchor.set(0.5);
       instance.zIndex = 100000; // High z-index
       root.addChild(instance);
@@ -126,7 +126,7 @@ export default class LabelManager {
    */
   resize(scale: number) {
     this.fields.forEach(field => {
-      field.instance.scale.set(scale * this.baseScale);
+      field.instance.scale.set(scale * this.baseScale * 0.25);
     });
 
     this.multiFields.forEach(field => {
