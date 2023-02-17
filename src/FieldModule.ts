@@ -601,7 +601,7 @@ export default class FieldModule extends ModuleInterface {
     if (!this.onFeatureClick) return;
     // TODO: Set highlight in handleMouseMove and just retrieve it here?
     const hits = this.testPosition(event);
-    if (!hits) {return false;};
+    if (!hits || hits.length === 0) {return false;};
     if(this.onFeatureClick) this.onFeatureClick(this.fieldIdFeatures[hits]);
     return true;
   }
