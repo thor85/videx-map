@@ -131,7 +131,7 @@ export default class LabelManager {
 
     this.multiFields.forEach(field => {
       field.labels.forEach(label => {
-        label.instance.scale.set(scale * this.baseScale);
+        label.instance.scale.set(scale * this.baseScale * 0.25);
       });
 
       const centers = groupLabels(field, scale);
