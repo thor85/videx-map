@@ -1,5 +1,6 @@
 import * as PIXI from 'pixi.js';
 import Vector2 from '@equinor/videx-vector2';
+import {v4 as uuidv4} from 'uuid';
 import groupLabels from './groupLabels';
 
 /** Data for label. */
@@ -12,14 +13,14 @@ export type LabelData = {
 interface Field {
   name: string;
   position: Vector2;
-  instance?: PIXI.Text;
+  instance?: PIXI.BitmapText;
 }
 
 /** Instance of a multi-label entry. */
 export type Label = {
   position: Vector2;
   mass: number;
-  instance: PIXI.Text;
+  instance: PIXI.BitmapText;
   active: boolean;
 }
 
@@ -51,10 +52,20 @@ export default class LabelManager {
   /** Visibility of labels */
   visible: boolean = true;
 
+  /** The font used for labels. */
+  font: PIXI.BitmapFont;
+
+  /** font name */
+  fontName: string;
+
   /** construct a new label manager. */
-  constructor(textStyle: PIXI.TextStyle, baseScale: number) {
+  constructor(textStyle: PIXI.TextStyle, baseScale: number, fontName?: string) {
     this.textStyle = textStyle;
     this.baseScale = baseScale;
+
+    this.fontName = fontName || uuidv4();
+    const charSet = PIXI.BitmapFont.ASCII.concat(['æ', 'ø', 'å', 'Æ', 'Ø', 'Å']);
+    this.font = PIXI.BitmapFont.from(this.fontName, this.textStyle, {resolution: window.devicePixelRatio, chars: charSet, textureHeight: 4096, textureWidth: 4096});
   }
 
   /**
@@ -97,11 +108,13 @@ export default class LabelManager {
   draw(root: PIXI.Container) {
     // Function for drawing single label
     const drawLabel = (name: string, position: Vector2) => {
-      const instance: PIXI.Text = new PIXI.Text(name, this.textStyle);
-      instance.resolution = 2; // Increases text resolution
+      const instance: PIXI.BitmapText = new PIXI.BitmapText(name, {fontName: this.fontName});
+      // const instance: PIXI.Text = new PIXI.Text(name, this.textStyle);
+      // instance.resolution = 2; // Increases text resolution
       instance.position.set(position[0], position[1]);
       instance.scale.set(this.baseScale * 0.25);
-      instance.anchor.set(0.5);
+      instance.anchor = new PIXI.Point(0.5, 0.5);
+      // instance.anchor.set(0.5);
       instance.zIndex = 100000; // High z-index
       root.addChild(instance);
       return instance;
