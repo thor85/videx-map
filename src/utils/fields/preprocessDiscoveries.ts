@@ -22,7 +22,10 @@ export interface PreprocessedField {
     company?: string;
     owner?: string;
     status?: string;
-    dscnpdiddiscovery?: number;
+    dscNpdidDiscovery?: number;
+    fldNpdidField?: number;
+    fldName?: string;
+    dscName?: string;
     label: string;
     lat: number;
     long: number;
@@ -48,9 +51,10 @@ export default function preprocessDiscoveries(data: Field[]): PreprocessedField[
 
     // Change properties keys to lowercase
     // @ts-ignore
-    const properties = Object.fromEntries(
-      Object.entries(f.properties).map(([k, v]) => [k.toLowerCase(), v])
-    );
+    // const properties = Object.fromEntries(
+    //   Object.entries(f.properties).map(([k, v]) => [k.toLowerCase(), v])
+    // );
+    const properties = f.properties;
     // console.log(properties)
     // console.log(f)
     let field: Field = {
@@ -61,7 +65,7 @@ export default function preprocessDiscoveries(data: Field[]): PreprocessedField[
     // console.log(field)
 
     // const fieldName: string = field.properties.label;
-    const fieldName: string = field.properties.dscname;
+    const fieldName: string = field.properties.dscName;
 
     let coordinates: [number, number][][] = [];
 
@@ -84,7 +88,7 @@ export default function preprocessDiscoveries(data: Field[]): PreprocessedField[
           // discname: field.properties.discname,
           // hctype: field.properties.hctype,
           // hctype: field.properties.dsc_hctype,
-          hctype: field.properties.dschctype,
+          hctype: field.properties.dscHcType,
           // polygonId: field.properties.polygonId,
           // status: field.properties.status,
         },
@@ -98,18 +102,18 @@ export default function preprocessDiscoveries(data: Field[]): PreprocessedField[
     // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
     // Push new polygon. Append additional.
     } else {
-      let label = field.properties.dscname;
-      if (field.properties.fldname) {
-        label = capitalizeFirstLetter(field.properties.fldname)
+      let label = field.properties.dscName;
+      if (field.properties.fldName) {
+        label = capitalizeFirstLetter(field.properties.fldName)
       } else {
-        if (field.properties.wlbname !== field.properties.dscname) {
-          label = (field.properties.dscname).replace(field.properties.wlbname, '');
+        if (field.properties.wlbName !== field.properties.dscName) {
+          label = (field.properties.dscName).replace(field.properties.wlbName, '');
           label = label.replace('(', '').replace(')', '')
         }
       }
 
-      let hctype = field.properties.dschctype;
-      if (field.properties.dscname === '31/6-1 (Troll Øst)') hctype = 'GAS';
+      let hctype = field.properties.dscHcType;
+      if (field.properties.dscName === '31/6-1 (Troll Øst)') hctype = 'GAS';
 
       unique[fieldName] = {
         type: field.geometry.type,
@@ -132,18 +136,21 @@ export default function preprocessDiscoveries(data: Field[]): PreprocessedField[
         properties: {
           group: field.properties.group,
           guid: field.properties.guid,
-          dscnpdiddiscovery: field.properties.dscnpdiddiscovery,
+          dscNpdidDiscovery: field.properties.dscNpdidDiscovery,
           // label: field.properties.label,
           // label: field.properties.dscname,
           label: label,
           // hctype: field.properties.dsc_hctype,
           // hctype: field.properties.dschctype,
           hctype: hctype,
-          discoveryyear: field.properties.dscdiscoveryyear,
-          owner: field.properties.dscownername,
-          company: field.properties.cmplongname,
+          fldName: field.properties.fldName,
+          dscName: field.properties.dscName,
+          fldNpdidField: field.properties.fldNpdidField,
+          discoveryyear: field.properties.dscDiscoveryYear,
+          owner: field.properties.dscOwnerName,
+          company: field.properties.cmpLongName,
           // status: field.properties.dscactstat,
-          status: field.properties.dsccurrentactivitystatus,
+          status: field.properties.dscCurrentActivityStatus,
           lat: field.properties.lat,
           long: field.properties.long,
         }
