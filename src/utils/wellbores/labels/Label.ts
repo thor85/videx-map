@@ -30,6 +30,7 @@ export class Label {
   static config: Common;
   static height: number; // Height of labels
 
+  // text: PIXI.BitmapText;
   text: PIXI.Text;
   // background: PIXI.Graphics;
   metrics: PIXI.TextMetrics;
