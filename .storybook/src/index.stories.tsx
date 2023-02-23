@@ -572,6 +572,7 @@ export const layer = () => {
         threshold: 8,
         baseScale: 0.15,
       },
+      labelFontFamily: 'Equinor',
       onFeatureClick: feature => {
         console.log(feature);
       },

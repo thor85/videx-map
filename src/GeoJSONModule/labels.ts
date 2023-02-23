@@ -46,11 +46,12 @@ export default class GeoJSONLabels {
 
     // textStyle.fontSize = textStyle.fontSize * 2;
     this.textStyle = textStyle;
+    // console.log(textStyle)
 
     this.baseScale = baseScale;
     this.fontName = fontName || uuidv4();
     const charSet = PIXI.BitmapFont.ASCII.concat(['æ', 'ø', 'å', 'Æ', 'Ø', 'Å']);
-    this.font = PIXI.BitmapFont.from(this.fontName, this.textStyle, {resolution: window.devicePixelRatio * 4, chars: charSet, textureHeight: 4096, textureWidth: 4096});
+    this.font = PIXI.BitmapFont.from(this.fontName, this.textStyle, {resolution: window.devicePixelRatio, chars: charSet, textureHeight: 4096, textureWidth: 4096});
   }
 
   /**
