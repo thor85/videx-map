@@ -112,7 +112,7 @@ export default class LabelManager {
       // const instance: PIXI.Text = new PIXI.Text(name, this.textStyle);
       // instance.resolution = 2; // Increases text resolution
       instance.position.set(position[0], position[1]);
-      instance.scale.set(this.baseScale * 0.25);
+      instance.scale.set(this.baseScale * 0.5);
       instance.anchor = new PIXI.Point(0.5, 0.5);
       // instance.anchor.set(0.5);
       instance.zIndex = 100000; // High z-index
@@ -139,12 +139,12 @@ export default class LabelManager {
    */
   resize(scale: number) {
     this.fields.forEach(field => {
-      field.instance.scale.set(scale * this.baseScale * 0.25);
+      field.instance.scale.set(scale * this.baseScale);
     });
 
     this.multiFields.forEach(field => {
       field.labels.forEach(label => {
-        label.instance.scale.set(scale * this.baseScale * 0.25);
+        label.instance.scale.set(scale * this.baseScale * 0.5);
       });
 
       const centers = groupLabels(field, scale);
