@@ -49,6 +49,7 @@ export default class WellboreModule extends ModuleInterface {
 
   /** Zoom event handler. */
   scaling: (zoom: number) => number;
+  // @ts-ignore
   marker : PIXI.Graphics;
 
   constructor(inputConfig?: InputConfig) {

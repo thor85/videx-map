@@ -11,11 +11,13 @@ import Highlighter from './HighlighterGraphics';
 
 
 function drawRegularPolygon(
+  // @ts-ignore
   this: PIXI.Graphics,
   x: number,
   y: number,
   radius: number,
   sides: number,
+  // @ts-ignore
   rotation = 0) : PIXI.Graphics
 {
   sides = Math.max(sides | 0, 3);
@@ -37,12 +39,14 @@ function drawRegularPolygon(
 }
 
 function drawTorus(
+  // @ts-ignore
   this: PIXI.Graphics,
   x: number,
   y: number,
   innerRadius: number,
   outerRadius: number,
   startArc = 0,
+  // @ts-ignore
   endArc: number = Math.PI * 2) : PIXI.Graphics
 {
   if (Math.abs(endArc - startArc) >= Math.PI * 2)
@@ -65,7 +69,9 @@ function drawTorus(
 
 
 export function drawPoint(point, properties, projected, forcedLineColor = null) {
+  //@ts-ignore
   const fillColor = properties.style.fillColor ? new PIXI.Color(color(properties.style.fillColor).formatHex()).toNumber() : 0x0;
+  //@ts-ignore
   let lineColor = properties.style.lineColor ? new PIXI.Color(color(properties.style.lineColor).formatHex()).toNumber()  : 0x0;
   if (forcedLineColor) lineColor = forcedLineColor;
   const opacity = properties.style.fillOpacity || 0;
@@ -117,9 +123,11 @@ export function drawPoint(point, properties, projected, forcedLineColor = null) 
 export default class GeoJSONPoint {
 
   /** Graphic elements currently existing in world space. */
+  // @ts-ignore
   spawned: (PIXI.Graphics|PIXI.Sprite)[] = [];
 
   /** Pool of initialized graphic elements. */
+  // @ts-ignore
   pool: (PIXI.Graphics|PIXI.Sprite)[] = [];
 
   container: PIXI.Container;
@@ -181,6 +189,7 @@ export default class GeoJSONPoint {
         if (this.pool.length > 0) {
           point = this.pool.pop();
         } else {
+          // @ts-ignore
           point = new PIXI.Graphics();
           this.container.addChild(point);
         }

@@ -1,11 +1,13 @@
 import * as PIXI from 'pixi.js';
 import { FeatureProps } from '.';
 import { drawPoint } from './point'
+//@ts-ignore
 window.PIXI = PIXI; //workaround for filters
-import { OutlineFilter } from "@pixi/filter-outline";
+import { OutlineFilter } from '@pixi/filter-outline';
 
 
 export interface FeatureGraphics {
+  // @ts-ignore
     graphics: PIXI.Graphics | PIXI.Sprite | any;
     properties: FeatureProps;
     projected?: any;

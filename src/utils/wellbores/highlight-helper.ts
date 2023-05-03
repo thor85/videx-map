@@ -82,7 +82,8 @@ export function updateHighlighted(module: WellboreModule,
       if (highlight.changeColor) {
         changed = true;
         highlight.set(root, wellbores);
-        pixiOverlay.redraw();
+        // pixiOverlay.redraw();
+        module.requestRedraw();
       }
     }
 

@@ -40,9 +40,11 @@ interface Config {
 export default class FaultlineModule extends ModuleInterface {
 
   /** Graphic elements currently existing in world space. */
+  // @ts-ignore
   spawned: PIXI.Graphics[] = [];
 
   /** Pool of initialized graphic elements. */
+  // @ts-ignore
   pool: PIXI.Graphics[] = [];
 
   /** Default config. */
@@ -87,6 +89,7 @@ export default class FaultlineModule extends ModuleInterface {
       if (this.pool.length > 0) {
         faultline = this.pool.pop();
       } else {
+        // @ts-ignore
         faultline = new PIXI.Graphics();
       }
       this.root.addChild(faultline);
@@ -125,6 +128,7 @@ export default class FaultlineModule extends ModuleInterface {
   /** Clear all spawned graphic elements and return to pool. */
   clear() {
     while (this.spawned.length > 0) {
+      // @ts-ignore
       const temp: PIXI.Graphics = this.spawned.pop();
       this.root.removeChild(temp);
       temp.clear(); // Clear
