@@ -13,7 +13,7 @@ import { ProspectColors } from './helper/ProspectColors';
 import Sidebar from './Sidebar';
 
 import Vector2 from '@equinor/videx-vector2';
-import { omit } from 'lodash';
+// import { omit } from 'lodash';
 
 export default { title: 'Leaflet layer' };
 
@@ -222,33 +222,33 @@ export const layer = () => {
     return new Date(date).getFullYear();
   }
 
-  function transformDrilledWellboreData(data: any[]) {
-    // const proj = new GeoProjection(defaultCrs);
+  // function transformDrilledWellboreData(data: any[]) {
+  //   // const proj = new GeoProjection(defaultCrs);
 
-    const wellboreInfo: any[] = data.map(item => {
-      const depthRef: any = item.depthReferenceElevation;
+  //   const wellboreInfo: any[] = data.map(item => {
+  //     const depthRef: any = item.depthReferenceElevation;
 
-      //@ts-ignore
-      item.intervals = item.intervals.map(d => ({
-        ...d,
-        start: d.start + depthRef,
-        end: d.end + depthRef,
-      }));
-      // proj.set(item.projectedCoordinateSystem || defaultCrs);
-      // item.path = proj.toLatLongStream(item.path, [item.refX, item.refY]);
-      return {
-        ...omit(item, ['depthMsl']),
-        wellboreId: item.wellboreGuid,
-        label: item.uniqueWellboreIdentifier,
-        labelShort: stripLabel(item.uniqueWellboreIdentifier),
-        category: item.wellborePurpose?.toLowerCase() || 'unknown',
-        drillEndYear: getYear(item.drillEndDate || item.completionDate),
-        totalDepthDrillerMd: item.depthMsl + depthRef,
-      };
-    });
+  //     //@ts-ignore
+  //     item.intervals = item.intervals.map(d => ({
+  //       ...d,
+  //       start: d.start + depthRef,
+  //       end: d.end + depthRef,
+  //     }));
+  //     // proj.set(item.projectedCoordinateSystem || defaultCrs);
+  //     // item.path = proj.toLatLongStream(item.path, [item.refX, item.refY]);
+  //     return {
+  //       ...omit(item, ['depthMsl']),
+  //       wellboreId: item.wellboreGuid,
+  //       label: item.uniqueWellboreIdentifier,
+  //       labelShort: stripLabel(item.uniqueWellboreIdentifier),
+  //       category: item.wellborePurpose?.toLowerCase() || 'unknown',
+  //       drillEndYear: getYear(item.drillEndDate || item.completionDate),
+  //       totalDepthDrillerMd: item.depthMsl + depthRef,
+  //     };
+  //   });
 
-    return wellboreInfo;
-  }
+  //   return wellboreInfo;
+  // }
 
   /** Get displacement of point relative to line. X-axis follows line and starts at 'lineStart'. */
   function displacementToVectorOrigin(point: any, lineStart: any, lineEnd: any) {

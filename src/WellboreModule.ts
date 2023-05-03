@@ -35,6 +35,7 @@ export default class WellboreModule extends ModuleInterface {
   currentZoom: number = 20;
 
   private _deferredSelector: (data: SourceData) => boolean;
+  private _deferredSelectorKeys: string[] = null;
   private _projector: Projector;
   private _eventHandler: EventHandler;
 
@@ -191,7 +192,7 @@ export default class WellboreModule extends ModuleInterface {
     // Append wellbore to root
     root.append(wellbore);
 
-    if (this._deferredSelector && this._deferredSelector(wellbore.data)) {
+    if (this._deferredSelector && (this._deferredSelectorKeys === null || this._deferredSelectorKeys.includes(group.key)) && this._deferredSelector(wellbore.data)) {
       this._deferredSelector = undefined;
       wellbore.setSelected(true);
     }
@@ -370,6 +371,7 @@ export default class WellboreModule extends ModuleInterface {
 
     if (nSelected === 0) {
       this._deferredSelector = selectFunction;
+      this._deferredSelectorKeys = keys;
     }
   }
 

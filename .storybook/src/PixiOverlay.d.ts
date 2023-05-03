@@ -8,4 +8,4 @@ declare namespace L {
   }
 }
 
-declare module '@pixi/graphics';
+// declare module '@pixi/graphics';
