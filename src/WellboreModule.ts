@@ -1,3 +1,4 @@
+/* eslint-disable no-magic-numbers, curly, @typescript-eslint/no-explicit-any */
 import * as PIXI from 'pixi.js';
 import { clamp, lerp } from '@equinor/videx-math';
 import Vector2 from '@equinor/videx-vector2';
@@ -85,7 +86,7 @@ export default class WellboreModule extends ModuleInterface {
     /** Prepare drawing of labels. */
     Label.setStyle(extra.fontSize); // Set label style
     Label.setCommon({ // Set common config
-      backgroundOpacity: extra.labelBgOpacity
+      backgroundOpacity: extra.labelBgOpacity,
     });
 
     this._eventHandler = inputConfig && inputConfig.customEventHandler || new DefaultEventHandler();
@@ -216,7 +217,7 @@ export default class WellboreModule extends ModuleInterface {
             // this.pixiOverlay.redraw();
             this.requestRedraw();
             resolve();
-          }
+          },
         }, 0);
       } catch (err) {
         reject(err);
@@ -226,8 +227,8 @@ export default class WellboreModule extends ModuleInterface {
 
   private forEachGroup(keys: string[], func: (group: Group, key: string) => void, redraw: boolean = true): void {
     const registeredKeys = Object.keys(this.groups);
-    keys = (keys.length == 0) ? registeredKeys : keys.filter(key => registeredKeys.includes(key));
-    keys.forEach(key => func(this.groups[key], key));
+    const filteredKeys = (keys.length === 0) ? registeredKeys : keys.filter(key => registeredKeys.includes(key));
+    filteredKeys.forEach(key => func(this.groups[key], key));
     if (redraw) this.pixiOverlay.redraw();
   }
 
@@ -391,7 +392,7 @@ export default class WellboreModule extends ModuleInterface {
    */
   setHighlight(label: string, ...keys: string[]): RealtimeWellbore {
     const registeredKeys = Object.keys(this.groups);
-    keys = (keys.length == 0) ? registeredKeys : keys.filter(key => registeredKeys.includes(key));
+    keys = (keys.length === 0) ? registeredKeys : keys.filter(key => registeredKeys.includes(key));
 
     // Similar behavior as forEachGroup, but without forEach loops. This is to allow return mid-loop.
     for (let n = 0; n < keys.length; n++) {
@@ -434,9 +435,9 @@ export default class WellboreModule extends ModuleInterface {
     this.roots = [];
 
     // remove PIXI elements
-    this.containers.wellbores.removeChildren().forEach(child => child.destroy());
-    this.containers.labels.removeChildren().forEach(child => child.destroy());
-    this.containers.roots.removeChildren().forEach(child => child.destroy());
+    this.containers.wellbores.removeChildren().forEach((child: PIXI.DisplayObject) => child.destroy());
+    this.containers.labels.removeChildren().forEach((child: PIXI.DisplayObject) => child.destroy());
+    this.containers.roots.removeChildren().forEach((child: PIXI.DisplayObject) => child.destroy());
     // this.pixiOverlay.redraw();
     this.requestRedraw();
   }
@@ -502,10 +503,11 @@ export default class WellboreModule extends ModuleInterface {
     const rootRadius = this.getRootRadius(zoom);
 
     // @ts-ignore
-    this.pixiOverlay._renderer.globalUniforms.uniforms.wellboreRadius = wellboreRadius;
+    // this.pixiOverlay._renderer.globalUniforms.uniforms.wellboreRadius = wellboreRadius;
 
     // @ts-ignore
-    this.pixiOverlay._renderer.globalUniforms.uniforms.rootRadius = rootRadius;
+    // this.pixiOverlay._renderer.globalUniforms.uniforms.rootRadius = rootRadius;
+    WellboreData.state = { wellboreRadius, rootRadius };
 
     if (!this.scaling) return; // Return if no scaling function
     let scale = this.scaling(zoom - this.config.zoomOrigin);
@@ -519,9 +521,10 @@ export default class WellboreModule extends ModuleInterface {
 
     // Only update labels on resize if labels and container is visible
     if (labelVisible && Label.state.visible) this.roots.forEach(root => root.updateLabels());
+    Object.values(this.groups).forEach(({wellbores}) => wellbores.forEach(wellbore => wellbore.update()));
   }
 
-  onAdd(map: import("leaflet").Map): void {
+  onAdd(map: import('leaflet').Map): void {
     const element = this.pixiOverlay.utils.getRenderer().view.parentNode;
     const callbacks = {
       mousemove: this.handleMouseMove.bind(this),
@@ -534,7 +537,7 @@ export default class WellboreModule extends ModuleInterface {
     this._eventHandler.register(map, element, callbacks);
   }
 
-  onRemove(map: import("leaflet").Map): void {
+  onRemove(map: import('leaflet').Map): void {
     this._eventHandler.unregister();
   }
 

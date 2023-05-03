@@ -1,4 +1,5 @@
-import Vector2 from "@equinor/videx-vector2";
+/* eslint-disable no-magic-numbers, @typescript-eslint/no-explicit-any */
+import Vector2 from '@equinor/videx-vector2';
 import * as PIXI from 'pixi.js';
 
 /**

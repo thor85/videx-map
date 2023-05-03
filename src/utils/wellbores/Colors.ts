@@ -1,3 +1,4 @@
+/* eslint-disable no-magic-numbers, curly, @typescript-eslint/ban-ts-comment */
 import * as PIXI from 'pixi.js';
 
 type vec3 = [number, number, number];

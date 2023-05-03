@@ -1,5 +1,7 @@
+/* eslint-disable no-magic-numbers, curly */
 import * as PIXI from 'pixi.js';
-import { color } from 'd3';
+// import { color } from 'd3';
+import { color } from 'd3-color';
 import Vector2 from '@equinor/videx-vector2';
 
 import { pixiOverlayBase } from '../pixiOverlayInterfaces';
@@ -111,26 +113,7 @@ export function drawPoint(point, properties, projected, forcedLineColor = null) 
   return;
 }
 
-/** Interface for faultline config. */
-interface InputConfig {
-  /** Color of faultline on format 0xRRGGBB. (Default: 0x727D88) */
-  color?: number;
-  /** Alpha of faultlines. (Default: 1.0) */
-  alpha?: number;
-  /** Width of outline. (Default: 0.125) */
-  outlineWidth?: number;
-}
-
-interface Config {
-  /** Color of faultline on format 0xRRGGBB. (Default: 0x727D88) */
-  color: number;
-  /** Alpha of faultlines. (Default: 1.0) */
-  alpha: number;
-  /** Width of outline. (Default: 0.125) */
-  outlineWidth: number;
-}
-
-/** Module for displaying fields. */
+/** Module for displaying points. */
 export default class GeoJSONPoint {
 
   /** Graphic elements currently existing in world space. */
@@ -141,6 +124,7 @@ export default class GeoJSONPoint {
 
   container: PIXI.Container;
   pixiOverlay: pixiOverlayBase;
+  /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
   dict: PointDictionary<any>;
 
   textStyle: PIXI.TextStyle;
@@ -227,7 +211,11 @@ export default class GeoJSONPoint {
     this.highlighter.zoom = zoom;
     if (this.highlighter.cached) {this.highlighter.highlight(this.highlighter.cached.index)}
   }
+  // resize(_zoom: number) {
 
+  // }
+
+  /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
   testPosition(pos: Vector2, radiusThreshold: number = 0.5) : any {
     const hitPoint = this.dict.getClosestUnder(pos, radiusThreshold);
     if (hitPoint) {

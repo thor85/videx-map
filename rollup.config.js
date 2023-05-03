@@ -40,6 +40,7 @@ export default [
         '@equinor/videx-linear-algebra': 'videxLinearAlgebra',
         '@equinor/videx-math': 'videxMath',
         '@equinor/videx-vector2': 'Vector2',
+        'd3-color': 'd3Color',
         earcut: 'earcut',
         'pixi.js': 'PIXI',
         uuid: 'uuid',

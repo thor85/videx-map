@@ -1,6 +1,8 @@
+/* eslint-disable no-magic-numbers */
 import * as PIXI from 'pixi.js';
 import Vector2 from '@equinor/videx-vector2';
 import {v4 as uuidv4} from 'uuid';
+
 import groupLabels from './groupLabels';
 
 /** Data for label. */
@@ -114,8 +116,8 @@ export default class LabelManager {
       // instance.resolution = 2; // Increases text resolution
       instance.position.set(position[0], position[1]);
       instance.scale.set(this.baseScale * 0.5);
-      instance.anchor = new PIXI.Point(0.5, 0.5);
-      // instance.anchor.set(0.5);
+      // instance.anchor = new PIXI.Point(0.5, 0.5);
+      instance.anchor.set(0.5);
       instance.zIndex = 100000; // High z-index
       root.addChild(instance);
       return instance;

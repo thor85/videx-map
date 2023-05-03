@@ -1,5 +1,7 @@
+/* eslint-disable curly */
 import * as PIXI from 'pixi.js';
 import Vector2 from '@equinor/videx-vector2';
+
 import { ModuleInterface } from '../ModuleInterface';
 import { EventHandler, DefaultEventHandler } from '../EventHandler';
 import { default as GeoJSONMultiPolygon } from './multipolygon';
@@ -13,6 +15,7 @@ import { FeatureProps } from './interfaces';
 /** Interface for config. */
 interface Config {
   customEventHandler?: EventHandler;
+  /* eslint-disable @typescript-eslint/no-explicit-any */
   onFeatureHover?: (event: MouseEvent, data: any) => void;
   onFeatureClick?: (data: any) => void;
   outlineResize?: ResizeConfig;
@@ -23,6 +26,7 @@ interface Config {
 /** Module for displaying fields. */
 export default class GeoJSONModule extends ModuleInterface {
 
+  /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
   onFeatureHover: (event: MouseEvent, data: any) => void;
   onFeatureClick: (data: any) => void;
   points: GeoJSONPoint;
@@ -156,6 +160,7 @@ export default class GeoJSONModule extends ModuleInterface {
    * @returns List of features at the given position
    */
   // testPosition(pos: Vector2) : any {
+  /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
   testPosition(event: MouseEvent) : any {
     const map = this.pixiOverlay.utils.getMap();
     const latLng = map.mouseEventToLatLng(event);
@@ -171,7 +176,7 @@ export default class GeoJSONModule extends ModuleInterface {
     return result;
   }
 
-  onAdd(map: import("leaflet").Map): void {
+  onAdd(map: import('leaflet').Map): void {
     const element = this.pixiOverlay.utils.getRenderer().view.parentNode;
     const callbacks = {
       mousemove: this.handleMouseMove.bind(this),

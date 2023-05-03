@@ -1,6 +1,8 @@
-import Vector2 from "@equinor/videx-vector2";
-import { Label } from "./Label";
-import { WellboreData } from "../data";
+/* eslint-disable no-magic-numbers */
+import Vector2 from '@equinor/videx-vector2';
+
+import { Label } from './Label';
+import { WellboreData } from '../data';
 
 export function positionAtRoot(wellbore: WellboreData, position: number) : void {
   wellbore.label.attachToRoot = true;

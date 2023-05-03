@@ -1,4 +1,8 @@
+/* eslint-disable no-magic-numbers, curly */
 import * as PIXI from 'pixi.js';
+import { clamp } from '@equinor/videx-math';
+import Vector2 from '@equinor/videx-vector2';
+
 import { ModuleInterface } from './ModuleInterface';
 import Mesh, { MeshData, MeshNormalData } from './utils/Mesh';
 import centerOfMass from './utils/centerOfMass';
@@ -7,9 +11,7 @@ import Highlighter from './utils/fields/Highlighter';
 import preprocessDiscoveries from './utils/fields/preprocessDiscoveries';
 import LabelManager, { LabelData } from './utils/fields/LabelManager';
 import { EventHandler, DefaultEventHandler } from './EventHandler';
-import { clamp } from '@equinor/videx-math';
 import TriangleDictionary from './utils/TriangleDictionary';
-import Vector2 from '@equinor/videx-vector2';
 import Projector from './utils/wellbores/Projector';
 import { getRadius } from './utils/Radius';
 import { Defaults } from './GeoJSONModule/constants';
@@ -245,7 +247,7 @@ export default class FieldModule extends ModuleInterface {
       fontSize: 64 * 2,
       fontWeight: '600',
       fill : 0x454545,
-      align : 'center'
+      align : 'center',
     });
 
     // const zoom = this.pixiOverlay._map.getZoom();
@@ -358,7 +360,11 @@ export default class FieldModule extends ModuleInterface {
 
     this.fieldMeshContainer.addChild(polygonMesh);
 
-    const polygonOutlineMesh = Mesh.from(outlineData.vertices, outlineData.triangles, FieldModule.vertexShaderOutline, FieldModule.fragmentShaderOutline, outlineUniform, outlineData.normals);
+    const polygonOutlineMesh = Mesh.from(outlineData.vertices,
+      outlineData.triangles,
+      FieldModule.vertexShaderOutline,
+      FieldModule.fragmentShaderOutline,
+      outlineUniform, outlineData.normals);
     polygonOutlineMesh.zIndex = zIndex + 1;
     this.fieldMeshContainer.addChild(polygonOutlineMesh);
 
@@ -452,36 +458,41 @@ export default class FieldModule extends ModuleInterface {
     });
   }
 
-  resize(zoom: number) {
-    if (!this.config.outlineResize) return;
-    const outlineRadius = this.getOutlineRadius(zoom);
+  // resize(zoom: number) {
+  //   if (!this.config.outlineResize) return;
+  //   const outlineRadius = this.getOutlineRadius(zoom);
 
-    if (this.config.labelResize && this.labelManager && this.labelsVisible && this.labelsDrawn) {
-      const labelSize = this.getLabelSize(zoom);
+  //   if (this.config.labelResize && this.labelManager && this.labelsVisible && this.labelsDrawn) {
+  //     const labelSize = this.getLabelSize(zoom);
 
-      // Labels will just get in the way after a certain threshold, so it is better to just hide them
-      if (zoom <= this.config.labelResize.threshold || !this.labelsVisible) {
-        this.labelManager.hideLabels();
-      } else {
-        if (this.labelsVisible) this.labelManager.showLabels();
-        this.labelManager.resize(labelSize);
-      }
-    }
+  //     // Labels will just get in the way after a certain threshold, so it is better to just hide them
+  //     if (zoom <= this.config.labelResize.threshold || !this.labelsVisible) {
+  //       this.labelManager.hideLabels();
+  //     } else {
+  //       if (this.labelsVisible) this.labelManager.showLabels();
+  //       this.labelManager.resize(labelSize);
+  //     }
+  //   }
 
-    /**
-     * This is not the best way to update, ideally we would use global uniforms
-     * @example this.pixiOverlay._renderer.globalUniforms.uniforms.outlineWidth = outlineRadius;
-     * instead of iterating over every mesh and manually updating each of the selected
-     */
-    this.fieldMeshContainer.children.map((child) => {
-      // console.log(child)
-      // @ts-ignore
-      if (child.shader.uniformGroup.uniforms.width) {
-        // @ts-ignore
-        child.shader.uniformGroup.uniforms.width = outlineRadius;
-      }
-    });
-    this.currentZoom = zoom;
+  //   /**
+  //    * This is not the best way to update, ideally we would use global uniforms
+  //    * @example this.pixiOverlay._renderer.globalUniforms.uniforms.outlineWidth = outlineRadius;
+  //    * instead of iterating over every mesh and manually updating each of the selected
+  //    */
+  //   this.fieldMeshContainer.children.map((child) => {
+  //     // console.log(child)
+  //     // @ts-ignore
+  //     if (child.shader.uniformGroup.uniforms.width) {
+  //       // @ts-ignore
+  //       child.shader.uniformGroup.uniforms.width = outlineRadius;
+  //     }
+  //   });
+  //   this.currentZoom = zoom;
+  // }
+
+  /* eslint-disable-next-line @typescript-eslint/no-empty-function */
+  resize(_zoom: number) {
+
   }
 
   clear() {
@@ -526,7 +537,7 @@ export default class FieldModule extends ModuleInterface {
       if (this.highlighter.revert()) this.pixiOverlay.redraw();
       this.prevField = -1;
       return false;
-    };
+    }
     // Don't highlight field twice
     if (this.prevField === field) return true;
     this.highlighter.highlight(field);

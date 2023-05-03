@@ -1,5 +1,7 @@
+/* eslint-disable no-magic-numbers, curly */
 import * as PIXI from 'pixi.js';
-import { color } from 'd3';
+// import { color } from 'd3';
+import { color } from 'd3-color';
 import Vector2 from '@equinor/videx-vector2';
 
 import { pixiOverlayBase } from '../pixiOverlayInterfaces';
@@ -43,6 +45,7 @@ export default class GeoJSONLineString {
 
   container: PIXI.Container;
   pixiOverlay: pixiOverlayBase;
+  /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
   dict: LineDictionary<any> = new LineDictionary(1.2);
   textStyle: PIXI.TextStyle;
   currentZoom: number = Defaults.INITIAL_ZOOM;
@@ -104,7 +107,12 @@ export default class GeoJSONLineString {
       outlineWidth: featureStyle.lineWidth,
     }
 
-    const polygonOutlineMesh = Mesh.from(outlineData.vertices, outlineData.triangles, GeoJSONVertexShaderOutline, GeoJSONFragmentShaderOutline, outlineUniform, outlineData.normals);
+    const polygonOutlineMesh = Mesh.from(outlineData.vertices,
+      outlineData.triangles,
+      GeoJSONVertexShaderOutline,
+      GeoJSONFragmentShaderOutline,
+      outlineUniform,
+      outlineData.normals);
     polygonOutlineMesh.zIndex = zIndex;
     container.addChild(polygonOutlineMesh);
 
@@ -138,9 +146,11 @@ export default class GeoJSONLineString {
      * @example this.pixiOverlay._renderer.globalUniforms.uniforms.outlineWidth = outlineRadius;
      * instead of iterating over every mesh and manually updating each of the selected
      */
-    this.container.children.map((child) => {
+    this.container.children.map((child: PIXI.DisplayObject) => {
+      /* eslint-disable-next-line @typescript-eslint/ban-ts-comment */
       // @ts-ignore
       if (child.shader.uniformGroup.uniforms.outlineWidth) {
+        /* eslint-disable-next-line @typescript-eslint/ban-ts-comment */
         // @ts-ignore
         child.shader.uniformGroup.uniforms.outlineWidth = outlineRadius;
       }
@@ -152,7 +162,7 @@ export default class GeoJSONLineString {
   testPosition(pos: Vector2, distanceThreshold: number = 2.0) : any {
     const hitPolygon = this.dict.getClosest(pos, distanceThreshold);
     if (hitPolygon) {
-      // Don't highlight field twice
+      // Don't highlight twice
       if (this.prevHighlighted !== hitPolygon.id) {
         this.highlighter.highlight(hitPolygon.id);
         this.prevHighlighted = hitPolygon.id;
