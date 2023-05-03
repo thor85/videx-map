@@ -34,6 +34,7 @@ interface FillUniform {
 interface OutlineUniform {
   color: vec3;
   width: number;
+  opacity?: number;
 }
 
 /** Collection of data describing colors used for fill. */
@@ -41,6 +42,7 @@ interface FieldStyle {
   fillColor1: vec3;
   fillColor2: vec3;
   fillOpacity: number;
+  outlineOpacity?: number;
   outlineColor: vec3;
   hashed: boolean;
 }
@@ -120,11 +122,15 @@ interface Config {
 // Colors
 const red: vec3 = [0.8, 0.0, 0.0];
 const green: vec3 = [0.133, 0.6, 0.133];
+const equinorGreen: vec3 = [0, 0.439, 0.475];
+const lightgreen: vec3 = [0.6, 0.78, 0.6];
 const pink: vec3 = [1.0, 0.753, 0.796];
 const gray: vec3 = [0.6, 0.6, 0.6];
+const black: vec3 = [0, 0, 0];
+const purple: vec3 = [0.55, 0, 1];
 
 const outlineRed: vec3 = [0.6, 0.0, 0.0];
-const outlineGray: vec3 = [0.5, 0.5, 0.5];
+const outlineGray: vec3 = [0.6, 0.6, 0.6];
 
 /** Module for displaying fields. */
 export default class FieldModule extends ModuleInterface {
@@ -274,7 +280,8 @@ export default class FieldModule extends ModuleInterface {
         // if (!polygon.hasOwnProperty('coordinates')) return;
         // if (!polygon.coordinates) return;
         // if ((polygon.coordinates).length === 0) return;
-        const fieldStyle: FieldStyle = this.getFieldStyle(guid, polygon.properties.hctype);
+        // console.log(polygon.properties)
+        const fieldStyle: FieldStyle = this.getFieldStyle(guid, polygon.properties);
         const projected = this.projectPolygons(polygon.coordinates);
         projected.pop(); // Remove overlapping
 
@@ -343,6 +350,7 @@ export default class FieldModule extends ModuleInterface {
     const outlineUniform: OutlineUniform = {
       color: fieldStyle.outlineColor,
       width: outlineRadius,
+      opacity: fieldStyle.outlineOpacity,
     }
 
     const polygonMesh = Mesh.from(meshData.vertices, meshData.triangles, FieldModule.vertexShaderFill, FieldModule.fragmentShaderFill, fillUniform);
@@ -371,7 +379,7 @@ export default class FieldModule extends ModuleInterface {
    * @param props Properties of field
    * @returns Color used to fill
    */
-  getFieldStyle(guid: number, hctype: string): FieldStyle {
+  getFieldStyle(guid: number, properties: any): FieldStyle {
     // If no GUID -> gray
     // if (!guid) {
     //   return {
@@ -388,36 +396,44 @@ export default class FieldModule extends ModuleInterface {
       fillColor1: gray,
       fillColor2: gray,
       outlineColor: outlineGray,
-      fillOpacity: 0.15,
+      fillOpacity: 0.25,
+      outlineOpacity: 1.0,
       hashed: false,
     };
 
-    switch(hctype) {
+    switch(properties.hctype) {
       case 'OIL':
         fill.fillColor1 = green;
         fill.fillColor2 = green;
-        fill.outlineColor = green;
-        fill.fillOpacity = 0.6;
         break;
       case 'GAS':
         fill.fillColor1 = red;
         fill.fillColor2 = red;
-        fill.outlineColor = outlineRed;
-        fill.fillOpacity = 0.6;
         break;
       case 'GAS/CONDENSATE':
         fill.fillColor1 = pink;
         fill.fillColor2 = red;
-        fill.outlineColor = outlineRed;
-        fill.fillOpacity = 0.6;
         fill.hashed = true;
         break;
       case 'OIL/GAS':
         fill.fillColor1 = red;
         fill.fillColor2 = green;
-        fill.fillOpacity = 0.6;
         fill.hashed = true;
         break;
+    }
+
+    if (properties.dscCurrentActivityStatus === 'Producing'
+      || properties.dscCurrentActivityStatus === 'Included in other discovery') {
+      fill.fillOpacity = 0.6;
+      if (properties.cmpNpdidCompany === 32011216) {
+        // fill.outlineColor = equinorGreen;
+        fill.outlineColor = green;
+      }
+    } else {
+      if (properties.cmpNpdidCompany === 32011216) {
+        fill.outlineColor = green;
+        // fill.outlineOpacity = 0.6;
+      }
     }
 
     return fill;
@@ -681,8 +697,9 @@ FieldModule.fragmentShaderOutline = `
   precision mediump float;
 
   uniform vec3 color;
+  uniform float opacity;
 
   void main() {
-    gl_FragColor = vec4(color, 1.0);
+    gl_FragColor = vec4(color, 1.0) * opacity;
   }
 `;
