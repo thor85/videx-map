@@ -52,7 +52,7 @@ export default class GeoJSONLabels {
     this.fontName = fontName || uuidv4();
     const charSet = PIXI.BitmapFont.ALPHANUMERIC.concat(['æ', 'ø', 'å', 'Æ', 'Ø', 'Å']).concat(['-', '\\', '/', '_', '?', '+', '%', '&']);
     // const charSet = PIXI.BitmapFont.ASCII.concat(['æ', 'ø', 'å', 'Æ', 'Ø', 'Å']);
-    this.font = PIXI.BitmapFont.from(this.fontName, this.textStyle, {resolution: window.devicePixelRatio, chars: charSet, textureHeight: 512, textureWidth: 512});
+    if (!this.font) this.font = PIXI.BitmapFont.from(this.fontName, this.textStyle, {resolution: window.devicePixelRatio, chars: charSet, textureHeight: 512, textureWidth: 512});
   }
 
   /**

@@ -106,6 +106,8 @@ interface Config {
 
   labelResize?: LabelResizeConfig;
 
+  labelFontFamily?: string;
+
   /** Provide your custom event handler. */
   customEventHandler?: EventHandler;
 
@@ -214,6 +216,7 @@ export default class FieldModule extends ModuleInterface {
     if (config.hasOwnProperty('labelsVisible')) this.labelsVisible = config.labelsVisible;
     if (config.outlineResize) this.config.outlineResize = config.outlineResize;
     if (config.labelResize) this.config.labelResize = config.labelResize;
+    if (config.labelFontFamily) this.config.labelFontFamily = config.labelFontFamily;
     if (config.initialHash && typeof config.initialHash === 'number') this.config.initialHash = config.initialHash;
     if (config.minHash && typeof config.minHash === 'number') this.config.minHash = config.minHash;
     if (config.maxHash && typeof config.maxHash === 'number') this.config.maxHash = config.maxHash;
@@ -232,7 +235,7 @@ export default class FieldModule extends ModuleInterface {
     this.fields = [];
 
     const textStyle: PIXI.TextStyle = new PIXI.TextStyle({
-      fontFamily : 'Arial',
+      fontFamily : this.config?.labelFontFamily || Defaults.DEFAULT_FONT_FAMILY,
       fontSize: 64 * 2,
       fontWeight: '600',
       fill : 0x454545,

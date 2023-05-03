@@ -64,8 +64,9 @@ export default class LabelManager {
     this.baseScale = baseScale;
 
     this.fontName = fontName || uuidv4();
-    const charSet = PIXI.BitmapFont.ASCII.concat(['æ', 'ø', 'å', 'Æ', 'Ø', 'Å']);
-    this.font = PIXI.BitmapFont.from(this.fontName, this.textStyle, {resolution: window.devicePixelRatio, chars: charSet, textureHeight: 4096, textureWidth: 4096});
+    const charSet = PIXI.BitmapFont.ALPHANUMERIC.concat(['æ', 'ø', 'å', 'Æ', 'Ø', 'Å']).concat(['-', '\\', '/', '_', '?', '+', '%', '&']);
+    // const charSet = PIXI.BitmapFont.ASCII.concat(['æ', 'ø', 'å', 'Æ', 'Ø', 'Å']);
+    if (!this.font) this.font = PIXI.BitmapFont.from(this.fontName, this.textStyle, {resolution: window.devicePixelRatio, chars: charSet, textureHeight: 512, textureWidth: 512});
   }
 
   /**
@@ -139,7 +140,7 @@ export default class LabelManager {
    */
   resize(scale: number) {
     this.fields.forEach(field => {
-      field.instance.scale.set(scale * this.baseScale);
+      field.instance.scale.set(scale * this.baseScale * 0.5);
     });
 
     this.multiFields.forEach(field => {

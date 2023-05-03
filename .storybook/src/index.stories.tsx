@@ -399,6 +399,7 @@ export const layer = () => {
         // threshold: 8,
         baseScale: 0.15,
       },
+      labelFontFamily: 'Verdana',
       initialHash: 5,
       labelsVisible: true,
     });
