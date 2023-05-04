@@ -3,7 +3,9 @@ module.exports = ({ config }) => {
     test: /\.(ts|tsx)$/,
     use: [
       {
-        loader: require.resolve('ts-loader'),
+        // loader: require.resolve('ts-loader'),
+        loader: 'ts-loader',
+        // loader: require.resolve('awesome-typescript-loader'),
       },
     ],
   });
