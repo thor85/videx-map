@@ -45,6 +45,7 @@ export default function preprocessFields(data: Field[]): PreprocessedField[] {
     let field: Field = {
       type: f.type,
       geometry: f.geometry,
+      //@ts-ignore
       properties: properties,
     };
     // console.log(field)

@@ -4,7 +4,8 @@
         "node": true
     },
     "extends": [
-        "airbnb-base"
+        "airbnb-base",
+        "plugin:storybook/recommended"
     ],
     "globals": {
         "Atomics": "readonly",
@@ -15,8 +16,8 @@
         "sourceType": "module"
     },
     "rules": {
-      "no-continue": "off",
-      "no-plusplus": "off",
-      "no-param-reassign": "off"
+        "no-continue": "off",
+        "no-plusplus": "off",
+        "no-param-reassign": "off"
     }
 }

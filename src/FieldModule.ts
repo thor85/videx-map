@@ -77,6 +77,7 @@ export interface Field {
     dscHcType?: string;
     dscName?: string;
     dscActstat?: string;
+    dscactstat?: string;
     label: string;
     lat: number;
     long: number;

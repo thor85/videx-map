@@ -3,13 +3,13 @@ module.exports = ({ config }) => {
     test: /\.(ts|tsx)$/,
     use: [
       {
-        // loader: require.resolve('ts-loader'),
+        loader: require.resolve('ts-loader'),
         // loader: require.resolve("ts-loader")
-        loader: 'ts-loader',
+        // loader: 'ts-loader',
         // loader: require.resolve('awesome-typescript-loader'),
       },
     ],
-    // exclude: /node_modules/,
+    exclude: [/bower_components/, /node_modules/, /styles/],
   });
   // config.module.rules.push({
   //   test: /\.(js|jsx)$/,
@@ -24,5 +24,6 @@ module.exports = ({ config }) => {
   //   exclude: [/bower_components/, /node_modules/, /styles/],
   // });
   config.resolve.extensions.push('.ts', '.tsx');
+  config.resolve.extensions.push('.js', '.jsx');
   return config;
   };
