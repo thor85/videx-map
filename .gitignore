@@ -2,3 +2,4 @@ node_modules
 dist
 .storybook/src/Samples
 .storybook/src/.Samples
+.env

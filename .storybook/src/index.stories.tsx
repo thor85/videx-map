@@ -577,11 +577,11 @@ export const layer = () => {
       onFeatureClick: feature => {
         console.log(feature);
       },
-      // onFeatureHover: (event, data) => {
-      //   if (data && data.length > 0) {
-      //     console.log(data)
-      //   }
-      // },
+      onFeatureHover: (event, data) => {
+        if (data && data.length > 0) {
+          console.log(data)
+        }
+      },
     });
 
     pixiLayer.addModule(faultlines);
@@ -687,6 +687,7 @@ export const layer = () => {
 
     // @ts-ignore
     window.parent.window.drilledData = drilled;
+    wellbores.disable()
     wellbores.set(drilled, 'Drilled'); // Set first half (Emulate 'Drilled')
 
     wellbores.set(planned, 'Planned'); // Set second half (Emulate 'Planned')
@@ -969,11 +970,13 @@ export const layer = () => {
      additionalData: {},
     });
 
+    console.log(process.env.STORYBOOK_DATA_KEY)
+
     const imagesProps = (feature: any) => ({
       label: feature.properties.fclName,
       id: feature.properties.fclNpdidFacility,
       style: {
-        lineColor: 'black',
+        // lineColor: 'black',
         lineWidth: 0.00009,
         fillColor: 'grey',
         // fillColor2: 'red',
@@ -989,7 +992,8 @@ export const layer = () => {
           // pointRotation: 0,
           pointScale: 0.01,
           // pointImage: feature.properties.fclKind === 'MULTI WELL TEMPLATE' ? 'https://trollmapsst.blob.core.windows.net/static/images/risks/radioactive.png?sv=2020-04-08&st=2021-09-29T18%3A56%3A17Z&se=2021-09-30T18%3A56%3A17Z&sr=b&sp=r&sig=gLldLoR4fiwBNBnmfxzQxKeTI8bOJD6vk9DjUShy%2F8I%3D' : 'https://trollmapsst.blob.core.windows.net/static/images/risks/loss.png?sv=2020-04-08&st=2021-09-29T19%3A05%3A01Z&se=2021-09-30T19%3A05%3A01Z&sr=b&sp=r&sig=9QIMAIm34XPgweDiXdZ92tl45%2FtxOtAor7X6jDsAMp8%3D',
-          pointImage: 'https://trollmapsst.blob.core.windows.net/static/images/risks/csand.png?sv=2016-05-31&spr=https%2Chttp&st=2022-10-13T07%3A58%3A54Z&se=2022-10-16T08%3A03%3A54Z&sip=0.0.0.0-255.255.255.255&sr=c&sp=r&sig=8Q2DTxtQ7Ph6ZSKwExeDQLaNXbMqQb1g40us0DlK0RA%3D',
+          // pointImage: './images/condeep_3.png',
+          pointImage: 'https://trollmapsst.blob.core.windows.net/static/images/infrastructure/condeep_3.png?sv=2016-05-31&spr=https%2Chttp&st=2023-05-06T19%3A19%3A00Z&se=2023-05-09T19%3A24%3A00Z&sip=0.0.0.0-255.255.255.255&sr=c&sp=r&sig=m4%2FEyeMlXJA6CMScE%2FbMu%2Fhi1vvuOmhe1n85P41e7Ic%3D'
         }
         // pointShape: 'square',
         // hashed: true,
