@@ -3,7 +3,7 @@ import * as PIXI from 'pixi.js';
 // import { color } from 'd3';
 import { color } from 'd3-color';
 import Vector2 from '@equinor/videx-vector2';
-import {DropShadowFilter} from '@pixi/filter-drop-shadow';
+// import {DropShadowFilter} from '@pixi/filter-drop-shadow';
 
 import { pixiOverlayBase } from '../pixiOverlayInterfaces';
 import PointDictionary from '../utils/PointDictionary';
@@ -223,15 +223,15 @@ export default class GeoJSONPoint {
   }
   // resize(_zoom: number) {
 
-  setDropShadow(visible: boolean) {
-    if (visible) {
-      this.container.filters = [new DropShadowFilter({
-        distance: 5,
-      })]
-    } else {
-      this.container.filters = null;
-    }
-  }
+  // setDropShadow(visible: boolean) {
+  //   if (visible) {
+  //     this.container.filters = [new DropShadowFilter({
+  //       distance: 5,
+  //     })]
+  //   } else {
+  //     this.container.filters = null;
+  //   }
+  // }
 
   // }
 
@@ -243,7 +243,7 @@ export default class GeoJSONPoint {
       if (this.prevHighlighted !== hitPoint.val.id) {
         this.highlighter.highlight(hitPoint.val.id);
         this.prevHighlighted = hitPoint.val.id;
-        this.setDropShadow(true)
+        // this.setDropShadow(true)
         this.pixiOverlay.redraw();
       }
       // make returned object same as before
