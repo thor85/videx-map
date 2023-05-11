@@ -231,8 +231,9 @@ export default class LineDictionary<T> {
 
       let oldWellNameBase = 'old';
       let oldSidestepNumber = 0;
+      let wellboreOld;
       try {
-        const wellboreOld = this.lineValues.get(Number(minLineID)).value;
+        wellboreOld = this.lineValues.get(Number(minLineID)).value;
         // @ts-ignore
         if ("data" in wellboreOld) if ("branch" in wellboreOld.data) oldWellNameBase = wellboreOld.data.branch;
         if ((oldWellNameBase).includes('T')) {
