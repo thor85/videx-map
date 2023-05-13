@@ -18,6 +18,9 @@ type vec3 = [number, number, number];
 
 interface Cache {
   outlineCol: vec3;
+  fillCol1?: vec3;
+  fillCol2?: vec3;
+  opacity?: number;
   baseZIndex: number;
   polygon: FeatureMesh;
 }
@@ -62,14 +65,18 @@ export default class Highlighter {
       // Cache colors before highlight
       this.cached[i] = {
         outlineCol: polygon.outline.uniform.color,
+        fillCol1: polygon.fill.uniform.col1,
+        fillCol2: polygon.fill.uniform.col2,
+        opacity: polygon.fill.uniform.opacity,
         baseZIndex: polygon.outline.mesh.zIndex,
         polygon,
       }
 
       // Highlight
-      // field.fill.uniform.col1 = this.fillColor1;
-      // field.fill.uniform.col2 = this.fillColor2;
-      // polygon.fill.mesh.zIndex += 10000;
+      polygon.fill.uniform.col1 = this.outlineColor;
+      polygon.fill.uniform.col2 = this.outlineColor;
+      polygon.fill.uniform.opacity = 1.0;
+      polygon.fill.mesh.zIndex += 10000;
       polygon.outline.uniform.color = this.outlineColor;
       polygon.outline.mesh.zIndex += 10000;
     }
@@ -82,6 +89,9 @@ export default class Highlighter {
     this.cached.forEach(d => {
       // d.polygon.outline.mesh.zIndex = d.baseZIndex;
       d.polygon.outline.uniform.color = d.outlineCol;
+      d.polygon.fill.uniform.col1 = d.fillCol1;
+      d.polygon.fill.uniform.col2 = d.fillCol2;
+      d.polygon.fill.uniform.opacity = d.opacity;
       d.polygon.outline.mesh.zIndex = d.baseZIndex;
       // d.polygon.outline.mesh.zIndex = d.baseZIndex + 1;
     });

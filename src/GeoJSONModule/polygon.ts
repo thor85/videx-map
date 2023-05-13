@@ -144,7 +144,7 @@ export default class GeoJSONPolygon {
 
     this.highlighter = new Highlighter([0, 255, 255]);
 
-    this.labels = new GeoJSONLabels(labelRoot || this.container, this.textStyle, this.config.labelResize?.baseScale || Defaults.DEFAULT_BASE_SCALE);
+    this.labels = new GeoJSONLabels(labelRoot || this.container, this.textStyle, this.config.labelResize?.baseScale || Defaults.DEFAULT_BASE_SCALE, this);
 
   }
 

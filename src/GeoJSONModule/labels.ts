@@ -12,6 +12,7 @@ interface Label {
   name: string;
   position: Vector2;
   instance?: PIXI.BitmapText;
+  labelLoc?: any;
 }
 
 /** Class used to manage field labels. Handles scaling and grouping of labels. */
@@ -32,6 +33,8 @@ export default class GeoJSONLabels {
   /** Scale of labels when size is set to 1. */
   baseScale: number;
 
+  module: any;
+
   /** Collection of single-polygon fields. */
   labels: Label[] = [];
 
@@ -39,7 +42,7 @@ export default class GeoJSONLabels {
   visible: boolean = true;
 
   /** construct a new label container. */
-  constructor(root: PIXI.Container, textStyle: PIXI.TextStyle, baseScale: number, fontName?: string) {
+  constructor(root: PIXI.Container, textStyle: PIXI.TextStyle, baseScale: number, module: any, fontName?: string) {
     this.container = new PIXI.Container();
     this.container.sortableChildren = true;
     root.addChild(this.container);
@@ -48,9 +51,11 @@ export default class GeoJSONLabels {
     this.textStyle = textStyle;
     // console.log(textStyle)
 
+    this.module = module;
+
     this.baseScale = baseScale;
     this.fontName = fontName || uuidv4();
-    const charSet = PIXI.BitmapFont.ALPHANUMERIC.concat(['æ', 'ø', 'å', 'Æ', 'Ø', 'Å']).concat(['-', '\\', '/', '_', '?', '+', '%', '&']);
+    const charSet = PIXI.BitmapFont.ALPHANUMERIC.concat(['æ', 'ø', 'å', 'Æ', 'Ø', 'Å']).concat(['-', '\\', '/', '_', '?', '+', '%', '&', ':']);
     // const charSet = PIXI.BitmapFont.ASCII.concat(['æ', 'ø', 'å', 'Æ', 'Ø', 'Å']);
     if (!this.font) this.font = PIXI.BitmapFont.from(this.fontName, this.textStyle, {resolution: window.devicePixelRatio, chars: charSet, textureHeight: 512, textureWidth: 512});
   }
@@ -74,10 +79,32 @@ export default class GeoJSONLabels {
    */
   draw(scale=this.baseScale) {
     // Function for drawing single label
-    const drawLabel = (name: string, position: Vector2) => {
+    const drawLabel = (name: string, position: Vector2, labelLoc: any = {}) => {
       const instance: PIXI.BitmapText = new PIXI.BitmapText(name, {fontName: this.fontName});
-      instance.position.set(position[0], position[1]);
+
+      let positionX = position[0];
+      let positionY = position[1];
+
+      if (labelLoc.hasOwnProperty('lng') || labelLoc.hasOwnProperty('lat')) {
+        // const zoom = this.module.pixiOverlay._map.getZoom();
+        const labelLatLng = this.module.pixiOverlay.utils.layerPointToLatLng([position[0], position[1]])
+
+        if (labelLoc.hasOwnProperty('lng')) {labelLatLng.lng = labelLatLng.lng + labelLoc.lng;}
+        if (labelLoc.hasOwnProperty('lat')) {labelLatLng.lat = labelLatLng.lat + labelLoc.lat;}
+        const layerPoint = this.module.pixiOverlay.utils.latLngToLayerPoint(labelLatLng)
+
+        positionX = layerPoint['x'];
+        positionY = layerPoint['y'];
+      }
+
+      let labelAngle = 0;
+      if (labelLoc.hasOwnProperty('angle')) {
+        labelAngle = labelLoc.angle;
+      };
+
+      instance.position.set(positionX, positionY);
       instance.scale.set(scale * 0.5);
+      instance.angle = labelAngle;
       // instance.scale.set(this.baseScale);
       // instance.anchor = new PIXI.Point(0.5, 0.5);
       instance.anchor.set(0.5, 0.5);
@@ -88,7 +115,7 @@ export default class GeoJSONLabels {
 
     // Draw single-polygon labels
     this.labels.forEach(label => {
-      label.instance = drawLabel(label.name, label.position);
+      label.instance = drawLabel(label.name, label.position, label.labelLoc);
     });
   }
 
