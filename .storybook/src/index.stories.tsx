@@ -579,11 +579,11 @@ export const layer = () => {
       onFeatureClick: feature => {
         console.log(feature);
       },
-      onFeatureHover: (event, data) => {
-        if (data && data.length > 0) {
-          console.log(data)
-        }
-      },
+      // onFeatureHover: (event, data) => {
+      //   if (data && data.length > 0) {
+      //     console.log(data)
+      //   }
+      // },
     });
 
     pixiLayer.addModule(faultlines);
