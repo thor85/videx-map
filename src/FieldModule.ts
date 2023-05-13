@@ -76,6 +76,9 @@ export interface Field {
     dscDiscoveryYear?: number;
     dscHcType?: string;
     dscName?: string;
+    labelLocLat?: number;
+    labelLocLng?: number;
+    labelLocAngle?: number;
     dscActstat?: string;
     dscactstat?: string;
     label: string;
@@ -253,7 +256,7 @@ export default class FieldModule extends ModuleInterface {
 
     // const zoom = this.pixiOverlay._map.getZoom();
     // const labelSize = this.getLabelSize(zoom);
-    this.labelManager = new LabelManager(textStyle, this.config.labelResize.baseScale);
+    this.labelManager = new LabelManager(textStyle, this.config.labelResize.baseScale, this);
     // this.labelManager = new LabelManager(textStyle, 0.029);
     this.highlighter = new Highlighter(
       // [0.50, 0, 0.50],
@@ -274,6 +277,8 @@ export default class FieldModule extends ModuleInterface {
       // if (name === 'Troll') return;
 
       const guid = field.properties.guid;
+
+      const labelLoc = field.properties.labelLoc;
 
       const entries: LabelData[] = [];
       const meshes: FieldMesh[] = [];
@@ -299,7 +304,7 @@ export default class FieldModule extends ModuleInterface {
         );
         baseZIndex += 2;
 
-        entries.push({ position, mass });
+        entries.push({ position, mass, labelLoc });
       });
       fieldID++;
       this.labelManager.addField(name, entries);

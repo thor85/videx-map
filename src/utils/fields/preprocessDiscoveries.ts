@@ -27,6 +27,7 @@ export interface PreprocessedField {
     fldName?: string;
     dscName?: string;
     label: string;
+    labelLoc?: any;
     lat: number;
     long: number;
   };
@@ -64,8 +65,9 @@ export default function preprocessDiscoveries(data: Field[]): PreprocessedField[
     };
     // console.log(field)
 
-    // const fieldName: string = field.properties.label;
-    const fieldName: string = field.properties.dscName;
+    const fieldName: string = field.properties.label;
+    // const fieldName: string = field.properties.wlbName;
+    // const fieldName: string = field.properties.dscName;
 
     let coordinates: [number, number][][] = [];
 
@@ -102,18 +104,24 @@ export default function preprocessDiscoveries(data: Field[]): PreprocessedField[
     // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
     // Push new polygon. Append additional.
     } else {
-      let label = field.properties.dscName;
-      if (field.properties.fldName) {
-        label = capitalizeFirstLetter(field.properties.fldName)
-      } else {
-        if (field.properties.wlbName !== field.properties.dscName) {
-          label = (field.properties.dscName).replace(field.properties.wlbName, '');
-          label = label.replace('(', '').replace(')', '')
-        }
-      }
+      // let label = field.properties.dscName;
+      let label = field.properties.label || '';
+      // if (field.properties.fldName) {
+      //   label = capitalizeFirstLetter(field.properties.fldName)
+      // } else {
+      //   if (field.properties.wlbName !== field.properties.dscName) {
+      //     label = (field.properties.dscName).replace(field.properties.wlbName, '');
+      //     label = label.replace('(', '').replace(')', '')
+      //   }
+      // }
 
       let hctype = field.properties.dscHcType;
       if (field.properties.dscName === '31/6-1 (Troll Øst)') hctype = 'GAS';
+
+      let labelLoc = {};
+      if (field.properties.labelLocLat) labelLoc['lat'] = field.properties.labelLocLat;
+      if (field.properties.labelLocLng) labelLoc['lng'] = field.properties.labelLocLng;
+      if (field.properties.labelLocAngle) labelLoc['angle'] = field.properties.labelLocAngle;
 
       unique[fieldName] = {
         type: field.geometry.type,
@@ -140,6 +148,7 @@ export default function preprocessDiscoveries(data: Field[]): PreprocessedField[
           // label: field.properties.label,
           // label: field.properties.dscname,
           label: label,
+          labelLoc: labelLoc,
           // hctype: field.properties.dsc_hctype,
           // hctype: field.properties.dschctype,
           hctype: hctype,
