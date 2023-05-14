@@ -598,6 +598,8 @@ export const layer = () => {
     pixiLayer.addModule(prospects);
     pixiLayer.addTo(map);
 
+    window.parent.window.prospects = prospects;
+
     fields.set(fieldData.features);
     // fields.highlight(60.9, 3.6)
     // fields.clear();
