@@ -36,9 +36,13 @@ export default class Highlighter {
 
   // Highlight colors
   outlineColor: vec3;
+  fillColor: any;
+  opacity: any;
 
-  constructor(outlineColor: vec3) {
+  constructor(outlineColor: vec3, fillColor: any = false, opacity: any = false) {
     this.outlineColor = outlineColor;
+    this.fillColor = fillColor;
+    this.opacity = opacity;
   }
 
   /**
@@ -47,6 +51,7 @@ export default class Highlighter {
    */
   add(group: FeatureMesh[]): void {
     this.meshes.push(group);
+    // console.log(this.meshes)
   }
 
   /**
@@ -73,10 +78,14 @@ export default class Highlighter {
       }
 
       // Highlight
-      polygon.fill.uniform.col1 = this.outlineColor;
-      polygon.fill.uniform.col2 = this.outlineColor;
-      polygon.fill.uniform.opacity = 1.0;
-      polygon.fill.mesh.zIndex += 10000;
+      if (this.fillColor) {
+        polygon.fill.uniform.col1 = this.fillColor;
+        polygon.fill.uniform.col2 = this.fillColor;
+        polygon.fill.mesh.zIndex += 10000;
+      }
+      if (this.opacity) {
+        polygon.fill.uniform.opacity = this.opacity;
+      }
       polygon.outline.uniform.color = this.outlineColor;
       polygon.outline.mesh.zIndex += 10000;
     }
@@ -87,6 +96,7 @@ export default class Highlighter {
     if (!this.cached) return false;
     // Revert selection
     this.cached.forEach(d => {
+      console.log(this.cached)
       // d.polygon.outline.mesh.zIndex = d.baseZIndex;
       d.polygon.outline.uniform.color = d.outlineCol;
       d.polygon.fill.uniform.col1 = d.fillCol1;

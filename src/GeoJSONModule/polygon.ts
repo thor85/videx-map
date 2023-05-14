@@ -96,6 +96,8 @@ export default class GeoJSONPolygon {
 
   highlighter: Highlighter;
 
+  highlighterForced: Highlighter;
+
   /** Settings for how to render data. */
   config: Config = {
     initialHash: Defaults.INITIAL_HASH,
@@ -142,7 +144,9 @@ export default class GeoJSONPolygon {
       align: (config?.labelAlign || Defaults.DEFAULT_LABEL_ALIGN) as PIXI.TextStyleAlign,
     });
 
-    this.highlighter = new Highlighter([0, 255, 255]);
+    this.highlighter = new Highlighter([0, 255, 255], false, false);
+    // this.highlighter = new Highlighter([0, 255, 255], [255, 0, 0], 1.0);
+    this.highlighterForced = new Highlighter([0, 0, 0], [0, 255, 255], 1.0);
 
     this.labels = new GeoJSONLabels(labelRoot || this.container, this.textStyle, this.config.labelResize?.baseScale || Defaults.DEFAULT_BASE_SCALE, this);
 
@@ -178,6 +182,7 @@ export default class GeoJSONPolygon {
       if (properties.label) this.labels.addLabel(properties.label, { position, mass });
       this.features.push(...meshes);
       this.highlighter.add(meshes);
+      this.highlighterForced.add(meshes);
     }
   }
 
@@ -283,9 +288,33 @@ export default class GeoJSONPolygon {
     this.currentZoom = zoom;
   }
 
+  forceHighlightOn(polygonId: number) {
+    if (!polygonId) return;
+
+    this.highlighter.revert()
+    this.highlighterForced.highlight(polygonId);
+    this.pixiOverlay.redraw();
+  }
+
+  forceHighlightTest(name: string) {
+    this.dict.polygonValues.every(el => {
+      if (el.properties.prospectName === name) {
+        console.log(el.id);
+        return false;
+      }
+      return true;
+    })
+  }
+
+  forceHighlightOff() {
+    this.highlighterForced.revert()
+    this.pixiOverlay.redraw();
+  }
+
   testPosition(pos: Vector2) : any {
     const hitPolygon = this.dict.getPolygonAt([pos.x, pos.y]);
     if (hitPolygon) {
+      // console.log(this.dict)
       // console.log("Hit a polygon")
       // console.log(hitPolygon)
       // console.log(this.prevHighlighted )
