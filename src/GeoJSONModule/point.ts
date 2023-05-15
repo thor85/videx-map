@@ -145,8 +145,8 @@ export default class GeoJSONPoint {
 
   pointId: number = 0;
 
-  constructor(root: PIXI.Container, pixiOverlay: pixiOverlayBase) {
-    this.dict = new PointDictionary<number>(100, 500, 4);
+  constructor(root: PIXI.Container, pixiOverlay: pixiOverlayBase, pointDictionaryOptions: any) {
+    this.dict = new PointDictionary<number>(pointDictionaryOptions[0], pointDictionaryOptions[1], pointDictionaryOptions[2]);
     this.container = new PIXI.Container();
     this.container.sortableChildren = true;
     root.addChild(this.container);

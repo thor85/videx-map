@@ -42,6 +42,7 @@ export default class GeoJSONModule extends ModuleInterface {
   private _projector: Projector;
   labelsDrawn: boolean;
   polygonContainer: PIXI.Container;
+  pointDictionaryOptions: any;
 
   constructor(config?: Config) {
     super();
@@ -56,6 +57,7 @@ export default class GeoJSONModule extends ModuleInterface {
     this.polygonContainer = new PIXI.Container();
     this.polygonContainer.sortableChildren = true;
     this.root.addChild(this.polygonContainer);
+    this.pointDictionaryOptions = [100, 500, 4];
   }
 
   get projector() {
@@ -89,7 +91,7 @@ export default class GeoJSONModule extends ModuleInterface {
     this.labelRoot = new PIXI.Container();
     data.features.forEach(feature => {
       if(feature.geometry.type === 'Point') {
-        if (this.points === undefined) this.points = new GeoJSONPoint(this.root, this.pixiOverlay);
+        if (this.points === undefined) this.points = new GeoJSONPoint(this.root, this.pixiOverlay, this.pointDictionaryOptions);
         this.points.add(feature, props);
       // MultiLineString not supported yet
       } else if (feature.geometry.type === 'LineString') {
