@@ -22,6 +22,7 @@ interface Cache {
   fillCol2?: vec3;
   opacity?: number;
   baseZIndex: number;
+  fillZIndex?: number;
   polygon: FeatureMesh;
 }
 
@@ -72,6 +73,7 @@ export default class Highlighter {
         outlineCol: polygon.outline.uniform.color,
         fillCol1: polygon.fill.uniform.col1,
         fillCol2: polygon.fill.uniform.col2,
+        fillZIndex: polygon.fill.mesh.zIndex,
         opacity: polygon.fill.uniform.opacity,
         baseZIndex: polygon.outline.mesh.zIndex,
         polygon,
@@ -97,11 +99,15 @@ export default class Highlighter {
     // Revert selection
     this.cached.forEach(d => {
       // console.log(this.cached)
-      // d.polygon.outline.mesh.zIndex = d.baseZIndex;
       d.polygon.outline.uniform.color = d.outlineCol;
-      d.polygon.fill.uniform.col1 = d.fillCol1;
-      d.polygon.fill.uniform.col2 = d.fillCol2;
-      d.polygon.fill.uniform.opacity = d.opacity;
+      if (this.fillColor) {
+        d.polygon.fill.uniform.col1 = d.fillCol1;
+        d.polygon.fill.uniform.col2 = d.fillCol2;
+        d.polygon.fill.mesh.zIndex = d.fillZIndex;
+      }
+      if (this.opacity) {
+        d.polygon.fill.uniform.opacity = d.opacity;
+      }
       d.polygon.outline.mesh.zIndex = d.baseZIndex;
       // d.polygon.outline.mesh.zIndex = d.baseZIndex + 1;
     });

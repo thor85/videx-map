@@ -108,6 +108,7 @@ export default class GeoJSONMultiPolygon {
   labels: GeoJSONLabels;
   currentZoom: number = Defaults.INITIAL_ZOOM;
   highlighter: Highlighter;
+  highlighterForced: Highlighter;
   /** Index of previously highlighted polygon */
   prevHighlighted: number = -1;
 
@@ -142,6 +143,7 @@ export default class GeoJSONMultiPolygon {
       // [0, 1.0, 1.0],
       [0, 255, 255],
     );
+    this.highlighterForced = new Highlighter([0, 0, 0], [0, 255, 255], 1.0);
 
     this.labels = new GeoJSONLabels(labelRoot || this.container, this.textStyle, this.config.labelResize?.baseScale || Defaults.DEFAULT_BASE_SCALE, this);
 
@@ -199,6 +201,7 @@ export default class GeoJSONMultiPolygon {
       if (labelUse) this.labels.addLabel(labelUse, { position: positionUse, mass: massUse });
       this.features.push(...meshes);
       this.highlighter.add(meshes);
+      this.highlighterForced.add(meshes);
     }
   }
 
@@ -257,6 +260,29 @@ export default class GeoJSONMultiPolygon {
   drawLabels(): void {
     this.labelsVisible = true;
     this.labels.draw(this.getLabelSize(this.pixiOverlay._map.getZoom()));
+  }
+
+  forceHighlightOn(polygonId: number) {
+    if (!polygonId) return;
+
+    this.highlighter.revert()
+    this.highlighterForced.highlight(polygonId);
+    this.pixiOverlay.redraw();
+  }
+
+  forceHighlightTest(name: string) {
+    this.dict.polygonValues.every(el => {
+      if (el.properties.prospectName === name) {
+        console.log(el.id);
+        return false;
+      }
+      return true;
+    })
+  }
+
+  forceHighlightOff() {
+    this.highlighterForced.revert()
+    this.pixiOverlay.redraw();
   }
 
 
