@@ -96,7 +96,7 @@ export default class Highlighter {
     if (!this.cached) return false;
     // Revert selection
     this.cached.forEach(d => {
-      console.log(this.cached)
+      // console.log(this.cached)
       // d.polygon.outline.mesh.zIndex = d.baseZIndex;
       d.polygon.outline.uniform.color = d.outlineCol;
       d.polygon.fill.uniform.col1 = d.fillCol1;
