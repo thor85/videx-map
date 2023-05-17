@@ -177,6 +177,7 @@ export default class GeoJSONPoint {
         point = PIXI.Sprite.from(pointImage);
         point.anchor.x = 0.5;
         point.anchor.y = 0.5;
+        point.tint = properties.style?.pointOptions?.tint || '0xFFFFFF';
         point.position.x = projected[0];
         point.position.y = projected[1];
 
