@@ -259,17 +259,18 @@ export default class GeoJSONPolygon {
     if (!this.config.outlineResize) return;
     const outlineRadius = this.getOutlineRadius(zoom);
 
-    if (this.config.labelResize && this.labelsVisible) {
-      const labelSize = this.getLabelSize(zoom);
+    // if (this.config.labelResize && this.labelsVisible) {
+    //   console.log(this.config.labelResize)
+    //   const labelSize = this.getLabelSize(zoom);
 
-      // Labels will just get in the way after a certain threshold, so it is better to just hide them
-      if (zoom <= this.config.labelResize.threshold) {
-        this.labels.hideLabels();
-      } else {
-        if (this.labelsVisible) this.labels.showLabels();
-        this.labels.resize(labelSize);
-      }
-    }
+    //   // Labels will just get in the way after a certain threshold, so it is better to just hide them
+    //   if (zoom <= this.config.labelResize.threshold) {
+    //     this.labels.hideLabels();
+    //   } else {
+    //     if (this.labelsVisible) this.labels.showLabels();
+    //     this.labels.resize(labelSize);
+    //   }
+    // }
 
     /**
      * This is not the best way to update, ideally we would use global uniforms
