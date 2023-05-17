@@ -71,13 +71,18 @@ export default class Highlighter {
       // Cache colors before highlight
       this.cached[i] = {
         outlineCol: polygon.outline.uniform.color,
-        fillCol1: polygon.fill.uniform.col1,
-        fillCol2: polygon.fill.uniform.col2,
-        fillZIndex: polygon.fill.mesh.zIndex,
-        opacity: polygon.fill.uniform.opacity,
         baseZIndex: polygon.outline.mesh.zIndex,
-        polygon,
+        polygon: polygon,
       }
+      if (this.fillColor) {
+        this.cached[i]['fillCol1'] = polygon.fill.uniform.col1;
+        this.cached[i]['fillCol2'] = polygon.fill.uniform.col2;
+        this.cached[i]['fillZIndex'] = polygon.fill.mesh.zIndex;
+      }
+      if (this.opacity) {
+        this.cached[i]['opacity'] = polygon.fill.uniform.opacity;
+      }
+
 
       // Highlight
       if (this.fillColor) {
