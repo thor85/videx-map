@@ -6,6 +6,7 @@ import Vector2 from '@equinor/videx-vector2';
 export type GeoJSONLabelData = {
   position: Vector2;
   mass: number;
+  labelLoc?: any;
 }
 
 interface Label {
@@ -66,11 +67,11 @@ export default class GeoJSONLabels {
    * @param data Data for each label
    */
   addLabel(name: string, data: GeoJSONLabelData) { // Single-polygon
-      this.labels.push({
-        name,
-        position: data.position,
-        instance: null,
-      });
+    this.labels.push({
+      name,
+      position: data.position,
+      instance: null,
+    });
   }
 
   /**
@@ -108,7 +109,7 @@ export default class GeoJSONLabels {
       // instance.scale.set(this.baseScale);
       // instance.anchor = new PIXI.Point(0.5, 0.5);
       instance.anchor.set(0.5, 0.5);
-      instance.zIndex = 1000; // High z-index
+      instance.zIndex = 100000; // High z-index
       this.container.addChild(instance);
       return instance;
     };
@@ -131,6 +132,6 @@ export default class GeoJSONLabels {
   }
 
   resize(scale: number) {
-    this.labels.forEach((lbl) => lbl.instance.scale.set(scale * 0.5));
+    this.labels.forEach((lbl) => lbl.instance.scale.set(scale * this.baseScale * 0.5));
   }
 }

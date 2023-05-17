@@ -526,7 +526,9 @@ export const layer = () => {
           // console.log(data)
         }
       },
+      distanceThreshold: 200000
     });
+    window.parent.window.pipelines = pipelines;
     const facilities: GeoJSONModule = new GeoJSONModule({
       onFeatureHover: (event, data) => {
         if (data && data.length > 0) {
