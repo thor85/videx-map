@@ -164,6 +164,9 @@ export default class GeoJSONModule extends ModuleInterface {
   // testPosition(pos: Vector2) : any {
   /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
   testPosition(event: MouseEvent) : any {
+    console.log(event)
+    console.log("testPosition")
+    console.log(this.onFeatureHover)
     const map = this.pixiOverlay.utils.getMap();
     const latLng = map.mouseEventToLatLng(event);
     const layerCoords = new Vector2([latLng.lng, latLng.lat]);
@@ -203,7 +206,8 @@ export default class GeoJSONModule extends ModuleInterface {
 
   private handleMouseMove(event: MouseEvent): boolean {
     if (!this.highlightEnabled) return;
-    if(this.mapmoving) return false;
+    if (this.mapmoving) return false;
+    if (!this.visibility) return false;
     const hits = this.testPosition(event);
     if(this.onFeatureHover) this.onFeatureHover(event, hits);
     return true;
@@ -211,12 +215,15 @@ export default class GeoJSONModule extends ModuleInterface {
 
   private handleMouseOut(event: MouseEvent) : boolean {
     if (!this.highlightEnabled) return;
+    if (!this.visibility) return false;
     if(this.onFeatureHover) this.onFeatureHover(event, []);
     return true;
   }
 
   private handleMouseClick(event: MouseEvent) : boolean {
+    console.log("handleMouseClick")
     if (!this.onFeatureClick) return;
+    if (!this.visibility) return false;
     // TODO: Set highlight in handleMouseMove and just retrieve it here?
     const hits = this.testPosition(event);
     if (!hits || hits.length === 0) {return false;};
@@ -225,11 +232,13 @@ export default class GeoJSONModule extends ModuleInterface {
   }
 
   private handleMouseDown() : boolean {
+    if (!this.visibility) return false;
     this.mapmoving = true;
     return true;
   }
 
   private handleMouseUp() : boolean {
+    if (!this.visibility) return false;
     this.mapmoving = false;
     return true;
   }
