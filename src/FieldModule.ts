@@ -602,7 +602,9 @@ export default class FieldModule extends ModuleInterface {
 
   private handleMouseMove(event: MouseEvent): boolean {
     if (!this.highlightEnabled) return;
-    if(this.mapmoving) return false;
+    if (this.mapmoving) return false;
+    if (!this.visibility) return false;
+    console.log("FieldModule handleMouseMove")
     const hits = this.testPosition(event);
     if (hits.length !== 0 && !arraysEqual(this.highlightHits, hits)) {
       const map = this.pixiOverlay.utils.getMap();
@@ -630,12 +632,14 @@ export default class FieldModule extends ModuleInterface {
 
   private handleMouseOut(event: MouseEvent) : boolean {
     if (!this.highlightEnabled) return;
+    if (!this.visibility) return false;
     if(this.onFeatureHover) this.onFeatureHover(event, []);
     return true;
   }
 
   private handleMouseClick(event: MouseEvent) : boolean {
     if (!this.onFeatureClick) return;
+    if (!this.visibility) return false;
     // TODO: Set highlight in handleMouseMove and just retrieve it here?
     const hits = this.testPosition(event);
     if (!hits || hits.length === 0) {return false;};
@@ -644,11 +648,13 @@ export default class FieldModule extends ModuleInterface {
   }
 
   private handleMouseDown() : boolean {
+    if (!this.visibility) return false;
     this.mapmoving = true;
     return true;
   }
 
   private handleMouseUp() : boolean {
+    if (!this.visibility) return false;
     this.mapmoving = false;
     return true;
   }

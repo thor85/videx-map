@@ -501,6 +501,8 @@ export const layer = () => {
         }
       },
     });
+    licenses.setVisibility(false);
+
     const regions: GeoJSONModule = new GeoJSONModule({
       outlineResize: {
         min: { zoom: 6, scale: 0.6 },
@@ -518,6 +520,8 @@ export const layer = () => {
         }
       },
     });
+    regions.setVisibility(false);
+
     // (window as any).licenses = licenses;
     // console.log(licenses)
     const pipelines: GeoJSONModule = new GeoJSONModule({
@@ -528,7 +532,9 @@ export const layer = () => {
       },
       distanceThreshold: 200000
     });
+    pipelines.setVisibility(false);
     window.parent.window.pipelines = pipelines;
+
     const facilities: GeoJSONModule = new GeoJSONModule({
       onFeatureHover: (event, data) => {
         if (data && data.length > 0) {
@@ -538,6 +544,7 @@ export const layer = () => {
       },
       distanceThreshold: 0.2
     });
+    facilities.setVisibility(false);
     // const prospects: GeoJSONModule = new GeoJSONModule({
     //   outlineResize: {
     //     min: { zoom: 6, scale: 1.5 },
@@ -565,7 +572,9 @@ export const layer = () => {
       },
       distanceThreshold: 0.2
     });
+    images.setVisibility(false);
     window.parent.window.images = images;
+
     const prospects: GeoJSONModule = new GeoJSONModule({
       outlineResize: {
         min: { zoom: 6, scale: 1.5 },
@@ -587,6 +596,7 @@ export const layer = () => {
       //   }
       // },
     });
+    prospects.setVisibility(false);
 
     pixiLayer.addModule(faultlines);
     pixiLayer.addModule(fields);
@@ -794,13 +804,22 @@ export const layer = () => {
     // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
     let faultlinesVisible = true;
-
     const toggleFaultlines = () => {
       faultlinesVisible = !faultlinesVisible;
       // console.log(faultlinesVisible)
       // console.log(faultlines)
       faultlines.setVisibility(faultlinesVisible);
     }
+    window.parent.window.faultlines = faultlines;
+
+    let fieldsVisible = true;
+    const toggleFields = () => {
+      fieldsVisible = !fieldsVisible;
+      // console.log(faultlinesVisible)
+      // console.log(faultlines)
+      fields.setVisibility(fieldsVisible);
+    }
+    window.parent.window.fields = fields;
 
     const groupFilter = sidebar.addGroup('Filter');
 
@@ -1136,6 +1155,7 @@ export const layer = () => {
     groupGeoJSON.add('Toggle images', () => toggleGeoJSON(imagesGeoJSON));
     groupGeoJSON.add('Toggle prospects', () => toggleGeoJSON(prospectGeoJSON));
     groupGeoJSON.add('Toggle faultline', () => toggleFaultlines());
+    groupGeoJSON.add('Toggle fields', () => toggleFields());
   });
 
   return root.node();
