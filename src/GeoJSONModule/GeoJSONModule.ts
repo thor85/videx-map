@@ -164,9 +164,9 @@ export default class GeoJSONModule extends ModuleInterface {
   // testPosition(pos: Vector2) : any {
   /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
   testPosition(event: MouseEvent) : any {
-    console.log(event)
-    console.log("testPosition")
-    console.log(this.onFeatureHover)
+    // console.log(event)
+    // console.log("testPosition")
+    // console.log(this.onFeatureHover)
     const map = this.pixiOverlay.utils.getMap();
     const latLng = map.mouseEventToLatLng(event);
     const layerCoords = new Vector2([latLng.lng, latLng.lat]);

@@ -175,11 +175,19 @@ export default class GeoJSONPoint {
       if (properties.style.pointShape === 'image') {
         const pointImage = properties.style?.pointOptions?.pointImage || '';
         point = PIXI.Sprite.from(pointImage);
+        // point.texture.baseTexture.mipmap = PIXI.MIPMAP_MODES.POW2;
+        // point.cacheAsBitmap = true;
+        // point.texture.baseTexture.scaleMode = 0
+        // point.texture.baseTexture.resolution = 5;
+        // console.log(point.texture.baseTexture)
+        // console.log(PIXI.BaseTexture.defaultOptions.scaleMode)
+        // PIXI.BaseTexture.defaultOptions.scaleMode = 0;
         point.anchor.x = 0.5;
         point.anchor.y = 0.5;
         point.tint = properties.style?.pointOptions?.tint || '0xFFFFFF';
         point.position.x = projected[0];
         point.position.y = projected[1];
+        // console.log(point)
 
         const pointScale = properties.style?.pointOptions?.pointScale || 0.1;
         point.scale.x = pointScale;

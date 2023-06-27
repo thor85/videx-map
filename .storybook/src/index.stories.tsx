@@ -8,6 +8,8 @@ import processExploration from './processExploration';
 import removeExpDuplicates from './removeExpDuplicates';
 
 import condeep_3_image from './images/condeep_3.png';
+// import expwell_image from './images/9.png';
+import expwell_image from './images/9_512.png';
 
 import { SourceData } from '../../src/utils/wellbores/data/SourceData';
 import PixiLayer from './helper/PixiLayer';
@@ -1015,9 +1017,10 @@ export const layer = () => {
           pointFillet: 1,
           // pointRectangularSides: 3,
           // pointRotation: 0,
-          pointScale: 0.01,
+          pointScale: 0.5,
           // pointImage: feature.properties.fclKind === 'MULTI WELL TEMPLATE' ? 'https://trollmapsst.blob.core.windows.net/static/images/risks/radioactive.png?sv=2020-04-08&st=2021-09-29T18%3A56%3A17Z&se=2021-09-30T18%3A56%3A17Z&sr=b&sp=r&sig=gLldLoR4fiwBNBnmfxzQxKeTI8bOJD6vk9DjUShy%2F8I%3D' : 'https://trollmapsst.blob.core.windows.net/static/images/risks/loss.png?sv=2020-04-08&st=2021-09-29T19%3A05%3A01Z&se=2021-09-30T19%3A05%3A01Z&sr=b&sp=r&sig=9QIMAIm34XPgweDiXdZ92tl45%2FtxOtAor7X6jDsAMp8%3D',
-          pointImage: condeep_3_image,
+          // pointImage: condeep_3_image,
+          pointImage: expwell_image,
           // pointImage: 'https://trollmapsst.blob.core.windows.net/static/images/infrastructure/condeep_3.png?sv=2016-05-31&spr=https%2Chttp&st=2023-05-06T19%3A19%3A00Z&se=2023-05-09T19%3A24%3A00Z&sip=0.0.0.0-255.255.255.255&sr=c&sp=r&sig=m4%2FEyeMlXJA6CMScE%2FbMu%2Fhi1vvuOmhe1n85P41e7Ic%3D'
         }
         // pointShape: 'square',

@@ -604,7 +604,7 @@ export default class FieldModule extends ModuleInterface {
     if (!this.highlightEnabled) return;
     if (this.mapmoving) return false;
     if (!this.visibility) return false;
-    console.log("FieldModule handleMouseMove")
+    // console.log("FieldModule handleMouseMove")
     const hits = this.testPosition(event);
     if (hits.length !== 0 && !arraysEqual(this.highlightHits, hits)) {
       const map = this.pixiOverlay.utils.getMap();
