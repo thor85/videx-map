@@ -1036,7 +1036,7 @@ export const layer = () => {
       // const { fillColor, lineColor } = ProspectColors.valid(period) ? ProspectColors.get(period) : { fillColor: '#666666', lineColor: '#444444' };
 
       return {
-        label: feature.properties.prospectName,
+        label: feature.properties.label,
         id: feature.properties.prospectAnalysisId,
         style: {
           // lineColor,
@@ -1116,7 +1116,8 @@ export const layer = () => {
       prospectSegments['kvinandsor'],
     ]
 
-    let prospectDataNew = transformProspectData(prospectData);
+    // let prospectDataNew = transformProspectData(prospectData);
+    let prospectDataNew = prospectData;
     // let prospectDataNew = prospectData;
     const prospectDataFiltered = prospectDataNew;
     // let prospectDataFiltered = prospectDataNew.features = prospectDataNew.features.filter((item) => (
@@ -1146,7 +1147,7 @@ export const layer = () => {
       } catch (error) {
         console.error(error);
       }
-      console.log(collection)
+      // console.log(collection)
       collection.module.pixiOverlay.redraw();
     }
 

@@ -176,10 +176,15 @@ export default class GeoJSONPolygon {
       // const outlineData = Mesh.PolygonOutline(projected, this.outlineThickness);
       const [position, mass] = centerOfMass(projected, meshData.triangles);
 
+      let labelLoc = {};
+      if (feature.properties.labelLocLat) labelLoc['lat'] = feature.properties.labelLocLat;
+      if (feature.properties.labelLocLng) labelLoc['lng'] = feature.properties.labelLocLng;
+      if (feature.properties.labelLocAngle) labelLoc['angle'] = feature.properties.labelLocAngle;
+
       meshes.push(
         this.drawPolygons(this.container, meshData, outlineData, properties.style, this.zIndex),
       );
-      if (properties.label) this.labels.addLabel(properties.label, { position, mass });
+      if (properties.label) this.labels.addLabel(properties.label, { position, mass, labelLoc });
       this.features.push(...meshes);
       this.highlighter.add(meshes);
       this.highlighterForced.add(meshes);
@@ -300,7 +305,7 @@ export default class GeoJSONPolygon {
   forceHighlightTest(name: string) {
     this.dict.polygonValues.every(el => {
       if (el.properties.prospectName === name) {
-        console.log(el.id);
+        // console.log(el.id);
         return false;
       }
       return true;
