@@ -27,10 +27,13 @@ type vec3 = [number, number, number];
 interface FillUniform {
   col1: vec3;
   col2: vec3;
+  inactiveCol: vec3;
   opacity: number;
   hashed: boolean;
   hashDisp: number;
   hashWidth: number;
+  inactiveWidth: number;
+  active: boolean;
 }
 
 interface OutlineUniform {
@@ -43,10 +46,12 @@ interface OutlineUniform {
 interface FieldStyle {
   fillColor1: vec3;
   fillColor2: vec3;
+  inactiveCol: vec3;
   fillOpacity: number;
   outlineOpacity?: number;
   outlineColor: vec3;
   hashed: boolean;
+  active: boolean;
 }
 
 export interface Field {
@@ -109,6 +114,9 @@ interface Config {
   /** Maximum scale of field hash (Default: Infinity). */
   maxHash?: number,
 
+  inactiveWidth?: number;
+  inactiveCol?: vec3;
+
   /** Resize configuration of outline. */
   outlineResize?: ResizeConfig;
 
@@ -132,6 +140,7 @@ const equinorGreen: vec3 = [0, 0.439, 0.475];
 const lightgreen: vec3 = [0.6, 0.78, 0.6];
 const pink: vec3 = [1.0, 0.753, 0.796];
 const gray: vec3 = [0.6, 0.6, 0.6];
+const darkGray: vec3 = [0.2, 0.2, 0.2];
 const black: vec3 = [0, 0, 0];
 const purple: vec3 = [0.55, 0, 1];
 
@@ -171,6 +180,8 @@ export default class FieldModule extends ModuleInterface {
   /** Settings for how to render fields. */
   config: Config = {
     initialHash: 1.0,
+    inactiveWidth: 5.0,
+    inactiveCol: black,
     minHash: 0.0,
     maxHash: Infinity,
     outlineResize: {
@@ -230,6 +241,8 @@ export default class FieldModule extends ModuleInterface {
     if (config.labelResize) this.config.labelResize = config.labelResize;
     if (config.labelFontFamily) this.config.labelFontFamily = config.labelFontFamily;
     if (config.initialHash && typeof config.initialHash === 'number') this.config.initialHash = config.initialHash;
+    if (config.inactiveWidth && typeof config.inactiveWidth === 'number') this.config.inactiveWidth = config.inactiveWidth;
+    if (config.inactiveCol) this.config.inactiveCol = config.inactiveCol;
     if (config.minHash && typeof config.minHash === 'number') this.config.minHash = config.minHash;
     if (config.maxHash && typeof config.maxHash === 'number') this.config.maxHash = config.maxHash;
   }
@@ -346,10 +359,13 @@ export default class FieldModule extends ModuleInterface {
     const fillUniform: FillUniform = {
       col1: fieldStyle.fillColor1,
       col2: fieldStyle.fillColor2,
+      inactiveCol: this.config.inactiveCol,
       opacity: fieldStyle.fillOpacity,
       hashed: fieldStyle.hashed,
       hashDisp: Math.random() * 10,
       hashWidth: this.config.initialHash,
+      inactiveWidth: this.config.inactiveWidth,
+      active: fieldStyle.active,
     };
 
     const zoom = this.pixiOverlay._map.getZoom();
@@ -407,10 +423,12 @@ export default class FieldModule extends ModuleInterface {
     const fill: FieldStyle = {
       fillColor1: gray,
       fillColor2: gray,
+      inactiveCol: black,
       outlineColor: outlineGray,
-      fillOpacity: 0.25,
+      fillOpacity: 0.6,
       outlineOpacity: 1.0,
       hashed: false,
+      active: false,
     };
 
     switch(properties.hctype) {
@@ -436,7 +454,8 @@ export default class FieldModule extends ModuleInterface {
 
     if (properties.dscCurrentActivityStatus === 'Producing'
       || properties.dscCurrentActivityStatus === 'Included in other discovery') {
-      fill.fillOpacity = 0.6;
+      // fill.fillOpacity = 0.6;
+      fill.active = true;
       if (properties.cmpNpdidCompany === 32011216) {
         // fill.outlineColor = equinorGreen;
         fill.outlineColor = green;
@@ -683,19 +702,56 @@ FieldModule.fragmentShaderFill = `
 
   uniform vec3 col1;
   uniform vec3 col2;
+  uniform vec3 inactiveCol;
   uniform float opacity;
 
   uniform bool hashed;
+  uniform bool active;
   uniform float hashDisp;
   uniform float hashWidth;
+  uniform float inactiveWidth;
 
   void main() {
-    if(hashed && mod(verts.y + hashDisp, hashWidth * 2.0) > hashWidth) {
-      gl_FragColor = vec4(col2, 1.0) * opacity;
+    vec4 finalColor = vec4(col1, 1.0) * opacity;
+
+    // Diagonal lines showing fluid
+    float interval = hashWidth * 2.0;
+    float a = step(mod(verts.x + verts.y, interval) / (interval - 1.0), 0.5);
+
+    if (hashed && a > 0.5) {
+      finalColor = vec4(col2, 1.0) * opacity;
+    } else {
+      finalColor = vec4(col1, 1.0) * opacity;
     }
-    else {
-      gl_FragColor = vec4(col1, 1.0) * opacity;
+
+    // Original horizontal lines
+    // if(hashed && mod(verts.y + hashDisp, hashWidth * 2.0) > hashWidth) {
+    //   finalColor = vec4(col2, 1.0) * opacity;
+    // }
+
+    // else {
+    //   finalColor = vec4(col1, 1.0) * opacity;
+    // }
+
+    // Vertical grey lines to show if field in production
+    // if (!active && mod(verts.x, inactiveWidth * 1.20) > inactiveWidth) {
+    //   finalColor = vec4(inactiveCol, 1.0) * opacity;
+    // }
+
+    // horizontal grey lines to show if field in production
+    // if (!active && mod(verts.y, inactiveWidth * 1.20) > inactiveWidth) {
+    //   finalColor = vec4(inactiveCol, 1.0) * opacity;
+    // }
+
+    // Opposite diagonal lines to show if field in production
+    float b = step(mod(verts.x - verts.y, inactiveWidth * 2.0) / (inactiveWidth * 1.3), 0.5);
+
+    if (!active && b > 0.5) {
+      // finalColor = vec4(inactiveCol, 1.0);
+      finalColor = vec4(inactiveCol, 1.0) * opacity;
     }
+
+    gl_FragColor = finalColor;
   }
 `;
 
