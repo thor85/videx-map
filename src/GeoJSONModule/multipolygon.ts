@@ -107,6 +107,7 @@ export default class GeoJSONMultiPolygon {
   textStyle: PIXI.TextStyle;
   labels: GeoJSONLabels;
   currentZoom: number = Defaults.INITIAL_ZOOM;
+  zIndex: number = Defaults.DEFAULT_Z_INDEX;
   highlighter: Highlighter;
   highlighterForced: Highlighter;
   /** Index of previously highlighted polygon */
@@ -176,8 +177,9 @@ export default class GeoJSONMultiPolygon {
         polygonMass.push([position, mass]);
 
         meshes.push(
-          this.drawPolygons(this.container, meshData, outlineData, properties.style, Defaults.DEFAULT_Z_INDEX),
+          this.drawPolygons(this.container, meshData, outlineData, properties.style, this.zIndex),
         );
+        this.zIndex = this.zIndex + 1;
 
         let label = ''
         if (properties.label) label = properties.label;
@@ -242,7 +244,8 @@ export default class GeoJSONMultiPolygon {
       GeoJSONFragmentShaderOutline,
       outlineUniform,
       outlineData.normals);
-    polygonOutlineMesh.zIndex = zIndex + 1;
+    // polygonOutlineMesh.zIndex = zIndex + 1;
+    polygonOutlineMesh.zIndex = zIndex;
     container.addChild(polygonOutlineMesh);
 
     return {

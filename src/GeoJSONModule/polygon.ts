@@ -184,6 +184,8 @@ export default class GeoJSONPolygon {
       meshes.push(
         this.drawPolygons(this.container, meshData, outlineData, properties.style, this.zIndex),
       );
+      this.zIndex = this.zIndex + 1;
+
       if (properties.label) this.labels.addLabel(properties.label, { position, mass, labelLoc });
       this.features.push(...meshes);
       this.highlighter.add(meshes);
@@ -227,7 +229,8 @@ export default class GeoJSONPolygon {
       GeoJSONFragmentShaderOutline,
       outlineUniform,
       outlineData.normals);
-    polygonOutlineMesh.zIndex = zIndex + 1;
+    // polygonOutlineMesh.zIndex = zIndex + 1;
+    polygonOutlineMesh.zIndex = zIndex;
     container.addChild(polygonOutlineMesh);
 
     return {
