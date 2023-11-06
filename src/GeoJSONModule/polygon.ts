@@ -180,6 +180,9 @@ export default class GeoJSONPolygon {
       if (feature.properties.labelLocLat) labelLoc['lat'] = feature.properties.labelLocLat;
       if (feature.properties.labelLocLng) labelLoc['lng'] = feature.properties.labelLocLng;
       if (feature.properties.labelLocAngle) labelLoc['angle'] = feature.properties.labelLocAngle;
+      if (properties.labelLocLat) labelLoc['lat'] = properties.labelLocLat;
+      if (properties.labelLocLng) labelLoc['lng'] = properties.labelLocLng;
+      if (properties.labelLocAngle) labelLoc['angle'] = properties.labelLocAngle;
 
       meshes.push(
         this.drawPolygons(this.container, meshData, outlineData, properties.style, this.zIndex),

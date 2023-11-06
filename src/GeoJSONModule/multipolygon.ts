@@ -157,6 +157,7 @@ export default class GeoJSONMultiPolygon {
     if (properties.style.labelScale) this.labels.baseScale = properties.style.labelScale;
     const meshes: FeatureMesh[] = [];
     const coordinateGroup = geom.coordinates as [number, number][][][];
+
     if(coordinateGroup?.length > 0) {
       let polygonMass = []
       coordinateGroup.forEach(coordinates => {
@@ -200,7 +201,15 @@ export default class GeoJSONMultiPolygon {
           positionUse = position;
         }
       })
-      if (labelUse) this.labels.addLabel(labelUse, { position: positionUse, mass: massUse });
+
+      let labelLoc = {};
+      if (feature.properties.labelLocLat) labelLoc['lat'] = feature.properties.labelLocLat;
+      if (feature.properties.labelLocLng) labelLoc['lng'] = feature.properties.labelLocLng;
+      if (feature.properties.labelLocAngle) labelLoc['angle'] = feature.properties.labelLocAngle;
+      if (properties.labelLocLat) labelLoc['lat'] = properties.labelLocLat;
+      if (properties.labelLocLng) labelLoc['lng'] = properties.labelLocLng;
+      if (properties.labelLocAngle) labelLoc['angle'] = properties.labelLocAngle;
+      if (labelUse) this.labels.addLabel(labelUse, { position: positionUse, mass: massUse, labelLoc: labelLoc });
       this.features.push(...meshes);
       this.highlighter.add(meshes);
       this.highlighterForced.add(meshes);

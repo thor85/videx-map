@@ -17,6 +17,9 @@ export interface FeatureStyle {
 export interface FeatureProps {
   id: number;
   label: string;
+  labelLocLat: number;
+  labelLocLng: number;
+  labelLocAngle: number;
   style: FeatureStyle;
   /* eslint-disable-next-line @typescript-eslint/no-explicit-any  */
   additionalData?: any;
